@@ -18,12 +18,21 @@ class UserRegisterSchema(UserBaseSchema):
     password: str = Field(min_length=8, max_length=40)
     password_repeat: str = Field(min_length=8, max_length=40)
 
+    class Config:
+        orm_mode = True
+
 
 class UserInputSchema(UserBaseSchema):
     pass
+
+    class Config:
+        orm_mode = True
 
 
 class UserOutputSchema(UserBaseSchema):
     id: UUID
     is_active: bool = True
+
+    class Config:
+        orm_mode = True
      

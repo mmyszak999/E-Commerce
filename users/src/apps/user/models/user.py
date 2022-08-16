@@ -1,13 +1,18 @@
-from enum import unique
-from tortoise import fields, models
+from sqlalchemy import Boolean, Column, Integer, String, Date
+
+from users.src.database import Base
 
 
-class User(models.Model):
-    id = fields.UUIDField(pk=True)
-    first_name = fields.CharField(max_length=50)
-    last_name = fields.CharField(max_length=75)
-    email = fields.CharField(max_length=125, unique=True)
-    password = fields.CharField(max_length=330)
-    username = fields.CharField(max_length=35, unique=True)
-    data_of_birth = fields.DateField()
-    is_active = fields.BooleanField(default=True)
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    first_name = Column(String(length=50), nullable=False)
+    last_name = Column(String(length=75), nullable=False)
+    email = Column(String, unique=True, nullable=False)
+    username = Column(String(length=50), nullable=False, unique=True)
+    password = Column(String, nullable=False)
+    birth_date = Column(Date, nullable=False)
+    is_active = Column(Boolean, nullable=False)
+
+
