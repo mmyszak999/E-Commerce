@@ -1,5 +1,6 @@
 /Lib
 /Scripts
 /pyvenv.cfg
-
 /__pycache__
+*.pyc
+/include
