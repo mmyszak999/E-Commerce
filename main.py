@@ -1,10 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from users.src.apps.user.models import user_model
 from users.src.apps.user.schemas import user_schema
 from users.src.apps.user.services import user_services
-from users.src.database import SessionLocal
+from users.src.database import SessionLocal, engine
 
+user_model.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -17,10 +19,10 @@ def get_db():
         db.close()
 
 
-@app.post("/users/", response_model=user_schema.UserOutputSchema)
+@app.post("/users/", response_model=user_schema.UserOutputSchema, status_code=status.HTTP_201_CREATED)
 def create_user(user: user_schema.UserRegisterSchema, db : Session = Depends(get_db)):
     db_user = user_services.create_user(db, user)
-    if db_user:
+    if not db_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User already exist")
