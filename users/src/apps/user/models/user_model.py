@@ -1,5 +1,7 @@
 from uuid import UUID
+
 from sqlalchemy import Boolean, Column, Integer, String, Date
+from pydantic import BaseModel
 
 from users.src.database import Base
 
