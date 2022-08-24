@@ -1,16 +1,16 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 
-from users.src.apps.user.models import user_model
-from users.src.apps.user.schemas.user_schema import (
+from src.apps.user.models.models import User
+from src.apps.user.schemas.schemas import (
     UserInputSchema,
     UserOutputSchema,
     UserRegisterSchema
 )
-from users.src.apps.user.services import crud
-from users.src.database import SessionLocal, engine
+from src.apps.user.services import crud
+from src.apps.user.database import SessionLocal, engine
 
-user_model.Base.metadata.create_all(bind=engine)
+User.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -23,7 +23,7 @@ def get_db():
         db.close()
 
 
-@app.post("/users/", response_model=UserOutputSchema, status_code=status.HTTP_201_CREATED)
+@app.post("/users", response_model=UserOutputSchema, status_code=status.HTTP_201_CREATED)
 def create_user(user: UserRegisterSchema, db : Session = Depends(get_db)):
     db_user = crud.create_user(db, user)
     if not db_user:
@@ -32,12 +32,12 @@ def create_user(user: UserRegisterSchema, db : Session = Depends(get_db)):
             detail="User already exist")
     return db_user
 
-@app.get("/users/", response_model=list[UserOutputSchema], status_code=status.HTTP_200_OK)
+@app.get("/users", response_model=list[UserOutputSchema], status_code=status.HTTP_200_OK)
 def get_users(skip: int = 0, limit: int = 100,db: Session = Depends(get_db)):
     db_users = crud.get_users(db, skip=skip, limit=limit)
     return db_users
 
-@app.get("/users/{user_id}/", response_model=UserOutputSchema, status_code=status.HTTP_200_OK)
+@app.get("/users/{user_id}", response_model=UserOutputSchema, status_code=status.HTTP_200_OK)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id)
     if db_user is None:
