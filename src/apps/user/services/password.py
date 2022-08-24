@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 
-from users.src.apps.user.schemas.user_schema import UserRegisterSchema
+from src.apps.user.schemas.schemas import UserRegisterSchema
 
 def hash_user_password(user_schema: UserRegisterSchema) -> None:
     passwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
