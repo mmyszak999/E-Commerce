@@ -2,13 +2,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import delete, select
 from fastapi import status
 
-from src.apps.user.models.models import User
-from src.apps.user.schemas.schemas import (
+from src.apps.user.models.user import User
+from src.apps.user.schemas.user import (
     UserRegisterSchema,
     UserOutputSchema,
     UserInputSchema
 )
-from src.apps.user.services.password import hash_user_password
+from src.apps.user.utils.hash_password import hash_user_password
 
 
 def get_user(db: Session, user_id: int):
@@ -17,8 +17,8 @@ def get_user(db: Session, user_id: int):
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
-def get_users(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(User).offset(skip).limit(limit).all()
+def get_users(db: Session,limit: int = 100):
+    return db.query(User).limit(limit).all()
     
 def create_user(db: Session, user: UserRegisterSchema) -> UserOutputSchema:
     hash_user_password(user_schema=user)
