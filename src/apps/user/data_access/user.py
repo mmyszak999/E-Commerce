@@ -1,3 +1,5 @@
+from typing import Union
+
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 from fastapi import status
@@ -10,9 +12,11 @@ from src.apps.user.schemas.user import (
 )
 from src.apps.user.utils.hash_password import hash_user_password
 
-def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
+def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, int]:
     statement = select(User).filter(User.id == user_id)
     instance = session.scalar(statement)
+    if session.scalar(instance) is None:
+        return status.HTTP_404_NOT_FOUND
     session.commit()
 
     return UserOutputSchema.from_orm(instance)
@@ -40,10 +44,10 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
     return UserOutputSchema.from_orm(db_user)
 
-def update_single_user(session: Session, user: UserInputSchema, user_id: int) -> UserOutputSchema:
+def update_single_user(session: Session, user: UserInputSchema, user_id: int) -> Union[UserOutputSchema, int]:
     statement = update(User).filter(User.id == user_id)
     statement = statement.values(**user.dict())
-    
+
     session.execute(statement)
     session.commit()
     return get_single_user(session, user_id=user_id)
