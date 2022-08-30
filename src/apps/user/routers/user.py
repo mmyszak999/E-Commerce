@@ -22,8 +22,8 @@ def create_user(user: UserRegisterSchema, db : Session = Depends(get_db)) -> Use
     return db_user
 
 @router.get("/", response_model=list[UserOutputSchema], status_code=status.HTTP_200_OK)
-def get_users(limit: int = 100,db: Session = Depends(get_db)) -> list[UserOutputSchema]:
-    db_users = crud.get_users(db, limit=limit)
+def get_users(db: Session = Depends(get_db)) -> list[UserOutputSchema]:
+    db_users = crud.get_users(db)
     return db_users
 
 @router.get("/{user_id}", response_model=UserOutputSchema, status_code=status.HTTP_200_OK)

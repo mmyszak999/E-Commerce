@@ -8,51 +8,26 @@ from src.apps.user.schemas.user import (
     UserOutputSchema,
     UserInputSchema
 )
-from src.apps.user.utils.hash_password import hash_user_password
+from src.apps.user.data_access.user import (
+    get_all_users,
+    get_single_user,
+    register_user,
+    update_single_user,
+    delete_one_user
+)
 
 
-def get_user(db: Session, user_id: int):
-    return db.query(User).filter(User.id == user_id).first()
+def get_user(db: Session, user_id: int) -> UserOutputSchema:
+    return get_single_user(db, user_id)
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(User).filter(User.email == email).first()
-
-def get_users(db: Session,limit: int = 100):
-    return db.query(User).limit(limit).all()
+def get_users(db: Session) -> list[UserOutputSchema]:
+    return get_all_users(db)
     
 def create_user(db: Session, user: UserRegisterSchema) -> UserOutputSchema:
-    hash_user_password(user_schema=user)
-    db_user = User(
-        first_name = user.first_name,
-        last_name = user.last_name,
-        email = user.email,
-        birth_date = user.birth_date,
-        username = user.username,
-        password = user.password
-    )
-
-    print(db_user.password)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+    return register_user(db, user)
 
 def update_user(db: Session, user: UserInputSchema, user_id: int) -> UserOutputSchema:
-    instance = get_user(db, user_id)
-    for key, value in user.dict().items():
-        setattr(instance, key, value)
-    
-    db.commit()
-    db.refresh(instance)
-    
-    return UserOutputSchema.from_orm(instance)
+    return update_single_user(db, user, user_id)
 
 def delete_user(db: Session, user_id: int):
-    if_exists = select(User.id).filter(User.id == user_id)
-    if db.scalar(if_exists) is None:
-        return status.HTTP_404_NOT_FOUND
-
-    statement = delete(User).filter(User.id == user_id)
-    result = db.execute(statement)
-    db.commit()
-    return result
+    delete_one_user(db, user_id=user_id)
