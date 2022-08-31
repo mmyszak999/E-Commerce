@@ -4,7 +4,10 @@ WORKDIR /code
 
 COPY requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt \
+    && apt-get update \
+    && apt-get -y install libpq-dev gcc \
+    && pip install psycopg2
 
 COPY . .
 
