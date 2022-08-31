@@ -6,4 +6,5 @@ services:
     container_name: app
     volumes: 
       - .:/code/
-    ports: "8000:8000"
+    ports: 
+      - "8000:8000"
