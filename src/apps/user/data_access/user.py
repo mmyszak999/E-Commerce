@@ -15,7 +15,7 @@ from src.apps.user.utils.hash_password import hash_user_password
 def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, int]:
     statement = select(User).filter(User.id == user_id)
     instance = session.scalar(statement)
-    if session.scalar(instance) is None:
+    if instance is None:
         return status.HTTP_404_NOT_FOUND
     session.commit()
 

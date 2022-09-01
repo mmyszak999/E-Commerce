@@ -1,8 +1,6 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import delete, select
-from fastapi import status
+from typing import Union
 
-from src.apps.user.models.user import User
 from src.apps.user.schemas.user import (
     UserRegisterSchema,
     UserOutputSchema,
@@ -17,7 +15,7 @@ from src.apps.user.data_access.user import (
 )
 
 
-def get_user(db: Session, user_id: int) -> UserOutputSchema:
+def get_user(db: Session, user_id: int) -> Union[UserOutputSchema, int]:
     return get_single_user(db, user_id)
 
 def get_users(db: Session) -> list[UserOutputSchema]:
@@ -26,7 +24,7 @@ def get_users(db: Session) -> list[UserOutputSchema]:
 def create_user(db: Session, user: UserRegisterSchema) -> UserOutputSchema:
     return register_user(db, user)
 
-def update_user(db: Session, user: UserInputSchema, user_id: int) -> UserOutputSchema:
+def update_user(db: Session, user: UserInputSchema, user_id: int) -> Union[UserOutputSchema, int]:
     return update_single_user(db, user, user_id)
 
 def delete_user(db: Session, user_id: int):
