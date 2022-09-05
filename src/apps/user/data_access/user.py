@@ -12,21 +12,22 @@ from src.apps.user.schemas.user import (
 )
 from src.apps.user.utils.hash_password import hash_user_password
 
-def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, int]:
-    statement = select(User).filter(User.id == user_id)
-    instance = session.scalar(statement)
-    if instance is None:
-        return status.HTTP_404_NOT_FOUND
-    session.commit()
-
-    return UserOutputSchema.from_orm(instance)
-
 
 def get_all_users(session: Session) -> list[UserOutputSchema]:
     statement = select(User)
     instances = (session.execute(statement)).scalars()
 
     return [UserOutputSchema.from_orm(instance) for instance in instances]
+
+def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, int]:
+    statement = select(User).filter(User.id == user_id)
+    instance = session.scalar(statement)
+    all_users = get_all_users(session)
+    if instance not in all_users:
+        return status.HTTP_404_NOT_FOUND
+    session.commit()
+
+    return UserOutputSchema.from_orm(instance)
 
 def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchema:
     hash_user_password(user_schema=user)
@@ -38,7 +39,6 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
         username = user.username,
         password = user.password
     )
-
     session.add(db_user)
     session.commit()
 
