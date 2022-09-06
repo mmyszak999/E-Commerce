@@ -14,7 +14,7 @@ from src.apps.user.utils.get_db import get_db
 
 router = APIRouter(prefix="/users")
 
-@router.post("/", response_model=UserOutputSchema, status_code=status.HTTP_201_CREATED, tags=["users"])
+@router.post("/register", response_model=UserOutputSchema, status_code=status.HTTP_201_CREATED, tags=["users"])
 def create_user(user: UserRegisterSchema, db : Session = Depends(get_db)) -> UserOutputSchema:
     db_user = crud.create_user(db, user)
     return db_user

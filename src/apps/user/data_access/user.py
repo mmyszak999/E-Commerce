@@ -22,9 +22,6 @@ def get_all_users(session: Session) -> list[UserOutputSchema]:
 def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, int]:
     statement = select(User).filter(User.id == user_id)
     instance = session.scalar(statement)
-    all_users = get_all_users(session)
-    if instance not in all_users:
-        return status.HTTP_404_NOT_FOUND
     session.commit()
 
     return UserOutputSchema.from_orm(instance)
