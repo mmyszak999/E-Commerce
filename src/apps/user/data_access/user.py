@@ -22,6 +22,7 @@ def get_all_users(session: Session) -> list[UserOutputSchema]:
 def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, int]:
     statement = select(User).filter(User.id == user_id)
     instance = session.scalar(statement)
+    print(instance)
     session.commit()
 
     return UserOutputSchema.from_orm(instance)
