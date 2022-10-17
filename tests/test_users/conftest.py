@@ -1,16 +1,18 @@
-from typing import Iterator
+from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session
 from sqlalchemy.engine import Engine
 from sqlalchemy.event import listens_for
-from httpx import Client
 
 from src.settings.db_settings import settings
-from src.apps.user.utils.get_db import get_db
 from src.apps.user.database import Base
+from src.apps.user.data_access.user import register_user
+from src.apps.user.schemas.user import UserRegisterSchema, UserBaseSchema, UserUpdateSchema
+from src.apps.user.utils.get_db import get_db
+from src.apps.user.models.user import User
 from main import app
 
 
@@ -52,26 +54,88 @@ def sync_session(sync_engine: Engine):
 
 @pytest.fixture(scope="function")
 def sync_client():
-    with TestClient(app=app) as sync_client:
+    with TestClient(app=app, base_url="http://localhost:8000/api/") as sync_client:
         yield sync_client
 
-"""@pytest.fixture(scope="function")
-def client():
-    with Client(app=app, base_url='127.0.0.1:8000/') as sync_client:
-        yield sync_client"""
 
-"""@pytest.fixture(scope="function")
-def override_get_db(engine: Engine):
-    connection = engine.connect()
+@pytest.fixture(autouse=True)
+def override_get_sync_session(sync_session: Session):
+    app.dependency_overrides[get_db] = lambda: sync_session
+    yield
 
-      # begin a non-ORM transaction
-    connection.begin()
+@pytest.fixture(scope="module")
+def register_data() -> dict[str, str]:
+    return {
+        "first_name": "jan",
+        "last_name": "kowalski",
+        "email": "kowal@mail.com",
+        "birth_date": "2020-07-12",
+        "username": "kowal2137",
+        "password": "kowalkowal",
+        "password_repeat": "kowalkowal"
+        }
 
-      # bind an individual Session to the connection
-    db = Session(bind=connection)
-      # db = Session(engine)
+@pytest.fixture(autouse=True)
+def create_test_users(sync_session: Session):
+    list_of_user_register_schemas = [
+    UserRegisterSchema(
+        first_name="jan",
+        last_name="kowalski",
+        email="kowaljan@mail.com",
+        birth_date=date(2020,7,12),
+        username="kowaljan2137",
+        password="kowalkowal",
+        password_repeat="kowalkowal"
+    ),
+    UserRegisterSchema(
+        first_name="karol",
+        last_name="krawczyk",
+        email="krawczyk@gmail.com",
+        birth_date=date(1965,6,18),
+        username="karkraw",
+        password="krawczyk1234",
+        password_repeat="krawczyk1234"
+    ),
+    UserRegisterSchema(  
+        first_name="norbert",
+        last_name="gierczak",
+        email="norbertgierczak@mail.com",
+        birth_date=date(1999,4,20),
+        username="jd123456",
+        password="jdjdjdjd",
+        password_repeat="jdjdjdjd")]
 
-    yield db
+    for user in list_of_user_register_schemas:
+        register_user(sync_session, user)
 
-    db.rollback()
-    connection.close()"""
+
+@pytest.fixture(scope="module")
+def update_db_user() -> UserRegisterSchema:
+    db_user = UserRegisterSchema(
+        first_name = 'donald',
+        last_name = 'trump',
+        email = 'maga@gmail.com',
+        birth_date = date(1950,1,1),
+        username = 'donaldjtrump',
+        password = 'buildthewall',
+        password_repeat = 'buildthewall'
+    )
+
+    return db_user
+
+@pytest.fixture(scope="module")
+def update_user_schema() -> UserUpdateSchema:
+    user_schema = UserUpdateSchema(
+        first_name = 'donald_2',
+        last_name = 'trump_2',
+        email = 'maga_updated@gmail.com',
+        birth_date = date(1951,2,2),
+        username = 'donaldjtrump_updated',
+        password = 'buildthewall'
+    )
+
+    return user_schema
+
+
+
+

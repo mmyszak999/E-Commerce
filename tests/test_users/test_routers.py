@@ -1,44 +1,57 @@
-from gc import get_debug
 from typing import Any
-from urllib import response
-import pytest
 
 from fastapi import status
-from sqlalchemy import select
+from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from httpx import Client, ASGITransport, AsyncClient
 
-from src.apps.user.utils.get_db import get_db
-from tests.test_users.conftest import Client as test_client
-from main import app
-
-
-@pytest.fixture(scope="module")
-def register_data():
-    return {
-        "first_name": "jan",
-        "last_name": "kowalski",
-        "email": "kowal@mail.com",
-        "birth_date": "2020-07-12",
-        "username": "kowal2137",
-        "password": "kowalkowal",
-        "password_repeat": "kowalkowal"
-        }
+from src.apps.user.models.user import User
+from src.apps.user.schemas.user import UserRegisterSchema, UserUpdateSchema
+from src.apps.user.data_access.user import register_user, update_single_user
 
 
-@pytest.fixture(autouse=True)
-def override_get_sync_session(sync_session: Session):
-    app.dependency_overrides[get_db] = lambda: sync_session
-    yield
-
-
-def test_user_can_register(
+def test_register_single_user(
     register_data: dict[str, Any],
-    sync_client: Client
+    sync_client: TestClient
 ):
-    response = sync_client.post("http://localhost:8000/api/users/register", json=register_data)
-    print(response.status_code)
-
-    assert response.status_code == 201
+    response = sync_client.post("users/register", json=register_data)
+    assert response.status_code == status.HTTP_201_CREATED
 
 
+def test_get_all_users(
+    sync_client: TestClient,
+    sync_session: Session
+):
+    response = sync_client.get("users/")
+    amount_of_users_from_db = sync_session.query(User).count()
+    assert len(response.json()) == amount_of_users_from_db
+    assert response.status_code == status.HTTP_200_OK
+    
+
+def test_get_single_user(
+    sync_client: TestClient,
+    sync_session: Session
+):
+    user_from_db = sync_session.query(User).order_by(User.id.desc()).first()
+    response = sync_client.get(f"users/{user_from_db.id}/")
+    assert response.json()["id"] == user_from_db.id
+    assert response.status_code == status.HTTP_200_OK
+
+def test_update_single_user(
+    update_db_user: UserRegisterSchema,
+    update_user_schema: UserUpdateSchema,
+    sync_client: TestClient,
+    sync_session: Session
+):
+    user = register_user(sync_session, update_db_user)
+    db_user = sync_session.query(User).filter(User.username == user.username).first()
+    update_single_user(sync_session, update_user_schema, user_id=db_user.id)
+    response = sync_client.get(f"users/{db_user.id}/")
+    assert response.json()["username"] == update_user_schema.username
+
+def test_delete_single_user(
+    sync_client: TestClient,
+    sync_session: Session
+):
+    user_from_db = sync_session.query(User).order_by(User.id.desc()).first()
+    response = sync_client.delete(f"users/{user_from_db.id}")
+    assert response.status_code == status.HTTP_204_NO_CONTENT

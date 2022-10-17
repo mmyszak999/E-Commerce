@@ -8,7 +8,8 @@ from src.apps.user.models.user import User
 from src.apps.user.schemas.user import (
     UserRegisterSchema,
     UserOutputSchema,
-    UserInputSchema
+    UserInputSchema,
+    UserUpdateSchema
 )
 from src.apps.user.utils.hash_password import hash_user_password
 
@@ -21,9 +22,7 @@ def get_all_users(session: Session) -> list[UserOutputSchema]:
 
 def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, int]:
     statement = select(User).filter(User.id == user_id)
-    instance = session.scalar(statement)
-    print(instance)
-    session.commit()
+    instance = session.execute(statement).scalar()
 
     return UserOutputSchema.from_orm(instance)
 
@@ -42,7 +41,7 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
     return UserOutputSchema.from_orm(db_user)
 
-def update_single_user(session: Session, user: UserInputSchema, user_id: int) -> Union[UserOutputSchema, int]:
+def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> Union[UserOutputSchema, int]:
     statement = update(User).filter(User.id == user_id)
     statement = statement.values(**user.dict())
 

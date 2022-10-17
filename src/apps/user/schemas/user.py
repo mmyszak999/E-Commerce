@@ -46,6 +46,12 @@ class UserInputSchema(UserBaseSchema):
     class Config:
         orm_mode = True
 
+class UserUpdateSchema(UserBaseSchema):
+    password: str = Field(min_length=8, max_length=40)
+
+    class Config:
+        orm_mode = True
+
 
 class UserOutputSchema(UserBaseSchema):
     id: int
