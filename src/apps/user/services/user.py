@@ -4,21 +4,14 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 from fastapi import status
 
-from src.apps.user.models.user import User
 from src.apps.user.schemas.user import (
     UserRegisterSchema,
     UserOutputSchema,
-    UserInputSchema,
     UserUpdateSchema
 )
+from src.apps.user.models.user import User
 from src.apps.user.utils.hash_password import hash_user_password
 
-
-def get_all_users(session: Session) -> list[UserOutputSchema]:
-    statement = select(User)
-    instances = (session.execute(statement)).scalars()
-
-    return [UserOutputSchema.from_orm(instance) for instance in instances]
 
 def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, int]:
     statement = select(User).filter(User.id == user_id)
@@ -26,6 +19,12 @@ def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, i
 
     return UserOutputSchema.from_orm(instance)
 
+def get_all_users(session: Session) -> list[UserOutputSchema]:
+    statement = select(User)
+    instances = (session.execute(statement)).scalars()
+
+    return [UserOutputSchema.from_orm(instance) for instance in instances]
+    
 def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchema:
     hash_user_password(user_schema=user)
     db_user = User(
@@ -49,7 +48,7 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
     session.commit()
     return get_single_user(session, user_id=user_id)
 
-def delete_one_user(session: Session, user_id: int):
+def delete_single_user(session: Session, user_id: int):
     if_exists = select(User.id).filter(User.id == user_id)
     if session.scalar(if_exists) is None:
         return status.HTTP_404_NOT_FOUND

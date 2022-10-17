@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.apps.user.models.user import User
 from src.apps.user.schemas.user import UserRegisterSchema, UserUpdateSchema
-from src.apps.user.data_access.user import register_user, update_single_user
+from src.apps.user.services.user import register_user, update_single_user
 
 
 def test_register_single_user(

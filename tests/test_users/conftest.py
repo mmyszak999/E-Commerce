@@ -9,7 +9,7 @@ from sqlalchemy.event import listens_for
 
 from src.settings.db_settings import settings
 from src.apps.user.database import Base
-from src.apps.user.data_access.user import register_user
+from src.apps.user.services.user import register_user
 from src.apps.user.schemas.user import UserRegisterSchema, UserBaseSchema, UserUpdateSchema
 from src.apps.user.utils.get_db import get_db
 from src.apps.user.models.user import User
