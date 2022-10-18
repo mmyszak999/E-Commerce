@@ -10,9 +10,8 @@ from sqlalchemy.event import listens_for
 from src.settings.db_settings import settings
 from src.apps.user.database import Base
 from src.apps.user.services.user import register_user
-from src.apps.user.schemas.user import UserRegisterSchema, UserBaseSchema, UserUpdateSchema
+from src.apps.user.schemas.user import UserRegisterSchema, UserUpdateSchema
 from src.apps.user.utils.get_db import get_db
-from src.apps.user.models.user import User
 from main import app
 
 
@@ -136,6 +135,58 @@ def update_user_schema() -> UserUpdateSchema:
 
     return user_schema
 
+
+@pytest.fixture(scope='module')
+def incorrect_passwords_dict() -> dict[str, str]:
+    return  {
+        "first_name": "average",
+        "last_name": "joe",
+        "email": "avjoe@mail.com",
+        "birth_date": "1980-07-12",
+        "username": "imjoe",
+        "password": "wearethesame",
+        "password_repeat": "wearenotthesame"
+    }
+
+@pytest.fixture(scope='module')
+def date_from_future_dict() -> dict[str, str]:
+    return  {
+        "first_name": "future",
+        "last_name": "man",
+        "email": "pluto@mail.com",
+        "birth_date": "2137-04-20",
+        "username": "pluto",
+        "password": "password_ok",
+        "password_repeat": "password_ok"
+    }
+
+@pytest.fixture(scope="module")
+def occupied_username_schema() -> UserRegisterSchema:
+    user_schema = UserRegisterSchema(
+        first_name = 'karol',
+        last_name = 'krawczyk2',
+        email = 'sth@gmail.com',
+        birth_date = date(1974,4,24),
+        username = 'karkraw',
+        password = 'password',
+        password_repeat = 'password',
+    )
+
+    return user_schema
+
+@pytest.fixture(scope="module")
+def occupied_email_schema() -> UserRegisterSchema:
+    user_schema = UserRegisterSchema(
+        first_name = 'karol',
+        last_name = 'krawczyk2',
+        email = 'krawczyk@gmail.com',
+        birth_date = date(1974,4,24),
+        username = 'karkraw2',
+        password = 'password',
+        password_repeat = 'password',
+    )
+
+    return user_schema
 
 
 

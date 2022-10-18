@@ -14,6 +14,7 @@ def test_register_single_user(
     sync_client: TestClient
 ):
     response = sync_client.post("users/register", json=register_data)
+    print(register_data)
     assert response.status_code == status.HTTP_201_CREATED
 
 

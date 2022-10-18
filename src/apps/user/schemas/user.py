@@ -1,7 +1,5 @@
 import datetime
-from typing import Any, Union
-
-from datetime import date
+from typing import Any
 from pydantic import BaseModel, Field, validator
 
 
@@ -37,7 +35,7 @@ class UserRegisterSchema(UserBaseSchema):
     @validator("password_repeat")
     def validate_passwords(cls, rep_password: str, values: dict[str, Any]) -> str:
         if rep_password != values["password"]:
-            raise ValueError("Password are not identical")
+            raise ValueError("Passwords are not identical")
         return rep_password
 
 class UserInputSchema(UserBaseSchema):
