@@ -1,3 +1,4 @@
+from datetime import date
 from uuid import UUID
 from pydantic import BaseModel, Field
 
@@ -11,12 +12,11 @@ class UserBaseSchema(BaseModel):
     first_name : str = Field(max_length=50)
     last_name : str = Field(max_length=75)
     email : str = Field(max_length=50)
-    birth_date : str = Field(max_length=50)
+    birth_date : date = Field()
     username : str = Field(max_length=50)
     
     class Config:
         orm_mode = True
-        arbitrary_types_allowed = True
 
 
 class UserRegisterSchema(UserBaseSchema):
