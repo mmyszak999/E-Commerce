@@ -29,8 +29,6 @@ class UserRegisterSchema(UserBaseSchema):
     password: str = Field(min_length=8, max_length=40)
     password_repeat: str = Field(min_length=8, max_length=40)
 
-    class Config:
-        orm_mode = False
     
     @validator("password_repeat")
     def validate_passwords(cls, rep_password: str, values: dict[str, Any]) -> str:
@@ -57,4 +55,5 @@ class UserOutputSchema(UserBaseSchema):
 
     class Config:
         orm_mode = True
+        load_instance = True
      

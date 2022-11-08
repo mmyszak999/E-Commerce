@@ -17,7 +17,6 @@ def test_create_user_with_occupied_username(
 ):
     with pytest.raises(IntegrityError) as exc:
         register_user(sync_session, occupied_username_schema)
-    assert exc.value.__class__ == IntegrityError
 
 
 def test_create_user_with_occupied_email(
@@ -26,7 +25,6 @@ def test_create_user_with_occupied_email(
 ):
     with pytest.raises(IntegrityError) as exc:
         register_user(sync_session, occupied_email_schema)
-    assert exc.value.__class__ == IntegrityError
 
 
 

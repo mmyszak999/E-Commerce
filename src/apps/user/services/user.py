@@ -11,12 +11,15 @@ from src.apps.user.schemas.user import (
 )
 from src.apps.user.models.user import User
 from src.apps.user.utils.hash_password import hash_user_password
+from src.apps.user.exceptions import user_does_not_exist_exception
 
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
     statement = select(User).filter(User.id == user_id).limit(1)
-    instance = session.execute(statement).scalar()
+    if session.scalar(statement) is None:
+        raise user_does_not_exist_exception
 
+    instance = session.execute(statement).scalar()
     return UserOutputSchema.from_orm(instance)
 
 def get_all_users(session: Session) -> list[UserOutputSchema]:
@@ -26,12 +29,15 @@ def get_all_users(session: Session) -> list[UserOutputSchema]:
     return [UserOutputSchema.from_orm(instance) for instance in instances]
     
 def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchema:
-    hash_user_password(user_schema=user)
-    db_user = User(**user.dict())
-    session.add(db_user)
+    user_data = user.dict()
+    user_data.pop('password_repeat')
+    user_data['password'] = hash_user_password(password=user_data.pop('password'))
+    new_user = User(**user_data)
+
+    session.add(new_user)
     session.commit()
 
-    return UserOutputSchema.from_orm(db_user)
+    return UserOutputSchema.from_orm(new_user)
 
 def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> UserOutputSchema:
     statement = update(User).filter(User.id == user_id)
@@ -44,7 +50,7 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
 def delete_single_user(session: Session, user_id: int):
     if_exists = select(User.id).filter(User.id == user_id)
     if session.scalar(if_exists) is None:
-        return status.HTTP_404_NOT_FOUND
+        raise user_does_not_exist_exception
 
     statement = delete(User).filter(User.id == user_id)
     result = session.execute(statement)
