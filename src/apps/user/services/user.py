@@ -13,8 +13,8 @@ from src.apps.user.models.user import User
 from src.apps.user.utils.hash_password import hash_user_password
 
 
-def get_single_user(session: Session, user_id: int) -> Union[UserOutputSchema, int]:
-    statement = select(User).filter(User.id == user_id)
+def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
+    statement = select(User).filter(User.id == user_id).limit(1)
     instance = session.execute(statement).scalar()
 
     return UserOutputSchema.from_orm(instance)
@@ -27,20 +27,13 @@ def get_all_users(session: Session) -> list[UserOutputSchema]:
     
 def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchema:
     hash_user_password(user_schema=user)
-    db_user = User(
-        first_name = user.first_name,
-        last_name = user.last_name,
-        email = user.email,
-        birth_date = user.birth_date,
-        username = user.username,
-        password = user.password
-    )
+    db_user = User(**user.dict())
     session.add(db_user)
     session.commit()
 
     return UserOutputSchema.from_orm(db_user)
 
-def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> Union[UserOutputSchema, int]:
+def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> UserOutputSchema:
     statement = update(User).filter(User.id == user_id)
     statement = statement.values(**user.dict())
 
@@ -55,5 +48,4 @@ def delete_single_user(session: Session, user_id: int):
 
     statement = delete(User).filter(User.id == user_id)
     result = session.execute(statement)
-    session.commit()
     return result

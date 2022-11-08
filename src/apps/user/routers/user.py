@@ -31,12 +31,12 @@ def get_users(db: Session = Depends(get_db)) -> list[UserOutputSchema]:
     return db_users
 
 @router.get("/{user_id}", response_model=UserOutputSchema, status_code=status.HTTP_200_OK, tags=["users"])
-def get_user(user_id: int, db: Session = Depends(get_db)) -> Union[UserOutputSchema, int]:
+def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
     db_user = get_single_user(db, user_id)
     return db_user
 
 @router.put("/{user_id}", response_model=UserOutputSchema, status_code=status.HTTP_200_OK, tags=["users"])
-def update_user(user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db)) -> Union[UserOutputSchema, int]:
+def update_user(user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db)) -> UserOutputSchema:
     db_user = update_single_user(db, user, user_id)
     return db_user
 
