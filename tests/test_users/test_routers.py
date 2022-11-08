@@ -33,7 +33,6 @@ def test_get_single_user(
     sync_session: Session
 ):
     user_from_db = sync_session.execute(select(User, User.id)).first()
-    print(user_from_db)
     response = sync_client.get(f"users/{user_from_db.id}/")
     assert response.json()["id"] == user_from_db.id
     assert response.status_code == status.HTTP_200_OK
@@ -52,7 +51,8 @@ def test_update_single_user(
 
 def test_delete_single_user(
     sync_client: TestClient,
-    sync_session: Session
+    sync_session: Session,
 ):
-    response = sync_client.delete(f"users/{14}")
+    user = sync_session.execute(select(User, User.id)).scalar()
+    response = sync_client.delete(f"users/{user.id}")
     assert response.status_code == status.HTTP_204_NO_CONTENT
