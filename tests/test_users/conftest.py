@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -31,7 +32,7 @@ def sync_engine():
     Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="package")
 def sync_session(sync_engine: Engine):
     connection = sync_engine.connect()
     transaction = connection.begin()
@@ -62,20 +63,9 @@ def override_get_sync_session(sync_session: Session):
     app.dependency_overrides[get_db] = lambda: sync_session
     yield
 
-@pytest.fixture(scope="module")
-def register_data() -> dict[str, str]:
-    return {
-        "first_name": "jan",
-        "last_name": "kowalski",
-        "email": "kowal@mail.com",
-        "birth_date": "2020-07-12",
-        "username": "kowal2137",
-        "password": "kowalkowal",
-        "password_repeat": "kowalkowal"
-        }
 
-@pytest.fixture(autouse=True)
-def create_test_users(sync_session: Session):
+@pytest.fixture(scope="package", autouse=True)
+def create_setup_users(sync_session: Session):
     list_of_user_register_schemas = [
     UserRegisterSchema(
         first_name="jan",
@@ -109,18 +99,30 @@ def create_test_users(sync_session: Session):
 
 
 @pytest.fixture(scope="module")
-def update_db_user() -> UserRegisterSchema:
-    db_user = UserRegisterSchema(
-        first_name = 'donald',
-        last_name = 'trump',
-        email = 'maga@gmail.com',
-        birth_date = date(1950,1,1),
-        username = 'donaldjtrump',
-        password = 'buildthewall',
-        password_repeat = 'buildthewall'
-    )
+def register_data() -> dict[str, str]:
+    return {
+        "first_name": "jan",
+        "last_name": "kowalski",
+        "email": "kowal@mail.com",
+        "birth_date": "2020-07-12",
+        "username": "kowal2137",
+        "password": "kowalkowal",
+        "password_repeat": "kowalkowal"
+        }
 
-    return db_user
+
+
+@pytest.fixture(scope="module")
+def update_data() -> dict[str, str]:
+    return {
+        "first_name": 'donald',
+        "last_name": 'trump',
+        "email": 'maga@gmail.com',
+        "birth_date": "1950-07-12",
+        "username": 'donaldjtrump',
+        "password": 'buildthewall',
+        "password_repeat": 'buildthewall',
+        }
 
 @pytest.fixture(scope="module")
 def update_user_schema() -> UserUpdateSchema:
@@ -137,24 +139,24 @@ def update_user_schema() -> UserUpdateSchema:
 
 
 @pytest.fixture(scope='module')
-def incorrect_passwords_dict() -> dict[str, str]:
+def incorrect_passwords_dict() -> dict[str, Any]:
     return  {
         "first_name": "average",
         "last_name": "joe",
         "email": "avjoe@mail.com",
-        "birth_date": "1980-07-12",
+        "birth_date": date(1980,7,12),
         "username": "imjoe",
         "password": "wearethesame",
         "password_repeat": "wearenotthesame"
     }
 
 @pytest.fixture(scope='module')
-def date_from_future_dict() -> dict[str, str]:
+def date_from_future_dict() -> dict[str, Any]:
     return  {
         "first_name": "future",
         "last_name": "man",
         "email": "pluto@mail.com",
-        "birth_date": "2137-04-20",
+        "birth_date": date(2137,4,20),
         "username": "pluto",
         "password": "password_ok",
         "password_repeat": "password_ok"
@@ -166,8 +168,8 @@ def occupied_username_schema() -> UserRegisterSchema:
         first_name = 'karol',
         last_name = 'krawczyk2',
         email = 'sth@gmail.com',
-        birth_date = date(1974,4,24),
-        username = 'karkraw',
+        birth_date = date(1974,4,25),
+        username = "karkraw",
         password = 'password',
         password_repeat = 'password',
     )
