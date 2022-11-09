@@ -17,7 +17,6 @@ def test_get_all_users(
     sync_client: TestClient
 ):
     response = sync_client.get("users/")
-    print(response.json())
     assert len(response.json()) == 4
     assert response.status_code == status.HTTP_200_OK
     

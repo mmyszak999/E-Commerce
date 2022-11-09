@@ -55,5 +55,4 @@ class UserOutputSchema(UserBaseSchema):
 
     class Config:
         orm_mode = True
-        load_instance = True
      
