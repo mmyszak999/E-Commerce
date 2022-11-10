@@ -147,3 +147,15 @@ def register_user_data() -> UserRegisterSchema:
     )
 
     return user_schema
+
+@pytest.fixture(scope="module")
+def update_schema() -> UserUpdateSchema:
+    user_schema = UserUpdateSchema(
+        first_name = 'sleepy2',
+        last_name = 'joe2',
+        email = 'sleepyjoe2@gmail.com',
+        birth_date = date(1943,11,20),
+        username = 'sleepyjoepotus',
+    )
+
+    return user_schema

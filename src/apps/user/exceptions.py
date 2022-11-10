@@ -3,3 +3,6 @@ class UserDoesNotExistException(Exception):
 
 class UserAlreadyExists(Exception):
     pass
+
+class FieldNameIsOccupied(Exception):
+    pass
