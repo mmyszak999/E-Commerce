@@ -8,7 +8,7 @@ from src.apps.user.schemas.user import (
 )
 from src.apps.user.models.user import User
 from src.apps.user.utils.hash_password import hash_user_password
-from src.apps.user.exceptions import UserDoesNotExistException
+from src.apps.user.exceptions import UserDoesNotExistException, UserAlreadyExists
 
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
@@ -29,6 +29,15 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
     user_data = user.dict()
     user_data.pop('password_repeat')
     user_data['password'] = hash_user_password(password=user_data.pop('password'))
+
+    username_check = session.execute(select(User).filter(User.username == user_data["username"]))
+    if username_check.first():
+        raise UserAlreadyExists
+
+    email_check = session.execute(select(User).filter(User.email == user_data["email"]))
+    if email_check.first():
+        raise UserAlreadyExists
+
     new_user = User(**user_data)
 
     session.add(new_user)
@@ -37,6 +46,10 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
     return UserOutputSchema.from_orm(new_user)
 
 def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> UserOutputSchema:
+    if_exists = select(User.id).filter(User.id == user_id)
+    if session.scalar(if_exists) is None:
+        raise UserDoesNotExistException
+
     statement = update(User).filter(User.id == user_id)
     statement = statement.values(**user.dict())
 

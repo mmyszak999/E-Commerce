@@ -133,3 +133,17 @@ def hash_test_schema() -> UserRegisterSchema:
     )
 
     return user_schema
+
+@pytest.fixture(scope="module")
+def register_user_data() -> UserRegisterSchema:
+    user_schema = UserRegisterSchema(
+        first_name = 'sleepy2',
+        last_name = 'joe2',
+        email = 'sleepyjoe2@gmail.com',
+        birth_date = date(1943,11,20),
+        username = 'sleepyjoepotus',
+        password = 'sleepyjoe2',
+        password_repeat = 'sleepyjoe2'
+    )
+
+    return user_schema

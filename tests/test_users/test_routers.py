@@ -4,16 +4,15 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 
-def test_register_single_user(
+def test_create_user(
     register_data: dict[str, Any],
     sync_client: TestClient,
 ):
-
     response = sync_client.post("users/register", json=register_data)
     assert response.status_code == status.HTTP_201_CREATED
 
 
-def test_get_all_users(
+def test_get_users(
     sync_client: TestClient
 ):
     response = sync_client.get("users/")
@@ -21,21 +20,22 @@ def test_get_all_users(
     assert response.status_code == status.HTTP_200_OK
     
 
-def test_get_single_user(
+def test_get_user(
     sync_client: TestClient,
 ):
     response = sync_client.get(f"users/{2}")
     assert response.json()["id"] == 2
     assert response.status_code == status.HTTP_200_OK
 
-def test_update_single_user(
+
+def test_update_user(
     sync_client: TestClient,
     update_data: dict[str, str]
 ):
     response = sync_client.put(f"users/{3}", json=update_data)
     assert response.json()["username"] == update_data["username"]
 
-def test_delete_single_user(
+def test_delete_user(
     sync_client: TestClient,
 ):
     response = sync_client.delete(f"users/{3}")
