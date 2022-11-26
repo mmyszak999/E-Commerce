@@ -2,19 +2,19 @@ version: '3.9'
 
 services:
   db:
-    image: postgres:13.4
+    image: postgres:14.4
     container_name: fastapi_db
     env_file:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
 
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: fastapi_backend
     volumes: 
       - .:/code/
@@ -24,10 +24,6 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    environment:
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     restart: always
       
 volumes:

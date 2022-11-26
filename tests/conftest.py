@@ -13,10 +13,10 @@ from main import app
 
 @pytest.fixture(scope="session")
 def sync_engine():
-    DATABASE_URL = 'postgresql://{}:{}@{}:{}/test'.format(
-        settings.POSTGRES_USER, settings.POSTGRES_PASSWORD, 
-        settings.POSTGRES_HOST,settings.POSTGRES_PORT
-        )
+    DATABASE_URL = (
+        f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@"
+        f"{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/test"
+    )
 
     engine = create_engine(DATABASE_URL)
 
@@ -27,7 +27,7 @@ def sync_engine():
     Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="session")
 def sync_session(sync_engine: Engine):
     connection = sync_engine.connect()
     transaction = connection.begin()

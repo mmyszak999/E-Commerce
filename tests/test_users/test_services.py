@@ -1,8 +1,7 @@
 import pytest
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, PendingRollbackError
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import select
 from src.apps.user.services.user import (
     register_user, get_single_user,
     delete_single_user, get_all_users,

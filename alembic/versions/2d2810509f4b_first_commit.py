@@ -1,8 +1,8 @@
-"""upgrade pt2 id column in table user
+"""First commit
 
-Revision ID: 67e75281946e
-Revises: 8d3007a1aefb
-Create Date: 2022-09-29 13:14:39.363503
+Revision ID: 2d2810509f4b
+Revises: 
+Create Date: 2022-11-24 14:50:18.002645
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '67e75281946e'
-down_revision = '8d3007a1aefb'
+revision = '2d2810509f4b'
+down_revision = None
 branch_labels = None
 depends_on = None
 
