@@ -1,6 +1,22 @@
 version: '3.9'
 
 services:
+  web:
+    build:
+      context: .
+      dockerfile: ./docker/python/Dockerfile
+    container_name: fastapi_backend
+    volumes: 
+      - .:/code/
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - .env
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    restart: always
+      
   db:
     image: postgres:14.4
     container_name: fastapi_db
@@ -8,23 +24,7 @@ services:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - ./docker/postgres:/docker-entrypoint-initdb.d
 
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: fastapi_backend
-    volumes: 
-      - .:/code/
-    env_file:
-      - .env
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-    restart: always
-      
 volumes:
   postgres_data:
