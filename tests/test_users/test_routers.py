@@ -35,6 +35,7 @@ def test_update_user(
     response = sync_client.put(f"users/{3}", json=update_data)
     assert response.json()["username"] == update_data["username"]
 
+
 def test_delete_user(
     sync_client: TestClient,
 ):

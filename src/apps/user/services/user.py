@@ -1,3 +1,4 @@
+from fastapi import status
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
@@ -7,8 +8,12 @@ from src.apps.user.schemas.user import (
     UserUpdateSchema
 )
 from src.apps.user.models.user import User
-from src.apps.user.utils.hash_password import hash_user_password
-from src.apps.user.exceptions import UserDoesNotExistException, UserAlreadyExists, FieldNameIsOccupied
+from src.apps.user.utils.hash_password import passwd_context
+from src.apps.user.exceptions import UserDoesNotExistException, UserAlreadyExists, FieldNameIsOccupied, AuthException
+
+
+def hash_user_password(password: str) -> str:
+    return passwd_context.hash(password)
 
 
 def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchema:
@@ -30,6 +35,17 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
     session.commit()
 
     return UserOutputSchema.from_orm(new_user)
+
+
+def authenticate(session: Session, username: str, password: str) -> User:
+    statement = select(User).filter(username == User.username).limit(1)
+    user = session.scalar(statement)
+    print(user)
+    if user is None or not passwd_context.verify(password, user.password):
+        raise AuthException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials"
+            )
+    return user
 
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:

@@ -14,10 +14,6 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt 
 
-COPY ./docker/postgres/init-postgres.sql /docker-entrypoint-initdb.d/
-
-RUN ["/usr/local/bin/docker-entrypoint.sh", "postgres"]
-
 COPY . .
 
 ENTRYPOINT ["sh", "./db_scripts/start.sh"]
