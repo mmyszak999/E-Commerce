@@ -56,19 +56,13 @@ def register_data() -> dict[str, str]:
         "password_repeat": "kowalkowal"
         }
 
-"""
+
 @pytest.fixture(scope="module")
-def db_user_add(
-    register_data: dict[str, str],
-    sync_session: Session
-) -> UserOutputSchema:
-
-    user_schema = UserRegisterSchema(**register_data)
-    user = register_user(sync_session, user_schema)
-    sync_session.commit()
-    sync_session.refresh(user)
-
-    return user"""
+def login_data() -> dict[str, str]:
+    return {
+        "username": "kowal2137",
+        "password": "kowalkowal"
+    }
 
 
 @pytest.fixture(scope="module")
@@ -81,9 +75,11 @@ def get_token_header(sync_session: Session) -> dict[str, str]:
 @pytest.fixture(scope="module")
 def update_data() -> dict[str, str]:
     return {
-        "first_name": "nowyjan",
-        "last_name": "nowykowalski",
+        "first_name": "jan",
+        "last_name": "kowalski",
+        "email": "kowal@mail.com",
         "birth_date": "2020-07-12",
+        "username": "kowalczyk2137"
         }
 
 
@@ -173,9 +169,9 @@ def update_schema() -> UserUpdateSchema:
     user_schema = UserUpdateSchema(
         first_name = 'sleepy2',
         last_name = 'joe2',
-        email = 'sleepyjoe2@gmail.com',
+        email = 'norbertgierczak@mail.com',
         birth_date = date(1943,11,20),
-        username = 'sleepyjoepotus',
+        username = "jd123456",
     )
 
     return user_schema

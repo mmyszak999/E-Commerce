@@ -52,7 +52,7 @@ def test_create_user_with_occupied_username(
 def test_if_only_one_user_was_returned(
     sync_session: Session
 ):
-    user = get_single_user(sync_session, 1)
+    user = get_single_user(sync_session, 3)
 
     assert type(user) == UserOutputSchema
 
@@ -68,7 +68,7 @@ def test_if_multiple_users_were_returned(
     sync_session: Session
 ):
     users = get_all_users(sync_session)
-
+    print(users)
     assert len(users) > 1
     assert type(users) == list
 
@@ -78,7 +78,7 @@ def test_raise_exception_while_updating_nonexistent_user(
     update_schema: UserUpdateSchema
 ):
     with pytest.raises(UserDoesNotExistException) as exc:
-        update_single_user(sync_session, update_schema, 92999919939999799)
+        update_single_user(sync_session, update_schema, 92999999999919939999799)
 
 
 def test_if_user_can_update_their_username_to_occupied_one(
@@ -86,7 +86,7 @@ def test_if_user_can_update_their_username_to_occupied_one(
     update_schema: UserUpdateSchema
 ):
     with pytest.raises(FieldNameIsOccupied):
-        update_single_user(sync_session, update_schema, 1)
+        update_single_user(sync_session, update_schema, 4)
 
 
 def test_if_user_can_update_their_email_to_occupied_one(
@@ -94,8 +94,7 @@ def test_if_user_can_update_their_email_to_occupied_one(
     update_schema: UserUpdateSchema
 ):
     with pytest.raises(FieldNameIsOccupied):
-        update_single_user(sync_session, update_schema, 1)
-
+        update_single_user(sync_session, update_schema, 4)
 
 
 def test_raise_exception_while_deleting_nonexistent_user(

@@ -68,20 +68,20 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
     searched_user = session.scalar(if_exists)
     if searched_user is None:
         raise UserDoesNotExistException
-
-    """
+    
+    print("ss", searched_user, user_id)
     username_check = session.execute(select(User).filter(User.username == user.username))
-    if username_check.first() and searched_user != user_id:
+    if username_check.first():
         raise FieldNameIsOccupied
 
     email_check = session.execute(select(User).filter(User.email == user.email))
-    if email_check.first() and searched_user != user_id:
-        raise FieldNameIsOccupied"""
+    if email_check.first():
+        raise FieldNameIsOccupied
 
     statement = update(User).filter(User.id == user_id).values(**user.dict())
 
     session.execute(statement)
-    session.commit()
+    
     return get_single_user(session, user_id=user_id)
 
 
