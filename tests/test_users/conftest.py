@@ -3,9 +3,12 @@ from typing import Any
 
 import pytest
 from sqlalchemy.orm import Session
+from fastapi_jwt_auth import AuthJWT
 
-from src.apps.user.services.user import register_user
-from src.apps.user.schemas.user import UserRegisterSchema, UserUpdateSchema
+from src.apps.user.services.user import register_user, get_single_user
+from src.apps.user.schemas.user import UserRegisterSchema, UserUpdateSchema, UserOutputSchema
+from src.apps.user.models.user import User
+
 
 @pytest.fixture(scope="package", autouse=True)
 def create_setup_users(sync_session: Session):
@@ -53,17 +56,34 @@ def register_data() -> dict[str, str]:
         "password_repeat": "kowalkowal"
         }
 
+"""
+@pytest.fixture(scope="module")
+def db_user_add(
+    register_data: dict[str, str],
+    sync_session: Session
+) -> UserOutputSchema:
+
+    user_schema = UserRegisterSchema(**register_data)
+    user = register_user(sync_session, user_schema)
+    sync_session.commit()
+    sync_session.refresh(user)
+
+    return user"""
+
+
+@pytest.fixture(scope="module")
+def get_token_header(sync_session: Session) -> dict[str, str]:
+    user_schema = get_single_user(sync_session, 1)
+    access_token = AuthJWT().create_access_token(subject=user_schema.json())
+    return {"Authorization": f"Bearer {access_token}"}
+
 
 @pytest.fixture(scope="module")
 def update_data() -> dict[str, str]:
     return {
-        "first_name": 'donald',
-        "last_name": 'trump',
-        "email": 'maga@gmail.com',
-        "birth_date": "1950-07-12",
-        "username": 'donaldjtrump',
-        "password": 'buildthewall',
-        "password_repeat": 'buildthewall',
+        "first_name": "nowyjan",
+        "last_name": "nowykowalski",
+        "birth_date": "2020-07-12",
         }
 
 

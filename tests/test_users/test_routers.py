@@ -13,31 +13,35 @@ def test_create_user(
 
 
 def test_get_users(
-    sync_client: TestClient
+    sync_client: TestClient,
+    get_token_header: dict[str, str]
 ):
-    response = sync_client.get("users/")
+    response = sync_client.get("users/", headers=get_token_header)
     assert len(response.json()) == 4
     assert response.status_code == status.HTTP_200_OK
     
 
 def test_get_user(
     sync_client: TestClient,
+    get_token_header: dict[str, str]
 ):
-    response = sync_client.get(f"users/{2}")
-    assert response.json()["id"] == 2
+    response = sync_client.get(f"users/{1}", headers=get_token_header)
+    assert response.json()["id"] == 1
     assert response.status_code == status.HTTP_200_OK
 
 
 def test_update_user(
     sync_client: TestClient,
-    update_data: dict[str, str]
+    update_data: dict[str, str],
+    get_token_header: dict[str, str]
 ):
-    response = sync_client.put(f"users/{3}", json=update_data)
-    assert response.json()["username"] == update_data["username"]
+    response = sync_client.put(f"users/{1}", json=update_data, headers=get_token_header)
+    assert response.json()["first_name"] == update_data["first_name"]
 
 
 def test_delete_user(
     sync_client: TestClient,
+    get_token_header: dict[str, str]
 ):
-    response = sync_client.delete(f"users/{3}")
+    response = sync_client.delete(f"users/{1}", headers=get_token_header)
     assert response.status_code == status.HTTP_204_NO_CONTENT

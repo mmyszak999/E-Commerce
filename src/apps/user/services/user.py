@@ -1,4 +1,4 @@
-from fastapi import status
+from fastapi import status, Depends
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
@@ -37,10 +37,9 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
     return UserOutputSchema.from_orm(new_user)
 
 
-def authenticate(session: Session, username: str, password: str) -> User:
+def authenticate(username: str, password: str, session: Session) -> User:
     statement = select(User).filter(username == User.username).limit(1)
     user = session.scalar(statement)
-    print(user)
     if user is None or not passwd_context.verify(password, user.password):
         raise AuthException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials"
@@ -66,16 +65,18 @@ def get_all_users(session: Session) -> list[UserOutputSchema]:
 
 def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> UserOutputSchema:
     if_exists = select(User.id).filter(User.id == user_id)
-    if session.scalar(if_exists) is None:
+    searched_user = session.scalar(if_exists)
+    if searched_user is None:
         raise UserDoesNotExistException
 
+    """
     username_check = session.execute(select(User).filter(User.username == user.username))
-    if username_check.first():
+    if username_check.first() and searched_user != user_id:
         raise FieldNameIsOccupied
 
     email_check = session.execute(select(User).filter(User.email == user.email))
-    if email_check.first():
-        raise FieldNameIsOccupied
+    if email_check.first() and searched_user != user_id:
+        raise FieldNameIsOccupied"""
 
     statement = update(User).filter(User.id == user_id).values(**user.dict())
 

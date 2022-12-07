@@ -1,4 +1,5 @@
 from pydantic import BaseSettings
+from fastapi_jwt_auth import AuthJWT
 
 class AuthJWTSettings(BaseSettings):
     authjwt_secret_key: str
@@ -6,3 +7,8 @@ class AuthJWTSettings(BaseSettings):
 
     class Config:
         env_file = ".env"
+
+
+@AuthJWT.load_config
+def get_config():
+    return AuthJWTSettings()
