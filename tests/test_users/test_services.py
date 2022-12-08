@@ -2,13 +2,13 @@ import pytest
 from sqlalchemy.orm import Session
 
 from sqlalchemy import select
-from src.apps.user.services.user import (
+from src.apps.user.services import (
     register_user, get_single_user,
     delete_single_user, get_all_users,
     update_single_user
 )
-from src.apps.user.schemas.user import UserRegisterSchema, UserOutputSchema, UserUpdateSchema
-from src.apps.user.models.user import User
+from src.apps.user.schemas import UserRegisterSchema, UserOutputSchema, UserUpdateSchema
+from src.apps.user.models import User
 from src.apps.user.exceptions import UserDoesNotExistException, UserAlreadyExists, FieldNameIsOccupied
 
 

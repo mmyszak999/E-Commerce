@@ -1,16 +1,15 @@
 from fastapi import Depends, status, Response
-from fastapi.security import HTTPBearer
 from fastapi.routing import APIRouter
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
-from src.apps.user.schemas.user import (
+from src.apps.user.schemas import (
     UserUpdateSchema,
     UserOutputSchema,
     UserRegisterSchema,
     UserLoginInputSchema
 )
-from src.apps.user.services.user import (
+from src.apps.user.services import (
     register_user,
     get_single_user,
     get_all_users,
@@ -18,13 +17,12 @@ from src.apps.user.services.user import (
     update_single_user,
     authenticate
 )
-from src.apps.user.models.user import User
-from src.apps.user.utils.get_db import get_db
-from src.utils.jwt import AccessTokenOutputSchema
+from src.apps.user.models import User
+from src.dependencies.get_db import get_db
+from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.dependencies.user import authenticate_user
 
 
-auth_scheme = HTTPBearer()
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.post("/register", response_model=UserOutputSchema, status_code=status.HTTP_201_CREATED)

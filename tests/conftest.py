@@ -6,8 +6,8 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.event import listens_for
 
 from src.settings.db_settings import settings
-from src.apps.user.database import Base
-from src.apps.user.utils.get_db import get_db
+from src.database.db_connection import Base
+from src.dependencies.get_db import get_db
 from main import app
 
 

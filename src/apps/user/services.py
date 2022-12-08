@@ -2,13 +2,13 @@ from fastapi import status, Depends
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
-from src.apps.user.schemas.user import (
+from src.apps.user.schemas import (
     UserRegisterSchema,
     UserOutputSchema,
     UserUpdateSchema
 )
-from src.apps.user.models.user import User
-from src.apps.user.utils.hash_password import passwd_context
+from src.apps.user.models import User
+from src.apps.user.utils import passwd_context
 from src.apps.user.exceptions import UserDoesNotExistException, UserAlreadyExists, FieldNameIsOccupied, AuthException
 
 
@@ -69,7 +69,6 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
     if searched_user is None:
         raise UserDoesNotExistException
     
-    print("ss", searched_user, user_id)
     username_check = session.execute(select(User).filter(User.username == user.username))
     if username_check.first():
         raise FieldNameIsOccupied

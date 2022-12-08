@@ -1,9 +1,9 @@
-from fastapi import FastAPI, APIRouter, status, Request, Depends
+from fastapi import FastAPI, APIRouter, status, Request
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth.exceptions import AuthJWTException
 
-from src.apps.user.routers.user import router
-from src.apps.user.routers.jwt import jwt_router
+from src.apps.user.routers import router
+from src.apps.jwt.routers import jwt_router
 
 
 app = FastAPI()

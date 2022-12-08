@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Response, status
 
-from src.apps.user.models.user import User
+from src.apps.user.models import User
 from src.dependencies.user import authenticate_user
 
 

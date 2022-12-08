@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 from pydantic.error_wrappers import ValidationError
 
-from src.apps.user.schemas.user import UserRegisterSchema
+from src.apps.user.schemas import UserRegisterSchema
 
 def test_passwords_are_not_identical(
     incorrect_passwords_dict: dict[str, Any]

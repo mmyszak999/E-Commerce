@@ -5,9 +5,9 @@ import pytest
 from sqlalchemy.orm import Session
 from fastapi_jwt_auth import AuthJWT
 
-from src.apps.user.services.user import register_user, get_single_user
-from src.apps.user.schemas.user import UserRegisterSchema, UserUpdateSchema, UserOutputSchema
-from src.apps.user.models.user import User
+from src.apps.user.services import register_user, get_single_user
+from src.apps.user.schemas import UserRegisterSchema, UserUpdateSchema, UserOutputSchema
+from src.apps.user.models import User
 
 
 @pytest.fixture(scope="package", autouse=True)
@@ -77,7 +77,7 @@ def update_data() -> dict[str, str]:
     return {
         "first_name": "jan",
         "last_name": "kowalski",
-        "email": "kowal@mail.com",
+        "email": "kowal@mailedit.com",
         "birth_date": "2020-07-12",
         "username": "kowalczyk2137"
         }

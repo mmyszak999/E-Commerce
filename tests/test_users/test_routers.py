@@ -53,7 +53,7 @@ def test_authenticated_user_can_update_user(
     get_token_header: dict[str, str]
 ):
     response = sync_client.put(f"users/{1}", json=update_data, headers=get_token_header)
-    assert response.json()["first_name"] == update_data["first_name"]
+    assert response.json()["username"] == update_data["username"]
 
 
 def test_authenticated_user_can_delete_user(
