@@ -29,23 +29,15 @@ class UserRegisterSchema(UserBaseSchema):
     password: str = Field(min_length=8, max_length=40)
     password_repeat: str = Field(min_length=8, max_length=40)
 
-    class Config:
-        orm_mode = False
-    
     @validator("password_repeat")
     def validate_passwords(cls, rep_password: str, values: dict[str, Any]) -> str:
         if rep_password != values["password"]:
             raise ValueError("Passwords are not identical")
         return rep_password
 
-class UserInputSchema(UserBaseSchema):
-    pass
-
-    class Config:
-        orm_mode = True
 
 class UserUpdateSchema(UserBaseSchema):
-    password: str = Field(min_length=8, max_length=40)
+    pass
 
     class Config:
         orm_mode = True

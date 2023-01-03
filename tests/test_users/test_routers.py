@@ -2,57 +2,104 @@ from typing import Any
 
 from fastapi import status
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
-
-from src.apps.user.models.user import User
-from src.apps.user.schemas.user import UserRegisterSchema, UserUpdateSchema
-from src.apps.user.services.user import register_user, update_single_user
 
 
-def test_register_single_user(
+def test_create_user(
     register_data: dict[str, Any],
-    sync_client: TestClient
+    sync_client: TestClient,
 ):
     response = sync_client.post("users/register", json=register_data)
-    print(register_data)
     assert response.status_code == status.HTTP_201_CREATED
 
 
-def test_get_all_users(
-    sync_client: TestClient,
-    sync_session: Session
+def test_login_user(
+    login_data: dict[str, str],
+    sync_client: TestClient
 ):
-    response = sync_client.get("users/")
-    amount_of_users_from_db = sync_session.query(User).count()
-    assert len(response.json()) == amount_of_users_from_db
+    response = sync_client.post("users/login", json=login_data)
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_authenticated_user_can_get_users(
+    sync_client: TestClient,
+    get_token_header: dict[str, str]
+):
+    response = sync_client.get("users/", headers=get_token_header)
+    assert len(response.json()) == 4
     assert response.status_code == status.HTTP_200_OK
     
 
-def test_get_single_user(
+def test_authenticated_user_can_get_single_user(
     sync_client: TestClient,
-    sync_session: Session
+    get_token_header: dict[str, str]
 ):
-    user_from_db = sync_session.query(User).order_by(User.id.desc()).first()
-    response = sync_client.get(f"users/{user_from_db.id}/")
-    assert response.json()["id"] == user_from_db.id
+    response = sync_client.get(f"users/{2}", headers=get_token_header)
+    assert response.json()["id"] == 2
     assert response.status_code == status.HTTP_200_OK
 
-def test_update_single_user(
-    update_db_user: UserRegisterSchema,
-    update_user_schema: UserUpdateSchema,
-    sync_client: TestClient,
-    sync_session: Session
-):
-    user = register_user(sync_session, update_db_user)
-    db_user = sync_session.query(User).filter(User.username == user.username).first()
-    update_single_user(sync_session, update_user_schema, user_id=db_user.id)
-    response = sync_client.get(f"users/{db_user.id}/")
-    assert response.json()["username"] == update_user_schema.username
 
-def test_delete_single_user(
+def test_authenticated_user_can_get_their_account(
     sync_client: TestClient,
-    sync_session: Session
+    get_token_header: dict[str, str]
 ):
-    user_from_db = sync_session.query(User).order_by(User.id.desc()).first()
-    response = sync_client.delete(f"users/{user_from_db.id}")
+    response = sync_client.get(f"users/me", headers=get_token_header)
+    assert response.json()["id"] == 1
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_authenticated_user_can_update_user(
+    sync_client: TestClient,
+    update_data: dict[str, str],
+    get_token_header: dict[str, str]
+):
+    response = sync_client.put(f"users/{1}", json=update_data, headers=get_token_header)
+    assert response.json()["username"] == update_data["username"]
+
+
+def test_authenticated_user_can_delete_user(
+    sync_client: TestClient,
+    get_token_header: dict[str, str]
+):
+    response = sync_client.delete(f"users/{1}", headers=get_token_header)
     assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+def test_anonymous_user_cannot_get_users(
+    sync_client: TestClient,
+):
+    response = sync_client.get("users/")
+    assert len(response.json()) == 1
+    assert response.json()["detail"] == "Missing Authorization Header"
+
+
+def test_anonymous_user_cannot_get_single_user(
+    sync_client: TestClient,
+):
+    response = sync_client.get(f"users/{1}")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Missing Authorization Header"
+
+
+def test_anonymous_user_cannot_get_their_account(
+    sync_client: TestClient,
+):
+    response = sync_client.get(f"users/me")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Missing Authorization Header"
+
+
+def test_anonymous_user_cannot_update_user(
+    sync_client: TestClient,
+    update_data: dict[str, str]
+):
+    response = sync_client.put(f"users/{2}", json=update_data)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Missing Authorization Header"
+
+
+def test_anonymous_user_cannot_delete_user(
+    sync_client: TestClient
+):
+    response = sync_client.delete(f"users/{2}")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Missing Authorization Header"

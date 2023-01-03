@@ -1,81 +1,17 @@
 from datetime import date
+from typing import Any
 
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from sqlalchemy.engine import Engine
-from sqlalchemy.event import listens_for
+from fastapi_jwt_auth import AuthJWT
 
-from src.settings.db_settings import settings
-from src.apps.user.database import Base
-from src.apps.user.services.user import register_user
-from src.apps.user.schemas.user import UserRegisterSchema, UserUpdateSchema
-from src.apps.user.utils.get_db import get_db
-from main import app
+from src.apps.user.services import register_user, get_single_user
+from src.apps.user.schemas import UserRegisterSchema, UserUpdateSchema, UserOutputSchema
+from src.apps.user.models import User
 
 
-@pytest.fixture(scope="session")
-def sync_engine():
-    DATABASE_URL = 'postgresql://{}:{}@{}:{}/test'.format(
-        settings.POSTGRES_USER, settings.POSTGRES_PASSWORD, 
-        settings.POSTGRES_HOST,settings.POSTGRES_PORT
-        )
-
-    engine = create_engine(DATABASE_URL)
-
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-
-    yield engine
-    Base.metadata.drop_all(bind=engine)
-
-
-@pytest.fixture(scope="function")
-def sync_session(sync_engine: Engine):
-    connection = sync_engine.connect()
-    transaction = connection.begin()
-    sync_session = Session(bind=connection)
-
-    connection.begin_nested()
-
-    @listens_for(sync_session, "after_transaction_end")
-    def restart_savepoint(session=sync_session, transaction=transaction):
-        if transaction.nested and not transaction._parent.nested:
-            session.begin_nested()
-
-    yield sync_session
-
-    sync_session.close()
-    transaction.rollback()
-    connection.close()
-
-
-@pytest.fixture(scope="function")
-def sync_client():
-    with TestClient(app=app, base_url="http://localhost:8000/api/") as sync_client:
-        yield sync_client
-
-
-@pytest.fixture(autouse=True)
-def override_get_sync_session(sync_session: Session):
-    app.dependency_overrides[get_db] = lambda: sync_session
-    yield
-
-@pytest.fixture(scope="module")
-def register_data() -> dict[str, str]:
-    return {
-        "first_name": "jan",
-        "last_name": "kowalski",
-        "email": "kowal@mail.com",
-        "birth_date": "2020-07-12",
-        "username": "kowal2137",
-        "password": "kowalkowal",
-        "password_repeat": "kowalkowal"
-        }
-
-@pytest.fixture(autouse=True)
-def create_test_users(sync_session: Session):
+@pytest.fixture(scope="package", autouse=True)
+def create_setup_users(sync_session: Session):
     list_of_user_register_schemas = [
     UserRegisterSchema(
         first_name="jan",
@@ -109,52 +45,63 @@ def create_test_users(sync_session: Session):
 
 
 @pytest.fixture(scope="module")
-def update_db_user() -> UserRegisterSchema:
-    db_user = UserRegisterSchema(
-        first_name = 'donald',
-        last_name = 'trump',
-        email = 'maga@gmail.com',
-        birth_date = date(1950,1,1),
-        username = 'donaldjtrump',
-        password = 'buildthewall',
-        password_repeat = 'buildthewall'
-    )
+def register_data() -> dict[str, str]:
+    return {
+        "first_name": "jan",
+        "last_name": "kowalski",
+        "email": "kowal@mail.com",
+        "birth_date": "2020-07-12",
+        "username": "kowal2137",
+        "password": "kowalkowal",
+        "password_repeat": "kowalkowal"
+        }
 
-    return db_user
 
 @pytest.fixture(scope="module")
-def update_user_schema() -> UserUpdateSchema:
-    user_schema = UserUpdateSchema(
-        first_name = 'donald_2',
-        last_name = 'trump_2',
-        email = 'maga_updated@gmail.com',
-        birth_date = date(1951,2,2),
-        username = 'donaldjtrump_updated',
-        password = 'buildthewall'
-    )
+def login_data() -> dict[str, str]:
+    return {
+        "username": "kowal2137",
+        "password": "kowalkowal"
+    }
 
-    return user_schema
+
+@pytest.fixture(scope="module")
+def get_token_header(sync_session: Session) -> dict[str, str]:
+    user_schema = get_single_user(sync_session, 1)
+    access_token = AuthJWT().create_access_token(subject=user_schema.json())
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture(scope="module")
+def update_data() -> dict[str, str]:
+    return {
+        "first_name": "jan",
+        "last_name": "kowalski",
+        "email": "kowal@mailedit.com",
+        "birth_date": "2020-07-12",
+        "username": "kowalczyk2137"
+        }
 
 
 @pytest.fixture(scope='module')
-def incorrect_passwords_dict() -> dict[str, str]:
+def incorrect_passwords_dict() -> dict[str, Any]:
     return  {
         "first_name": "average",
         "last_name": "joe",
         "email": "avjoe@mail.com",
-        "birth_date": "1980-07-12",
+        "birth_date": date(1980,7,12),
         "username": "imjoe",
         "password": "wearethesame",
         "password_repeat": "wearenotthesame"
     }
 
 @pytest.fixture(scope='module')
-def date_from_future_dict() -> dict[str, str]:
+def date_from_future_dict() -> dict[str, Any]:
     return  {
         "first_name": "future",
         "last_name": "man",
         "email": "pluto@mail.com",
-        "birth_date": "2137-04-20",
+        "birth_date": date(2137,4,20),
         "username": "pluto",
         "password": "password_ok",
         "password_repeat": "password_ok"
@@ -166,8 +113,8 @@ def occupied_username_schema() -> UserRegisterSchema:
         first_name = 'karol',
         last_name = 'krawczyk2',
         email = 'sth@gmail.com',
-        birth_date = date(1974,4,24),
-        username = 'karkraw',
+        birth_date = date(1974,4,25),
+        username = "karkraw",
         password = 'password',
         password_repeat = 'password',
     )
@@ -189,4 +136,42 @@ def occupied_email_schema() -> UserRegisterSchema:
     return user_schema
 
 
+@pytest.fixture(scope="module")
+def hash_test_schema() -> UserRegisterSchema:
+    user_schema = UserRegisterSchema(
+        first_name = 'sleepy',
+        last_name = 'joe',
+        email = 'sleepyjoe@gmail.com',
+        birth_date = date(1942,11,20),
+        username = 'sleepyjoepotus',
+        password = 'sleepyjoe',
+        password_repeat = 'sleepyjoe'
+    )
 
+    return user_schema
+
+@pytest.fixture(scope="module")
+def register_user_data() -> UserRegisterSchema:
+    user_schema = UserRegisterSchema(
+        first_name = 'sleepy2',
+        last_name = 'joe2',
+        email = 'sleepyjoe2@gmail.com',
+        birth_date = date(1943,11,20),
+        username = 'sleepyjoepotus',
+        password = 'sleepyjoe2',
+        password_repeat = 'sleepyjoe2'
+    )
+
+    return user_schema
+
+@pytest.fixture(scope="module")
+def update_schema() -> UserUpdateSchema:
+    user_schema = UserUpdateSchema(
+        first_name = 'sleepy2',
+        last_name = 'joe2',
+        email = 'norbertgierczak@mail.com',
+        birth_date = date(1943,11,20),
+        username = "jd123456",
+    )
+
+    return user_schema
