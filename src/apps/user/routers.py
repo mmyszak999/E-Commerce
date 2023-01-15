@@ -17,6 +17,7 @@ from src.apps.user.services import (
     update_single_user,
     authenticate
 )
+
 from src.apps.user.models import User
 from src.dependencies.get_db import get_db
 from src.apps.jwt.schemas import AccessTokenOutputSchema
