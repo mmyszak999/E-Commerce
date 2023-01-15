@@ -65,7 +65,7 @@ def test_authenticated_user_can_delete_user(
 
 
 def test_anonymous_user_cannot_get_users(
-    sync_client: TestClient,
+    sync_client: TestClient,z
 ):
     response = sync_client.get("users/")
     assert len(response.json()) == 1
