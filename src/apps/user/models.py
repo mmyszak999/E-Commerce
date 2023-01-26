@@ -1,6 +1,3 @@
-import datetime
-from uuid import UUID
-
 from sqlalchemy import Boolean, Column, Integer, String, Date
 
 from src.database.db_connection import Base
