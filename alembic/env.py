@@ -7,7 +7,7 @@ from alembic import context
 from src.settings.db_settings import settings
 from src.database.db_connection import Base
 from src.apps.user.models import User
-from src.apps.orders.models import Category, Product
+from src.apps.products.models import Category, Product
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
