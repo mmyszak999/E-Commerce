@@ -1,4 +1,3 @@
-from fastapi import status, Depends
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 

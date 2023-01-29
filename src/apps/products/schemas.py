@@ -16,15 +16,14 @@ class CategoryInputSchema(CategoryBaseSchema):
 class CategoryOutputSchema(CategoryBaseSchema):
     pass
 
-
-class CategoryListOutputSchema(BaseModel):
-    categories: list[CategoryOutputSchema] = []
+    class Config:
+        orm_mode = True
 
 
 class ProductBaseSchema(BaseModel):
     name: str = Field(max_length=75)
     price: Decimal = Field(max_length=15)
-    categories: CategoryListOutputSchema
+    categories: list[CategoryOutputSchema] = []
 
 
 class ProductInputSchema(ProductBaseSchema):
@@ -34,10 +33,9 @@ class ProductInputSchema(ProductBaseSchema):
 class ProductOutputSchema(ProductBaseSchema):
     pass
 
+    class Config:
+        orm_mode = True
+
 
 class ProductAddInputSchema(BaseModel):
     count: int
-
-
-
-
