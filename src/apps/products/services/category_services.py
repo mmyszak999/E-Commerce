@@ -54,7 +54,7 @@ def update_single_category(session: Session, category: CategoryInputSchema, cate
     
     return get_single_category(session, category_id=category_id)
 
-def delete_single_user(session: Session, category_id: int):
+def delete_single_category(session: Session, category_id: int):
     if_exists = select(Category).filter(Category.id == category_id)
     if session.scalar(if_exists) is None:
         pass

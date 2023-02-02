@@ -22,7 +22,7 @@ class CategoryOutputSchema(CategoryBaseSchema):
 
 class ProductBaseSchema(BaseModel):
     name: str = Field(max_length=75)
-    price: Decimal = Field(max_length=15)
+    price: Decimal = Field()
     categories: list[CategoryOutputSchema] = []
 
 
