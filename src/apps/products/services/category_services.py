@@ -51,6 +51,7 @@ def update_single_category(session: Session, category: CategoryInputSchema, cate
     statement = update(Category).filter(Category.id == category_id).values(**category.dict())
 
     session.execute(statement)
+    session.commit()
     
     return get_single_category(session, category_id=category_id)
 
@@ -61,4 +62,6 @@ def delete_single_category(session: Session, category_id: int):
 
     statement = delete(Category).filter(Category.id == category_id)
     result = session.execute(statement)
+    session.commit()
+
     return result

@@ -83,6 +83,7 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
     statement = update(User).filter(User.id == user_id).values(**user.dict())
 
     session.execute(statement)
+    session.commit()
     
     return get_single_user(session, user_id=user_id)
 
@@ -94,4 +95,6 @@ def delete_single_user(session: Session, user_id: int):
 
     statement = delete(User).filter(User.id == user_id)
     result = session.execute(statement)
+    session.commit()
+    
     return result
