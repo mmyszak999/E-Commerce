@@ -25,7 +25,7 @@ def create_category(session: Session, category: CategoryInputSchema) -> Category
     return CategoryOutputSchema.from_orm(new_category)
 
 def get_single_category(session: Session, category_id: int) -> CategoryOutputSchema:
-    statement = select(Category.filter(Category.id == category_id)).limit(1)
+    statement = select(Category).filter(Category.id == category_id).limit(1)
     if session.scalar(statement) is None:
         pass
 

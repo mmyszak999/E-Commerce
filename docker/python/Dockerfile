@@ -5,9 +5,9 @@ WORKDIR /code
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get install -yq netcat \
-    apt-get update \
+RUN apt-get update \
     && apt-get -y install libpq-dev gcc \
+    && apt-get install -yq netcat \
     && pip install psycopg2
 
 COPY requirements.txt .
