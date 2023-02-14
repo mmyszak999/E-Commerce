@@ -20,10 +20,14 @@ class CategoryOutputSchema(CategoryBaseSchema):
         orm_mode = True
 
 
+class CategoryListSchema(BaseModel):
+    id: int = Field()
+
+
 class ProductBaseSchema(BaseModel):
     name: str = Field(max_length=75)
     price: Decimal = Field()
-    categories: list[CategoryOutputSchema] = []
+    categories: list[CategoryListSchema] = []
 
 
 class ProductInputSchema(ProductBaseSchema):
