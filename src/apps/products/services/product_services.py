@@ -9,6 +9,7 @@ from src.apps.products.schemas import (
     ProductAddInputSchema
 )
 from src.apps.products.models import Category, Product
+from src.apps.products.services.category_services import get_single_category
 
 
 def create_product(session: Session, product: ProductInputSchema) -> ProductOutputSchema:
@@ -17,7 +18,11 @@ def create_product(session: Session, product: ProductInputSchema) -> ProductOutp
     name_check = session.execute(select(Product).filter(Product.name == product_data["name"]))
     if name_check:
         pass
-
+    
+    categories = product_data.pop('categories')
+    product_data['categories'] = [
+        session.scalar(select(Category).filter(Category.id == instance["id"])) for instance in categories
+        ]
     new_product = Product(**product_data)
     session.add(new_product)
     session.commit()

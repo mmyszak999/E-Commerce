@@ -4,6 +4,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field, validator
 
+from src.apps.products.models import Category, Product
+
 
 class CategoryBaseSchema(BaseModel):
     name: str = Field(max_length=75)
@@ -14,20 +16,17 @@ class CategoryInputSchema(CategoryBaseSchema):
 
 
 class CategoryOutputSchema(CategoryBaseSchema):
-    pass
+    id: int
 
     class Config:
+        orm_model = Category
         orm_mode = True
-
-
-class CategoryListSchema(BaseModel):
-    id: int = Field()
 
 
 class ProductBaseSchema(BaseModel):
     name: str = Field(max_length=75)
     price: Decimal = Field()
-    categories: list[CategoryListSchema] = []
+    categories: list[CategoryOutputSchema] = []
 
 
 class ProductInputSchema(ProductBaseSchema):
@@ -35,7 +34,7 @@ class ProductInputSchema(ProductBaseSchema):
 
 
 class ProductOutputSchema(ProductBaseSchema):
-    pass
+    id: int
 
     class Config:
         orm_mode = True
