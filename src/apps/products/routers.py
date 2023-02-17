@@ -19,7 +19,8 @@ from src.apps.products.services.product_services import (
     create_product,
     get_all_products,
     get_single_product,
-    update_single_product
+    update_single_product,
+    delete_single_product
 )
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
@@ -89,3 +90,8 @@ def get_product(product_id: int, db: Session = Depends(get_db)) -> ProductOutput
 def update_product(product_id: int, product: ProductInputSchema, db: Session = Depends(get_db)) -> ProductOutputSchema:
     db_product = update_single_product(db, product, product_id)
     return db_product
+
+@product_router.delete("/{product_id}", dependencies=[Depends(authenticate_user)], status_code=status.HTTP_204_NO_CONTENT)
+def delete_product(product_id: int, db: Session = Depends(get_db)) -> Response:
+    delete_single_product(db, product_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

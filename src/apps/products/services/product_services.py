@@ -60,13 +60,13 @@ def update_single_product(session: Session, product: ProductInputSchema, product
     
     return get_single_product(session, product_id=product_id)
 
-"""def delete_single_category(session: Session, category_id: int):
-    if_exists = select(Category).filter(Category.id == category_id)
+def delete_single_product(session: Session, product_id: int):
+    if_exists = select(Product).filter(Product.id == product_id)
     if session.scalar(if_exists) is None:
         pass
 
-    statement = delete(Category).filter(Category.id == category_id)
+    statement = delete(Product).filter(Product.id == product_id)
     result = session.execute(statement)
     session.commit()
 
-    return result"""
+    return result
