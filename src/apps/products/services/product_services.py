@@ -43,24 +43,24 @@ def get_all_products(session: Session) -> list[ProductOutputSchema]:
 
     return [ProductOutputSchema.from_orm(instance) for instance in instances]
 
-"""def update_single_category(session: Session, category: CategoryInputSchema, category_id: int):
-    if_exists = select(Category.id).filter(Category.id == category_id)
-    searched_user = session.scalar(if_exists)
-    if searched_user is None:
+def update_single_product(session: Session, product: ProductInputSchema, product_id: int):
+    if_exists = select(Product.id).filter(Product.id == product_id)
+    searched_product = session.scalar(if_exists)
+    if searched_product is None:
         pass
     
-    name_check = session.execute(select(Category).filter(Category.name == category.name))
+    name_check = session.execute(select(Product).filter(Product.name == product.name))
     if name_check.first():
         pass
 
-    statement = update(Category).filter(Category.id == category_id).values(**category.dict())
+    statement = update(Product).filter(Product.id == product_id).values(**product.dict())
 
     session.execute(statement)
     session.commit()
     
-    return get_single_category(session, category_id=category_id)
+    return get_single_product(session, product_id=product_id)
 
-def delete_single_category(session: Session, category_id: int):
+"""def delete_single_category(session: Session, category_id: int):
     if_exists = select(Category).filter(Category.id == category_id)
     if session.scalar(if_exists) is None:
         pass
