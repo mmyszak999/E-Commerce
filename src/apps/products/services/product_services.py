@@ -52,8 +52,14 @@ def update_single_product(session: Session, product: ProductInputSchema, product
     name_check = session.execute(select(Product).filter(Product.name == product.name))
     if name_check.first():
         pass
+    
+    product_data = product.dict()
 
-    statement = update(Product).filter(Product.id == product_id).values(**product.dict())
+    categories = product_data.pop('categories')
+    product_data['categories'] = [
+        session.scalar(select(Category).filter(Category.id == instance["id"])) for instance in categories
+        ]
+    statement = update(Product).filter(Product.id == product_id).values(**product_data)
 
     session.execute(statement)
     session.commit()
