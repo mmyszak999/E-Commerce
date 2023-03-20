@@ -84,7 +84,7 @@ def get_product(product_id: int, db: Session = Depends(get_db)) -> ProductOutput
     db_product= get_single_product(db, product_id)
     return db_product
 
-@product_router.put(
+@product_router.patch(
     "/{product_id}", dependencies=[Depends(authenticate_user)], response_model=ProductOutputSchema, status_code=status.HTTP_200_OK
 )
 def update_product(product_id: int, product: ProductInputSchema, db: Session = Depends(get_db)) -> ProductOutputSchema:

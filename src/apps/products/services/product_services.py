@@ -1,4 +1,4 @@
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, insert
 from sqlalchemy.orm import Session
 
 from src.apps.products.schemas import (
@@ -8,7 +8,7 @@ from src.apps.products.schemas import (
     ProductOutputSchema,
     ProductAddInputSchema
 )
-from src.apps.products.models import Category, Product
+from src.apps.products.models import Category, Product, association_table
 from src.apps.products.services.category_services import get_single_category
 
 
@@ -55,11 +55,15 @@ def update_single_product(session: Session, product: ProductInputSchema, product
     
     product_data = product.dict()
 
-    categories = product_data.pop('categories')
-    product_data['categories'] = [
-        session.scalar(select(Category).filter(Category.id == instance["id"])) for instance in categories
-        ]
-    statement = update(Product).filter(Product.id == product_id).values(**product_data)
+    rows = [{"product_id": product_id, "category_id": category.get('id')} for category in product_data['categories']]
+    insert(association_table).values(rows)
+    categories = [cat.get('id') for cat in product_data['categories']]
+    w = session.execute(select(Category).filter(Category.id.in_(categories))).all()
+    prod = session.execute(select(Product).filter(Product.id==product_id)).one()
+    for item in w:
+        prod[0].categories.append(item[0]) if item[0].id not in categories else print("next")
+    product_data.pop('categories')
+    statement = update(Product).filter(Product.id==product_id).values(**product_data)
 
     session.execute(statement)
     session.commit()
