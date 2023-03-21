@@ -56,7 +56,7 @@ def update_single_product(session: Session, product: ProductInputSchema, product
     product_data = product.dict()
 
     rows = [{"product_id": product_id, "category_id": category.get('id')} for category in product_data['categories']]
-    insert(association_table).values(rows)
+    session.execute(insert(association_table).values(rows))
     product_data.pop('categories')
     statement = update(Product).filter(Product.id==product_id).values(**product_data)
 
