@@ -44,9 +44,8 @@ def get_all_products(session: Session) -> list[ProductOutputSchema]:
     return [ProductOutputSchema.from_orm(instance) for instance in instances]
 
 def update_single_product(session: Session, product: ProductInputSchema, product_id: int):
-    if_exists = select(Product.id).filter(Product.id == product_id)
-    searched_product = session.scalar(if_exists)
-    if searched_product is None:
+    product_object = session.execute(select(Product).filter(Product.id==product_id)).scalar()
+    if product_object is None:
         pass
     
     name_check = session.execute(select(Product).filter(Product.name == product.name))
@@ -54,9 +53,21 @@ def update_single_product(session: Session, product: ProductInputSchema, product
         pass
     
     product_data = product.dict()
+    incoming_categories = set(category['id'] for category in product_data['categories'])
+    current_categories = set(category.id for category in product_object.categories)
 
-    rows = [{"product_id": product_id, "category_id": category.get('id')} for category in product_data['categories']]
+    intersect = incoming_categories ^ current_categories
+    print(intersect)
+
+    
+    rows = [{"product_id": product_id, "category_id": category_id} for category_id in intersect if category_id in current_categories]
+    #session.execute(select(association_table)).all())
+    for row in rows:
+        session.execute(delete(association_table).filter(category_id==row['category_id']))
+
+    rows = [{"product_id": product_id, "category_id": category_id} for category_id in intersect if category_id in incoming_categories]
     session.execute(insert(association_table).values(rows))
+
     product_data.pop('categories')
     statement = update(Product).filter(Product.id==product_id).values(**product_data)
 
