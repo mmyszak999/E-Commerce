@@ -56,23 +56,22 @@ def update_single_product(session: Session, product: ProductInputSchema, product
     incoming_categories = set(category['id'] for category in product_data['categories'])
     current_categories = set(category.id for category in product_object.categories)
 
-    intersect = incoming_categories ^ current_categories
-    print(intersect)
+    disjoint_categories_id_set = incoming_categories ^ current_categories
 
-    
-    rows = [{"product_id": product_id, "category_id": category_id} for category_id in intersect if category_id in current_categories]
-    #session.execute(select(association_table)).all())
-    for row in rows:
-        session.execute(delete(association_table).filter(category_id==row['category_id']))
+    rows = [{"product_id": product_id, "category_id": category_id} for category_id in disjoint_categories_id_set if category_id in current_categories]
+    if rows:
+        session.execute(delete(association_table).where(Category.id.in_([row['category_id'] for row in rows])))
 
-    rows = [{"product_id": product_id, "category_id": category_id} for category_id in intersect if category_id in incoming_categories]
-    session.execute(insert(association_table).values(rows))
+    rows = [{"product_id": product_id, "category_id": category_id} for category_id in disjoint_categories_id_set if category_id in incoming_categories]
+    if rows:
+        session.execute(insert(association_table).values(rows))
 
     product_data.pop('categories')
     statement = update(Product).filter(Product.id==product_id).values(**product_data)
-
+    
     session.execute(statement)
     session.commit()
+    session.refresh(product_object)
     
     return get_single_product(session, product_id=product_id)
 
