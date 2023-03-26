@@ -43,33 +43,29 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
 
 def authenticate(username: str, password: str, session: Session) -> User:
-    statement = select(User).filter(username == User.username).limit(1)
-    user = session.scalar(statement)
-    if user is None or not passwd_context.verify(password, user.password):
+    user = session.execute(select(User).filter(username == User.username)).scalar()
+    if not (user or passwd_context.verify(password, user.password)):
         raise auth_exception
     return user
 
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
-    statement = select(User).filter(User.id == user_id).limit(1)
-    if session.scalar(statement) is None:
+    user_object = session.execute(select(User).filter(User.id==user_id)).scalar()
+    if not user_object:
         raise user_does_not_exist_exception
 
-    instance = session.execute(statement).scalar()
-    return UserOutputSchema.from_orm(instance)
+    return UserOutputSchema.from_orm(user_object)
 
 
 def get_all_users(session: Session) -> list[UserOutputSchema]:
-    statement = select(User)
-    instances = session.execute(statement).scalars()
+    instances = session.execute(select(User)).scalars()
 
     return [UserOutputSchema.from_orm(instance) for instance in instances]
     
 
 def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> UserOutputSchema:
-    if_exists = select(User.id).filter(User.id == user_id)
-    searched_user = session.scalar(if_exists)
-    if searched_user is None:
+    user_object = session.execute(select(User).filter(User.id==user_id)).scalar()
+    if user_object is None:
         raise user_does_not_exist_exception
     
     username_check = session.execute(select(User).filter(User.username == user.username))
@@ -89,8 +85,8 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
 
 
 def delete_single_user(session: Session, user_id: int):
-    if_exists = select(User.id).filter(User.id == user_id)
-    if session.scalar(if_exists) is None:
+    user_object = session.execute(select(Product).filter(Product.id==product_id)).scalar()
+    if not user_object:
         raise user_does_not_exist_exception
 
     statement = delete(User).filter(User.id == user_id)

@@ -82,7 +82,7 @@ def update_single_product(session: Session, product: ProductInputSchema, product
 def delete_single_product(session: Session, product_id: int):
     product_object = session.execute(select(Product).filter(Product.id==product_id)).scalar()
     if not product_object:
-        pass
+        raise product_does_not_exist_exception
 
     statement = delete(Product).filter(Product.id == product_id)
     result = session.execute(statement)
