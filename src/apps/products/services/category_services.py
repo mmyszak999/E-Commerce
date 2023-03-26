@@ -9,14 +9,18 @@ from src.apps.products.schemas import (
     ProductAddInputSchema
 )
 from src.apps.products.models import Category, Product
+from src.apps.products.exceptions import (category_already_exists_exception,
+    category_does_not_exist_exception,
+    category_name_is_occupied_exception
+)
 
 
 def create_category(session: Session, category: CategoryInputSchema) -> CategoryOutputSchema:
     category_data = category.dict()
 
-    name_check = session.execute(select(Category).filter(Category.name == category_data["name"]))
-    if name_check:
-        pass
+    category_name_check = session.execute(select(Category).filter(Category.name == category_data["name"]))
+    if category_name_check:
+        category_name_is_occupied_exception
 
     new_category = Category(**category_data)
     session.add(new_category)
@@ -25,28 +29,25 @@ def create_category(session: Session, category: CategoryInputSchema) -> Category
     return CategoryOutputSchema.from_orm(new_category)
 
 def get_single_category(session: Session, category_id: int) -> CategoryOutputSchema:
-    statement = select(Category).filter(Category.id == category_id).limit(1)
-    if session.scalar(statement) is None:
-        pass
+    category_object = session.execute(select(Category).filter(Category.id==category_id)).scalar()
+    if not category_object:
+        category_does_not_exist_exception
 
-    instance = session.execute(statement).scalar()
-    return CategoryOutputSchema.from_orm(instance)
+    return CategoryOutputSchema.from_orm(category_object)
 
 def get_all_categories(session: Session) -> list[CategoryOutputSchema]:
-    statement = select(Category)
-    instances = session.execute(statement).scalars()
+    instances = session.execute(select(Category)).scalars()
 
     return [CategoryOutputSchema.from_orm(instance) for instance in instances]
 
-def update_single_category(session: Session, category: CategoryInputSchema, category_id: int):
-    if_exists = select(Category.id).filter(Category.id == category_id)
-    searched_user = session.scalar(if_exists)
-    if searched_user is None:
-        pass
+def update_single_category(session: Session, category: CategoryInputSchema, category_id: int) -> CategoryOutputSchema:
+    category_object = session.execute(select(Category).filter(Category.id==category_id)).scalar()
+    if not category_object:
+        raise category_does_not_exist_exception
     
-    name_check = session.execute(select(Category).filter(Category.name == category.name))
-    if name_check.first():
-        pass
+    category_name_check = session.execute(select(Category).filter(Category.name == category.name))
+    if category_name_check.first():
+        raise category_name_is_occupied_exception
 
     statement = update(Category).filter(Category.id == category_id).values(**category.dict())
 
@@ -56,9 +57,9 @@ def update_single_category(session: Session, category: CategoryInputSchema, cate
     return get_single_category(session, category_id=category_id)
 
 def delete_single_category(session: Session, category_id: int):
-    if_exists = select(Category).filter(Category.id == category_id)
-    if session.scalar(if_exists) is None:
-        pass
+    category_object = session.execute(select(Category).filter(Category.id==category_id)).scalar()
+    if not category_object:
+        category_does_not_exist_exception
 
     statement = delete(Category).filter(Category.id == category_id)
     result = session.execute(statement)

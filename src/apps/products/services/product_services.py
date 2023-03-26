@@ -43,7 +43,7 @@ def get_all_products(session: Session) -> list[ProductOutputSchema]:
 
     return [ProductOutputSchema.from_orm(instance) for instance in instances]
 
-def update_single_product(session: Session, product: ProductInputSchema, product_id: int):
+def update_single_product(session: Session, product: ProductInputSchema, product_id: int) -> ProductOutputSchema:
     product_object = session.execute(select(Product).filter(Product.id==product_id)).scalar()
     if product_object is None:
         pass
