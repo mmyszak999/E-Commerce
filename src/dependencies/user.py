@@ -6,19 +6,18 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
-from src.apps.user.exceptions import auth_exception
 from src.settings.jwt_settings import AuthJWTSettings
 from src.dependencies.get_db import get_db
+from src.core.exceptions import AuthException
 
 
 def authenticate_user(auth_jwt: AuthJWT = Depends(), session: Session = Depends(get_db)) -> User:
     auth_jwt.jwt_required()
     user = json.loads(auth_jwt.get_jwt_subject())
-    statement = select(User).filter(User.id==user["id"])
-    user = session.scalar(statement)
+    user = session.scalar(select(User).filter(User.id==user["id"]).limit(1))
 
-    if user is None:
-        raise auth_exception
+    if not user:
+        raise AuthException("Cannot find user")
 
     return user
 

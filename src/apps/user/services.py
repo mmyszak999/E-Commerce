@@ -8,14 +8,12 @@ from src.apps.user.schemas import (
 )
 from src.apps.user.models import User
 from src.apps.user.utils import passwd_context
-from src.apps.user.exceptions import (
-    user_does_not_exist_exception,
-    user_already_exists_exception,
-    auth_exception,
-    username_is_occupied_exception,
-    email_is_occupied_exception
-)   
-
+from src.core.exceptions import (
+    DoesNotExist,
+    AlreadyExists,
+    IsOccupied,
+    AuthException
+)
 
 def hash_user_password(password: str) -> str:
     return passwd_context.hash(password)
@@ -23,16 +21,16 @@ def hash_user_password(password: str) -> str:
 
 def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchema:
     user_data = user.dict()
-    user_data.pop('password_repeat')
-    user_data['password'] = hash_user_password(password=user_data.pop('password'))
-
-    username_check = session.execute(select(User).filter(User.username == user_data["username"]))
-    if username_check.first():
-        raise user_already_exists_exception
-
-    email_check = session.execute(select(User).filter(User.email == user_data["email"]))
-    if email_check.first():
-        raise user_already_exists_exception
+    if user_data.pop('password_repeat'):
+        user_data['password'] = hash_user_password(password=user_data.pop('password'))
+    
+    username = session.scalar(select(User).filter(User.username == user_data["username"]).limit(1))
+    email = session.scalar(select(User).filter(User.email == user_data["email"]).limit(1))
+    
+    if username: 
+        raise AlreadyExists(User.__name__, "username", user.username)
+    if email:
+        raise AlreadyExists(User.__name__, "email", user.email)
 
     new_user = User(**user_data)
 
@@ -43,16 +41,16 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
 
 def authenticate(username: str, password: str, session: Session) -> User:
-    user = session.execute(select(User).filter(username == User.username)).scalar()
+    user = session.scalar(select(User).filter(username == User.username).limit(1))
     if not (user or passwd_context.verify(password, user.password)):
-        raise auth_exception
+        raise AuthException("Invalid Credentials")
     return user
 
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
-    user_object = session.execute(select(User).filter(User.id==user_id)).scalar()
+    user_object = session.scalar(select(User).filter(User.id==user_id).limit(1))
     if not user_object:
-        raise user_does_not_exist_exception
+        raise DoesNotExist(User.__name__, user_id)
 
     return UserOutputSchema.from_orm(user_object)
 
@@ -64,18 +62,19 @@ def get_all_users(session: Session) -> list[UserOutputSchema]:
     
 
 def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> UserOutputSchema:
-    user_object = session.execute(select(User).filter(User.id==user_id)).scalar()
-    if user_object is None:
-        raise user_does_not_exist_exception
+    user_object = session.scalar(select(User).filter(User.id==user_id).limit(1))
+    if not user_object:
+        raise DoesNotExist(User.__name__, user_id)
     
-    username_check = session.execute(select(User).filter(User.username == user.username))
-    if username_check.first():
-        raise username_is_occupied_exception
+    username_check = session.scalar(select(User).filter(User.username == user.username).limit(1))
+    email_check = session.scalar(select(User).filter(User.email == user.email).limit(1))
+    
+    if username_check: 
+        raise IsOccupied(User.__name__, "username", user.username)
+    if email_check:
+        raise IsOccupied(User.__name__, "email", user.email)
 
-    email_check = session.execute(select(User).filter(User.email == user.email))
-    if email_check.first():
-        raise email_is_occupied_exception
-
+    print("w0w")
     statement = update(User).filter(User.id == user_id).values(**user.dict())
 
     session.execute(statement)
@@ -85,9 +84,9 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
 
 
 def delete_single_user(session: Session, user_id: int):
-    user_object = session.execute(select(Product).filter(Product.id==product_id)).scalar()
+    user_object = session.scalar(select(User).filter(User.id==user_id).limit(1))
     if not user_object:
-        raise user_does_not_exist_exception
+        raise DoesNotExist(User.__name__, user_id)
 
     statement = delete(User).filter(User.id == user_id)
     result = session.execute(statement)
