@@ -6,12 +6,12 @@ class ServiceException(Exception):
 
 class DoesNotExist(ServiceException):
     def __init__(self, class_name: str, _id: int) -> None:
-        super().__init__(f"Model {class_name} with id={_id} does not exist")
+        super().__init__(f"{class_name} with id={_id} does not exist")
 
 
 class AlreadyExists(ServiceException):
     def __init__(self, class_name: str, field: str, value: Any) -> None:
-        super().__init__(f"Model {class_name} with {field}={value} already exists")
+        super().__init__(f"{class_name} with {field}={value} already exists")
      
         
 class IsOccupied(ServiceException):

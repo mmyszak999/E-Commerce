@@ -31,12 +31,12 @@ def handle_auth_jwt_exception(request: Request, exception: AuthJWTException) -> 
 
 @app.exception_handler(DoesNotExist)
 def handle_does_not_exist(request: Request, exception: DoesNotExist) -> JSONResponse:
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": exception})
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exception)})
 
 @app.exception_handler(AlreadyExists)
 def handle_already_exists(request: Request, exception: AlreadyExists) -> JSONResponse:
-    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": exception})
+    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)})
 
 @app.exception_handler(IsOccupied)
 def handle_is_occupied(request: Request, exception: IsOccupied) -> JSONResponse:
-    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": exception})
+    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)})

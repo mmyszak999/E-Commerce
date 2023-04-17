@@ -20,7 +20,8 @@ from src.apps.products.exceptions import (
 def create_product(session: Session, product: ProductInputSchema) -> ProductOutputSchema:
     product_data = product.dict()
 
-    name_check = session.execute(select(Product).filter(Product.name == product_data["name"]))
+    name_check = session.scalar(select(Product).filter(Product.name == product_data["name"]).limit(1))
+    print("w", name_check)
     if name_check:
         raise product_name_is_occupied_exception
     
