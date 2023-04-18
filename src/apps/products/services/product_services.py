@@ -21,13 +21,12 @@ def create_product(session: Session, product: ProductInputSchema) -> ProductOutp
     product_data = product.dict()
 
     name_check = session.scalar(select(Product).filter(Product.name == product_data["name"]).limit(1))
-    print("w", name_check)
     if name_check:
         raise product_name_is_occupied_exception
     
     categories = product_data.pop('categories')
     product_data['categories'] = [
-        session.scalar(select(Category).filter(Category.id == instance["id"])) for instance in categories
+        session.scalar(select(Category).filter(Category.id == instance["id"]).limit(1)) for instance in categories
         ]
     new_product = Product(**product_data)
     session.add(new_product)
@@ -36,25 +35,25 @@ def create_product(session: Session, product: ProductInputSchema) -> ProductOutp
     return ProductOutputSchema.from_orm(new_product)
 
 def get_single_product(session: Session, product_id: int) -> ProductOutputSchema:
-    product_object = session.execute(select(Product).filter(Product.id==product_id)).scalar()
+    product_object = session.scalar(select(Product).filter(Product.id==product_id).limit(1))
     if not product_object:
         raise product_does_not_exist_exception
 
-    instance = session.execute(statement).scalar()
+    instance = session.scalar(statement)
     return ProductOutputSchema.from_orm(instance)
 
 def get_all_products(session: Session) -> list[ProductOutputSchema]:
-    instances = session.execute(select(Product)).scalars()
+    instances = session.scalars(select(Product))
 
     return [ProductOutputSchema.from_orm(instance) for instance in instances]
 
 def update_single_product(session: Session, product: ProductInputSchema, product_id: int) -> ProductOutputSchema:
-    product_object = session.execute(select(Product).filter(Product.id==product_id)).scalar()
+    product_object = session.scalar(select(Product).filter(Product.id==product_id).limit(1))
     if not product_object:
         raise product_does_not_exist_exception
     
-    product_name_check = session.execute(select(Product).filter(Product.name == product.name))
-    if product_name_check.first():
+    product_name_check = session.execute(select(Product).filter(Product.name == product.name).limit(1))
+    if product_name_check:
         raise product_name_is_occupied_exception
     
     product_data = product.dict()
@@ -81,7 +80,7 @@ def update_single_product(session: Session, product: ProductInputSchema, product
     return get_single_product(session, product_id=product_id)
 
 def delete_single_product(session: Session, product_id: int):
-    product_object = session.execute(select(Product).filter(Product.id==product_id)).scalar()
+    product_object = session.scalar(select(Product).filter(Product.id==product_id).limit(1))
     if not product_object:
         raise product_does_not_exist_exception
 

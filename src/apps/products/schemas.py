@@ -19,7 +19,6 @@ class CategoryOutputSchema(CategoryBaseSchema):
     id: int
 
     class Config:
-        orm_model = Category
         orm_mode = True
 
 
@@ -38,7 +37,3 @@ class ProductOutputSchema(ProductBaseSchema):
 
     class Config:
         orm_mode = True
-
-
-class ProductAddInputSchema(BaseModel):
-    count: int
