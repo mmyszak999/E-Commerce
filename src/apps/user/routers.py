@@ -22,6 +22,8 @@ from src.apps.user.models import User
 from src.dependencies.get_db import get_db
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.dependencies.user import authenticate_user
+from src.core.pagination.schemas import PagedResponseSchema
+from src.core.pagination.models import PageParams
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -43,9 +45,9 @@ def login_user(user_login_schema: UserLoginInputSchema, auth_jwt: AuthJWT = Depe
 def get_logged_user(request_user: User = Depends(authenticate_user)) -> UserOutputSchema:
     return UserOutputSchema.from_orm(request_user)
 
-@router.get("/", response_model=list[UserOutputSchema], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK)
-def get_users(db: Session = Depends(get_db)) -> list[UserOutputSchema]:
-    db_users = get_all_users(db)
+@router.get("/", response_model=PagedResponseSchema, dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK)
+def get_users(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema:
+    db_users = get_all_users(db, page_params)
     return db_users
 
 @router.get("/{user_id}", dependencies=[Depends(authenticate_user)], response_model=UserOutputSchema, status_code=status.HTTP_200_OK)

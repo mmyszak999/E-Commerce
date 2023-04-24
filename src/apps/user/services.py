@@ -14,10 +14,13 @@ from src.core.exceptions import (
     IsOccupied,
     AuthException
 )
+from src.core.pagination.services import paginate
+from src.core.pagination.schemas import PagedResponseSchema
+from src.core.pagination.models import PageParams, T
+
 
 def hash_user_password(password: str) -> str:
     return passwd_context.hash(password)
-
 
 def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchema:
     user_data = user.dict()
@@ -39,13 +42,11 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
     return UserOutputSchema.from_orm(new_user)
 
-
 def authenticate(username: str, password: str, session: Session) -> User:
     user = session.scalar(select(User).filter(username == User.username).limit(1))
     if not (user or passwd_context.verify(password, user.password)):
         raise AuthException("Invalid Credentials")
     return user
-
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
     user_object = session.scalar(select(User).filter(User.id==user_id).limit(1))
@@ -54,13 +55,11 @@ def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
 
     return UserOutputSchema.from_orm(user_object)
 
+def get_all_users(session: Session, page_params: PageParams) -> PagedResponseSchema:
+    instances = session.execute(select(User))
 
-def get_all_users(session: Session) -> list[UserOutputSchema]:
-    instances = session.execute(select(User)).scalars()
-
-    return [UserOutputSchema.from_orm(instance) for instance in instances]
+    return paginate(query=instances, response_schema=UserOutputSchema, table=User, page_params=page_params, session=session)
     
-
 def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> UserOutputSchema:
     user_object = session.scalar(select(User).filter(User.id==user_id).limit(1))
     if not user_object:
@@ -74,7 +73,6 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
     if email_check:
         raise IsOccupied(User.__name__, "email", user.email)
 
-    print("w0w")
     statement = update(User).filter(User.id == user_id).values(**user.dict())
 
     session.execute(statement)

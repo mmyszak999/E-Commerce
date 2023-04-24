@@ -1,13 +1,17 @@
-from src.core.pagination.models import BaseModel, PageParams, T
+from sqlalchemy import func, Table, select
+from sqlalchemy.orm import Session
+
+from src.core.pagination.models import BaseModel, PageParams, T, conint
 from src.core.pagination.schemas import PagedResponseSchema
 
-
-def paginate(page_params: PageParams, query, ResponseSchema: BaseModel) -> PagedResponseSchema[T]:
-    paginated_query = query.offset((page_params.page - 1) * page_params.size).limit(page_params.size).all()
-
+def paginate(
+    query, response_schema: BaseModel, table: Table, page_params: PageParams, session: Session
+    ) -> PagedResponseSchema[T]:
+    paginated_query = session.scalars(select(table).offset((page_params.page - 1) * page_params.size).limit(page_params.size)).all()
+    
     return PagedResponseSchema(
-        total=query.count(),
+        total=session.scalar(select(func.count()).select_from(table)),
         page=page_params.page,
         size=page_params.size,
-        results=[ResponseSchema.from_orm(item) for item in paginated_query],
+        results=[response_schema.from_orm(item) for item in paginated_query],
     )

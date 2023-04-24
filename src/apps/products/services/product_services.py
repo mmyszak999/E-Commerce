@@ -5,8 +5,7 @@ from src.apps.products.schemas import (
     CategoryInputSchema,
     CategoryOutputSchema,
     ProductInputSchema,
-    ProductOutputSchema,
-    ProductAddInputSchema
+    ProductOutputSchema
 )
 from src.apps.products.models import Category, Product, association_table
 from src.apps.products.services.category_services import get_single_category
