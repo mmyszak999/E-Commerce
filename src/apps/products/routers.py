@@ -24,6 +24,8 @@ from src.apps.products.services.product_services import (
 )
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
+from src.core.pagination.schemas import PagedResponseSchema
+from src.core.pagination.models import PageParams
 
 
 category_router = APIRouter(prefix="/categories", tags=["category"])
@@ -38,10 +40,10 @@ def post_category(category: CategoryInputSchema, db: Session = Depends(get_db)) 
     return db_category
 
 @category_router.get(
-    "/", response_model=list[CategoryOutputSchema], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
+    "/", response_model=PagedResponseSchema, dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
 )
-def get_categories(db: Session = Depends(get_db)) -> list[CategoryOutputSchema]:
-    db_categories = get_all_categories(db)
+def get_categories(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema:
+    db_categories = get_all_categories(db, page_params)
     return db_categories
 
 @category_router.get(
@@ -71,10 +73,10 @@ def post_product(product: ProductInputSchema, db: Session = Depends(get_db)) -> 
     return db_product
 
 @product_router.get(
-    "/", response_model=list[ProductOutputSchema], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
+    "/", response_model=PagedResponseSchema, dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
 )
-def get_products(db: Session = Depends(get_db)) -> list[ProductOutputSchema]:
-    db_products = get_all_products(db)
+def get_products(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema:
+    db_products = get_all_products(db, page_params)
     return db_products
 
 @product_router.get(
@@ -84,7 +86,7 @@ def get_product(product_id: int, db: Session = Depends(get_db)) -> ProductOutput
     db_product = get_single_product(db, product_id)
     return db_product
 
-@product_router.patch(
+@product_router.put(
     "/{product_id}", dependencies=[Depends(authenticate_user)], response_model=ProductOutputSchema, status_code=status.HTTP_200_OK
 )
 def update_product(product_id: int, product: ProductInputSchema, db: Session = Depends(get_db)) -> ProductOutputSchema:

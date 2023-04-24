@@ -16,7 +16,7 @@ from src.core.exceptions import (
 )
 from src.core.pagination.services import paginate
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.pagination.models import PageParams, T
+from src.core.pagination.models import PageParams
 
 
 def hash_user_password(password: str) -> str:

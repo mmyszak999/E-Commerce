@@ -11,6 +11,10 @@ from src.core.exceptions import (
     AlreadyExists,
     IsOccupied
 )
+from src.core.pagination.services import paginate
+from src.core.pagination.schemas import PagedResponseSchema
+from src.core.pagination.models import PageParams
+
 
 def create_category(session: Session, category: CategoryInputSchema) -> CategoryOutputSchema:
     category_data = category.dict()
@@ -32,10 +36,10 @@ def get_single_category(session: Session, category_id: int) -> CategoryOutputSch
 
     return CategoryOutputSchema.from_orm(category_object)
 
-def get_all_categories(session: Session) -> list[CategoryOutputSchema]:
-    instances = session.scalars(select(Category))
+def get_all_categories(session: Session, page_params: PageParams) -> PagedResponseSchema:
+    instances = session.execute(select(Category))
 
-    return [CategoryOutputSchema.from_orm(instance) for instance in instances]
+    return paginate(query=instances, response_schema=CategoryOutputSchema, table=Category, page_params=page_params, session=session)
 
 def update_single_category(session: Session, category: CategoryInputSchema, category_id: int) -> CategoryOutputSchema:
     category_object = session.scalar(select(Category).filter(Category.id==category_id).limit(1))

@@ -14,6 +14,9 @@ from src.core.exceptions import (
     AlreadyExists,
     IsOccupied
 )
+from src.core.pagination.services import paginate
+from src.core.pagination.schemas import PagedResponseSchema
+from src.core.pagination.models import PageParams
 
 
 def create_product(session: Session, product: ProductInputSchema) -> ProductOutputSchema:
@@ -41,10 +44,10 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
     instance = session.scalar(statement)
     return ProductOutputSchema.from_orm(instance)
 
-def get_all_products(session: Session) -> list[ProductOutputSchema]:
-    instances = session.scalars(select(Product))
+def get_all_products(session: Session, page_params: PageParams) -> PagedResponseSchema:
+    instances = session.execute(select(Product))
 
-    return [ProductOutputSchema.from_orm(instance) for instance in instances]
+    return paginate(query=instances, response_schema=ProductOutputSchema, table=Product, page_params=page_params, session=session)
 
 def update_single_product(session: Session, product: ProductInputSchema, product_id: int) -> ProductOutputSchema:
     product_object = session.scalar(select(Product).filter(Product.id==product_id).limit(1))
