@@ -17,6 +17,7 @@ from src.core.exceptions import (
 from src.core.pagination.services import paginate
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.models import PageParams
+from src.core.utils import if_exists
 
 
 def hash_user_password(password: str) -> str:
@@ -49,8 +50,7 @@ def authenticate(username: str, password: str, session: Session) -> User:
     return user
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
-    user_object = session.scalar(select(User).filter(User.id==user_id).limit(1))
-    if not user_object:
+    if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, user_id)
 
     return UserOutputSchema.from_orm(user_object)
@@ -61,8 +61,7 @@ def get_all_users(session: Session, page_params: PageParams) -> PagedResponseSch
     return paginate(query=instances, response_schema=UserOutputSchema, table=User, page_params=page_params, session=session)
     
 def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> UserOutputSchema:
-    user_object = session.scalar(select(User).filter(User.id==user_id).limit(1))
-    if not user_object:
+    if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, user_id)
     
     username_check = session.scalar(select(User).filter(User.username == user.username).limit(1))
@@ -82,8 +81,7 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
 
 
 def delete_single_user(session: Session, user_id: int):
-    user_object = session.scalar(select(User).filter(User.id==user_id).limit(1))
-    if not user_object:
+    if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, user_id)
 
     statement = delete(User).filter(User.id == user_id)

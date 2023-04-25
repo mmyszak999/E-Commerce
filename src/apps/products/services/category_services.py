@@ -30,8 +30,7 @@ def create_category(session: Session, category: CategoryInputSchema) -> Category
     return CategoryOutputSchema.from_orm(new_category)
 
 def get_single_category(session: Session, category_id: int) -> CategoryOutputSchema:
-    category_object = session.scalar(select(Category).filter(Category.id==category_id).limit(1))
-    if not category_object:
+    if not (category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
 
     return CategoryOutputSchema.from_orm(category_object)
@@ -42,8 +41,7 @@ def get_all_categories(session: Session, page_params: PageParams) -> PagedRespon
     return paginate(query=instances, response_schema=CategoryOutputSchema, table=Category, page_params=page_params, session=session)
 
 def update_single_category(session: Session, category: CategoryInputSchema, category_id: int) -> CategoryOutputSchema:
-    category_object = session.scalar(select(Category).filter(Category.id==category_id).limit(1))
-    if not category_object:
+    if not (category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
     
     category_name_check = session.scalar(select(Category).filter(Category.name == category.name).limit(1))
@@ -58,8 +56,7 @@ def update_single_category(session: Session, category: CategoryInputSchema, cate
     return get_single_category(session, category_id=category_id)
 
 def delete_single_category(session: Session, category_id: int):
-    category_object = session.scalar(select(Category).filter(Category.id==category_id).limit(1))
-    if not category_object:
+    if not (category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
 
     statement = delete(Category).filter(Category.id == category_id)

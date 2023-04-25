@@ -39,8 +39,7 @@ def create_product(session: Session, product: ProductInputSchema) -> ProductOutp
     return ProductOutputSchema.from_orm(new_product)
 
 def get_single_product(session: Session, product_id: int) -> ProductOutputSchema:
-    product_object = session.scalar(select(Product).filter(Product.id==product_id).limit(1))
-    if not product_object:
+    if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, product_id)
 
     return ProductOutputSchema.from_orm(product_object)
@@ -51,8 +50,7 @@ def get_all_products(session: Session, page_params: PageParams) -> PagedResponse
     return paginate(query=instances, response_schema=ProductOutputSchema, table=Product, page_params=page_params, session=session)
 
 def update_single_product(session: Session, product: ProductInputSchema, product_id: int) -> ProductOutputSchema:
-    product_object = session.scalar(select(Product).filter(Product.id==product_id).limit(1))
-    if not product_object:
+    if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, product_id)
     
     product_name_check = session.scalar(select(Product).filter(Product.name == product.name).limit(1))
@@ -80,8 +78,7 @@ def update_single_product(session: Session, product: ProductInputSchema, product
     return get_single_product(session, product_id=product_id)
 
 def delete_single_product(session: Session, product_id: int):
-    product_object = session.scalar(select(Product).filter(Product.id==product_id).limit(1))
-    if not product_object:
+    if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, product_id)
 
     statement = delete(Product).filter(Product.id == product_id)
