@@ -26,10 +26,12 @@ def create_product(session: Session, product: ProductInputSchema) -> ProductOutp
     if name_check:
         raise AlreadyExists(Product.__name__, "name", product.name)
     
-    categories = product_data.pop('categories')
-    product_data['categories'] = [
-        session.scalar(select(Category).filter(Category.id == instance["id"]).limit(1)) for instance in categories
-        ]
+    categories_ids = product_data.pop('categories_ids')
+    categories = session.scalars(select(Category).where(Category.id.in_(categories_ids))).all()
+    if not len(set(categories_ids)) == len(categories):
+        raise ValueError
+    
+    product_data['categories'] = categories
     new_product = Product(**product_data)
     session.add(new_product)
     session.commit()
@@ -41,8 +43,7 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
     if not product_object:
         raise DoesNotExist(Product.__name__, product_id)
 
-    instance = session.scalar(statement)
-    return ProductOutputSchema.from_orm(instance)
+    return ProductOutputSchema.from_orm(product_object)
 
 def get_all_products(session: Session, page_params: PageParams) -> PagedResponseSchema:
     instances = session.execute(select(Product))
@@ -54,25 +55,22 @@ def update_single_product(session: Session, product: ProductInputSchema, product
     if not product_object:
         raise DoesNotExist(Product.__name__, product_id)
     
-    product_name_check = session.execute(select(Product).filter(Product.name == product.name).limit(1))
-    if product_name_check:
+    product_name_check = session.scalar(select(Product).filter(Product.name == product.name).limit(1))
+    if product_name_check and (product_name_check.id != product_id):
         raise IsOccupied(Product.__name__, "name", product.name)
     
     product_data = product.dict()
-    incoming_categories = set(category['id'] for category in product_data['categories'])
+    incoming_categories = set(product_data['categories_ids'])
     current_categories = set(category.id for category in product_object.categories)
-
-    disjoint_categories_id_set = incoming_categories ^ current_categories
-
-    rows = [{"product_id": product_id, "category_id": category_id} for category_id in disjoint_categories_id_set if category_id in current_categories]
-    if rows:
-        session.execute(delete(association_table).where(Category.id.in_([row['category_id'] for row in rows])))
-
-    rows = [{"product_id": product_id, "category_id": category_id} for category_id in disjoint_categories_id_set if category_id in incoming_categories]
-    if rows:
+    
+    if to_delete := current_categories - incoming_categories:
+        session.execute(delete(association_table).where(Category.id.in_(to_delete)))
+    
+    if to_insert := incoming_categories - current_categories:
+        rows = [{"product_id": product_id, "category_id": category_id} for category_id in to_insert]
         session.execute(insert(association_table).values(rows))
 
-    product_data.pop('categories')
+    product_data.pop('categories_ids')
     statement = update(Product).filter(Product.id==product_id).values(**product_data)
     
     session.execute(statement)
