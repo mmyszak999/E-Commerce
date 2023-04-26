@@ -28,12 +28,12 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
     if user_data.pop('password_repeat'):
         user_data['password'] = hash_user_password(password=user_data.pop('password'))
     
-    username = session.scalar(select(User).filter(User.username == user_data["username"]).limit(1))
-    email = session.scalar(select(User).filter(User.email == user_data["email"]).limit(1))
+    username_check = session.scalar(select(User).filter(User.username == user_data["username"]).limit(1))
+    email_checl = session.scalar(select(User).filter(User.email == user_data["email"]).limit(1))
     
-    if username: 
+    if username_check: 
         raise AlreadyExists(User.__name__, "username", user.username)
-    if email:
+    if email_check:
         raise AlreadyExists(User.__name__, "email", user.email)
 
     new_user = User(**user_data)

@@ -9,7 +9,8 @@ from src.core.exceptions import (
     DoesNotExist,
     AlreadyExists,
     AuthException,
-    IsOccupied
+    IsOccupied,
+    ServiceException
 )
 
 
@@ -39,4 +40,8 @@ def handle_already_exists(request: Request, exception: AlreadyExists) -> JSONRes
 
 @app.exception_handler(IsOccupied)
 def handle_is_occupied(request: Request, exception: IsOccupied) -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)})
+
+@app.exception_handler(ServiceException)
+def handle_service_exception(request: Request, exception: ServiceException) -> JSONResponse:
     return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)})

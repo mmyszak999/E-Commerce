@@ -33,7 +33,7 @@ product_router = APIRouter(prefix="/products", tags=["product"])
 
 
 @category_router.post(
-    "/category", dependencies=[Depends(authenticate_user)], response_model=CategoryInputSchema, status_code=status.HTTP_201_CREATED
+    "/", dependencies=[Depends(authenticate_user)], response_model=CategoryInputSchema, status_code=status.HTTP_201_CREATED
 )
 def post_category(category: CategoryInputSchema, db: Session = Depends(get_db)) -> CategoryOutputSchema:
     db_category = create_category(db, category)
@@ -66,7 +66,7 @@ def delete_category(category_id: int, db: Session = Depends(get_db)) -> Response
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @product_router.post(
-    "/product", dependencies=[Depends(authenticate_user)], response_model=ProductInputSchema, status_code=status.HTTP_201_CREATED
+    "/", dependencies=[Depends(authenticate_user)], response_model=ProductInputSchema, status_code=status.HTTP_201_CREATED
 )
 def post_product(product: ProductInputSchema, db: Session = Depends(get_db)) -> ProductOutputSchema:
     db_product = create_product(db, product)

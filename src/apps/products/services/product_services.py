@@ -12,7 +12,8 @@ from src.apps.products.services.category_services import get_single_category
 from src.core.exceptions import (
     DoesNotExist,
     AlreadyExists,
-    IsOccupied
+    IsOccupied,
+    ServiceException
 )
 from src.core.pagination.services import paginate
 from src.core.pagination.schemas import PagedResponseSchema
@@ -29,7 +30,7 @@ def create_product(session: Session, product: ProductInputSchema) -> ProductOutp
     categories_ids = product_data.pop('categories_ids')
     categories = session.scalars(select(Category).where(Category.id.in_(categories_ids))).all()
     if not len(set(categories_ids)) == len(categories):
-        raise ValueError
+        raise ServiceException("Wrong categories!")
     
     product_data['categories'] = categories
     new_product = Product(**product_data)
@@ -49,15 +50,15 @@ def get_all_products(session: Session, page_params: PageParams) -> PagedResponse
 
     return paginate(query=instances, response_schema=ProductOutputSchema, table=Product, page_params=page_params, session=session)
 
-def update_single_product(session: Session, product: ProductInputSchema, product_id: int) -> ProductOutputSchema:
+def update_single_product(session: Session, product_input: ProductInputSchema, product_id: int) -> ProductOutputSchema:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, product_id)
     
-    product_name_check = session.scalar(select(Product).filter(Product.name == product.name).limit(1))
+    product_name_check = session.scalar(select(Product).filter(Product.name == product_input.name).limit(1))
     if product_name_check and (product_name_check.id != product_id):
-        raise IsOccupied(Product.__name__, "name", product.name)
+        raise IsOccupied(Product.__name__, "name", product_input.name)
     
-    product_data = product.dict()
+    product_data = product_input.dict()
     incoming_categories = set(product_data['categories_ids'])
     current_categories = set(category.id for category in product_object.categories)
     
