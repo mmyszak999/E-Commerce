@@ -24,7 +24,7 @@ from src.apps.products.services.product_services import (
 )
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
-from src.core.pagination.schemas import PagedResponseSchema
+from src.core.pagination.schemas import PagedResponseSchema, T
 from src.core.pagination.models import PageParams
 
 
@@ -40,9 +40,9 @@ def post_category(category: CategoryInputSchema, db: Session = Depends(get_db)) 
     return db_category
 
 @category_router.get(
-    "/", response_model=PagedResponseSchema, dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
+    "/", response_model=PagedResponseSchema[T], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
 )
-def get_categories(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema:
+def get_categories(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema[T]:
     db_categories = get_all_categories(db, page_params)
     return db_categories
 
@@ -73,9 +73,9 @@ def post_product(product: ProductInputSchema, db: Session = Depends(get_db)) -> 
     return db_product
 
 @product_router.get(
-    "/", response_model=PagedResponseSchema, dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
+    "/", response_model=PagedResponseSchema[T], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
 )
-def get_products(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema:
+def get_products(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema[T]:
     db_products = get_all_products(db, page_params)
     return db_products
 

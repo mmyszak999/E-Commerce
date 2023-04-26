@@ -56,9 +56,9 @@ def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
     return UserOutputSchema.from_orm(user_object)
 
 def get_all_users(session: Session, page_params: PageParams) -> PagedResponseSchema:
-    instances = session.execute(select(User))
+    query = select(User)
 
-    return paginate(query=instances, response_schema=UserOutputSchema, table=User, page_params=page_params, session=session)
+    return paginate(query=query, response_schema=UserOutputSchema, table=User, page_params=page_params, session=session)
     
 def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -> UserOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):

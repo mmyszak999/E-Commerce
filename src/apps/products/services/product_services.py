@@ -46,9 +46,9 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
     return ProductOutputSchema.from_orm(product_object)
 
 def get_all_products(session: Session, page_params: PageParams) -> PagedResponseSchema:
-    instances = session.execute(select(Product))
+    query = select(Product)
 
-    return paginate(query=instances, response_schema=ProductOutputSchema, table=Product, page_params=page_params, session=session)
+    return paginate(query=query, response_schema=ProductOutputSchema, table=Product, page_params=page_params, session=session)
 
 def update_single_product(session: Session, product_input: ProductInputSchema, product_id: int) -> ProductOutputSchema:
     if not (product_object := if_exists(Product, "id", product_id, session)):
