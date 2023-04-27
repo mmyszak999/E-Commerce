@@ -7,8 +7,8 @@ from src.database.db_connection import Base
 association_table = Table(
     "association_table",
     Base.metadata,
-    Column("category_id", ForeignKey("category.id", ondelete='cascade', onupdate='cascade')),
-    Column("product_id", ForeignKey("product.id", ondelete='cascade', onupdate='cascade')),
+    Column("category_id", ForeignKey("category.id", ondelete='cascade', onupdate='cascade'), nullable=False),
+    Column("product_id", ForeignKey("product.id", ondelete='cascade', onupdate='cascade'), nullable=False),
 )
 
 
