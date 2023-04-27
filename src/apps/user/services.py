@@ -29,7 +29,7 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
         user_data['password'] = hash_user_password(password=user_data.pop('password'))
     
     username_check = session.scalar(select(User).filter(User.username == user_data["username"]).limit(1))
-    email_checl = session.scalar(select(User).filter(User.email == user_data["email"]).limit(1))
+    email_check = session.scalar(select(User).filter(User.email == user_data["email"]).limit(1))
     
     if username_check: 
         raise AlreadyExists(User.__name__, "username", user.username)
