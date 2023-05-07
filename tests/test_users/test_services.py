@@ -15,6 +15,7 @@ from src.core.exceptions import (
     IsOccupied,
     AuthException
 )
+from src.core.pagination.models import PageParams
 
 
 def test_password_hashed_correctly(
@@ -70,12 +71,12 @@ def test_raise_exception_while_getting_nonexistent_user(
 
 
 def test_if_multiple_users_were_returned(
-    sync_session: Session
+    sync_session: Session,
+    db_users: list[UserOutputSchema]
 ):
-    users = get_all_users(sync_session)
-    print(users)
-    assert len(users) > 1
-    assert type(users) == list
+    users = get_all_users(sync_session, PageParams(page=1, size=5))
+    assert len(users.results) == len(db_users) + 1
+    assert type(users.results) == list
 
 
 def test_raise_exception_while_updating_nonexistent_user(

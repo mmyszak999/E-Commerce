@@ -9,10 +9,7 @@ from src.apps.user.services import register_user, get_single_user
 from src.apps.user.schemas import UserRegisterSchema, UserUpdateSchema, UserOutputSchema
 from src.apps.user.models import User
 
-
-@pytest.fixture(scope="package", autouse=True)
-def create_setup_users(sync_session: Session):
-    list_of_user_register_schemas = [
+list_of_user_register_schemas = [
     UserRegisterSchema(
         first_name="jan",
         last_name="kowalski",
@@ -40,48 +37,49 @@ def create_setup_users(sync_session: Session):
         password="jdjdjdjd",
         password_repeat="jdjdjdjd")]
 
-    for user in list_of_user_register_schemas:
-        register_user(sync_session, user)
+user_register_data = {
+        "first_name": "janusz",
+        "last_name": "pawlacz",
+        "email": "janpaw@mail.com",
+        "birth_date": "2020-07-12",
+        "username": "janpaw22",
+        "password": "janusz1488",
+        "password_repeat": "janusz1488"
+        }
 
+user_update_data = {
+        "first_name": list_of_user_register_schemas[0].first_name,
+        "last_name": list_of_user_register_schemas[0].last_name,
+        "email": "kowal@mailedit.com",
+        "birth_date": "1983-10-12",
+        "username": list_of_user_register_schemas[0].username
+        }
+    
+@pytest.fixture(scope="package", autouse=True)
+def db_users(sync_session: Session):
+    return [register_user(sync_session, user) for user in list_of_user_register_schemas]
 
 @pytest.fixture(scope="module")
 def register_data() -> dict[str, str]:
-    return {
-        "first_name": "jan",
-        "last_name": "kowalski",
-        "email": "kowal@mail.com",
-        "birth_date": "2020-07-12",
-        "username": "kowal2137",
-        "password": "kowalkowal",
-        "password_repeat": "kowalkowal"
-        }
-
+    return user_register_data
 
 @pytest.fixture(scope="module")
 def login_data() -> dict[str, str]:
     return {
-        "username": "kowal2137",
-        "password": "kowalkowal"
+        "username": user_register_data['username'],
+        "password": user_register_data['password']
     }
 
-
 @pytest.fixture(scope="module")
-def get_token_header(sync_session: Session) -> dict[str, str]:
-    user_schema = get_single_user(sync_session, 1)
+def get_token_header(sync_session: Session, db_users: list[UserOutputSchema]) -> dict[str, str]:
+    user_schema = get_single_user(sync_session, db_users[0].id)
     access_token = AuthJWT().create_access_token(subject=user_schema.json())
     return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture(scope="module")
 def update_data() -> dict[str, str]:
-    return {
-        "first_name": "jan",
-        "last_name": "kowalski",
-        "email": "kowal@mailedit.com",
-        "birth_date": "2020-07-12",
-        "username": "kowalczyk2137"
-        }
-
+    return user_update_data
 
 @pytest.fixture(scope='module')
 def incorrect_passwords_dict() -> dict[str, Any]:
