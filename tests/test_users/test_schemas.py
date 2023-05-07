@@ -1,22 +1,28 @@
 from typing import Any
+from datetime import date
 
 import pytest
 from pydantic.error_wrappers import ValidationError
 
 from src.apps.user.schemas import UserRegisterSchema
 
-def test_passwords_are_not_identical(
-    incorrect_passwords_dict: dict[str, Any]
-):
-    with pytest.raises(ValidationError) as exc:
-        UserRegisterSchema(**incorrect_passwords_dict)
 
+
+def test_passwords_are_not_identical(
+    register_data: dict[str, Any]
+):
+    user_data = register_data
+    user_data['password_repeat'] = user_data['password'] + "abcde"
+    with pytest.raises(ValidationError) as exc:
+        UserRegisterSchema(**user_data)
 
 def test_date_is_from_future(
-    date_from_future_dict: dict[str, Any]
+    register_data: dict[str, Any]
 ):
+    user_data = register_data
+    user_data['birth_date'] = '9922-02-12'
     with pytest.raises(ValidationError) as exc:
-        UserRegisterSchema(**date_from_future_dict)
+        UserRegisterSchema(**user_data)
 
 
 

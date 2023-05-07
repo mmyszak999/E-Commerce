@@ -81,30 +81,6 @@ def get_token_header(sync_session: Session, db_users: list[UserOutputSchema]) ->
 def update_data() -> dict[str, str]:
     return user_update_data
 
-@pytest.fixture(scope='module')
-def incorrect_passwords_dict() -> dict[str, Any]:
-    return  {
-        "first_name": "average",
-        "last_name": "joe",
-        "email": "avjoe@mail.com",
-        "birth_date": date(1980,7,12),
-        "username": "imjoe",
-        "password": "wearethesame",
-        "password_repeat": "wearenotthesame"
-    }
-
-@pytest.fixture(scope='module')
-def date_from_future_dict() -> dict[str, Any]:
-    return  {
-        "first_name": "future",
-        "last_name": "man",
-        "email": "pluto@mail.com",
-        "birth_date": date(2137,4,20),
-        "username": "pluto",
-        "password": "password_ok",
-        "password_repeat": "password_ok"
-    }
-
 @pytest.fixture(scope="module")
 def occupied_username_schema() -> UserRegisterSchema:
     user_schema = UserRegisterSchema(
