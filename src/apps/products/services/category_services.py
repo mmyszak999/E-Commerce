@@ -11,6 +11,7 @@ from src.core.exceptions import (
     AlreadyExists,
     IsOccupied
 )
+from src.core.utils import if_exists
 from src.core.pagination.services import paginate
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.models import PageParams
@@ -45,7 +46,8 @@ def update_single_category(session: Session, category: CategoryInputSchema, cate
         raise DoesNotExist(Category.__name__, category_id)
     
     category_name_check = session.scalar(select(Category).filter(Category.name == category.name).limit(1))
-    if category_name_check.first():
+    print(category_name_check, category)
+    if category_name_check is not None and category_name_check.first():
         raise IsOccupied(Category.__name__, "name", category.name)
 
     statement = update(Category).filter(Category.id == category_id).values(**category.dict())

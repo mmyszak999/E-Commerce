@@ -62,7 +62,6 @@ def test_authenticated_user_can_update_user(
     db_users: list[UserOutputSchema]
 ):
     response = sync_client.put(f"users/{db_users[0].id}", json=update_data, headers=get_token_header)
-    print(response.json())
     assert response.json()["username"] == update_data["username"]
 
 
