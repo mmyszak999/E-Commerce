@@ -28,7 +28,6 @@ def test_authenticated_user_can_get_users(
     get_token_header: dict[str, str],
     db_users: list[UserOutputSchema]
 ):
-    sync_client.delete(f"users/{len(db_users)+1}", headers=get_token_header) # deletes the previously created user
     response = sync_client.get("users/", headers=get_token_header)
     
     assert len(response.json()['results']) == len(db_users)
@@ -62,7 +61,6 @@ def test_authenticated_user_can_update_user(
     db_users: list[UserOutputSchema]
 ):
     response = sync_client.put(f"users/{db_users[0].id}", json=update_data, headers=get_token_header)
-    print(response.json())
     assert response.json()["username"] == update_data["username"]
 
 

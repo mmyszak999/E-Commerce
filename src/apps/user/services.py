@@ -79,6 +79,14 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
     
     return get_single_user(session, user_id=user_id)
 
+def delete_all_users(session: Session):
+    statement = delete(User)
+    result = session.execute(statement)
+    session.commit()
+    
+    return result
+    
+
 
 def delete_single_user(session: Session, user_id: int):
     if not (user_object := if_exists(User, "id", user_id, session)):

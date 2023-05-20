@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.orm import Session
 from fastapi_jwt_auth import AuthJWT
 
-from src.apps.user.services import register_user, get_single_user
+from src.apps.user.services import register_user, get_single_user, delete_all_users
 from src.apps.user.schemas import UserRegisterSchema, UserUpdateSchema, UserOutputSchema
 from src.apps.user.models import User
 
@@ -47,6 +47,12 @@ user_register_data = {
         "password_repeat": "janusz1488"
         }
 
+@pytest.fixture
+def register_existing_user_data() -> UserRegisterSchema:
+    return existitng_user_data
+
+existitng_user_data = list_of_user_register_schemas[0]
+
 user_update_data = {
         "first_name": list_of_user_register_schemas[0].first_name,
         "last_name": list_of_user_register_schemas[0].last_name,
@@ -55,28 +61,29 @@ user_update_data = {
         "username": list_of_user_register_schemas[0].username
         }
     
-@pytest.fixture(scope="package", autouse=True)
+@pytest.fixture
 def db_users(sync_session: Session):
+    delete_all_users(sync_session)
     return [register_user(sync_session, user) for user in list_of_user_register_schemas]
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def register_data() -> dict[str, str]:
     return user_register_data
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def login_data() -> dict[str, str]:
     return {
-        "username": user_register_data['username'],
-        "password": user_register_data['password']
+        "username": list_of_user_register_schemas[0].username,
+        "password": list_of_user_register_schemas[0].password
     }
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def get_token_header(sync_session: Session, db_users: list[UserOutputSchema]) -> dict[str, str]:
     user_schema = get_single_user(sync_session, db_users[0].id)
     access_token = AuthJWT().create_access_token(subject=user_schema.json())
     return {"Authorization": f"Bearer {access_token}"}
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def update_data() -> dict[str, str]:
     return user_update_data
