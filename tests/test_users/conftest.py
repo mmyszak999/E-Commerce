@@ -9,7 +9,7 @@ from src.apps.user.services import register_user, get_single_user, delete_all_us
 from src.apps.user.schemas import UserRegisterSchema, UserUpdateSchema, UserOutputSchema
 from src.apps.user.models import User
 
-list_of_user_register_schemas = [
+LIST_OF_USER_REGISTER_SCHEMAS = [
     UserRegisterSchema(
         first_name="jan",
         last_name="kowalski",
@@ -51,20 +51,14 @@ user_register_data = {
 def register_existing_user_data() -> UserRegisterSchema:
     return existitng_user_data
 
-existitng_user_data = list_of_user_register_schemas[0]
+existitng_user_data = LIST_OF_USER_REGISTER_SCHEMAS[0]
 
-user_update_data = {
-        "first_name": list_of_user_register_schemas[0].first_name,
-        "last_name": list_of_user_register_schemas[0].last_name,
-        "email": "kowal@mailedit.com",
-        "birth_date": "1983-10-12",
-        "username": list_of_user_register_schemas[0].username
-        }
+user_update_data = {"email": "kowal@mailedit.com"}
     
 @pytest.fixture
 def db_users(sync_session: Session):
     delete_all_users(sync_session)
-    return [register_user(sync_session, user) for user in list_of_user_register_schemas]
+    return [register_user(sync_session, user) for user in LIST_OF_USER_REGISTER_SCHEMAS]
 
 @pytest.fixture
 def register_data() -> dict[str, str]:
@@ -73,8 +67,8 @@ def register_data() -> dict[str, str]:
 @pytest.fixture
 def login_data() -> dict[str, str]:
     return {
-        "username": list_of_user_register_schemas[0].username,
-        "password": list_of_user_register_schemas[0].password
+        "username": LIST_OF_USER_REGISTER_SCHEMAS[0].username,
+        "password": LIST_OF_USER_REGISTER_SCHEMAS[0].password
     }
 
 @pytest.fixture

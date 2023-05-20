@@ -67,12 +67,12 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
     username_check = session.scalar(select(User).filter(User.username == user.username).limit(1))
     email_check = session.scalar(select(User).filter(User.email == user.email).limit(1))
     
-    if username_check and (username_check.id != user_id): 
+    if username_check: 
         raise IsOccupied(User.__name__, "username", user.username)
-    if email_check and (email_check.id != user_id):
+    if email_check:
         raise IsOccupied(User.__name__, "email", user.email)
 
-    statement = update(User).filter(User.id == user_id).values(**user.dict())
+    statement = update(User).filter(User.id == user_id).values(**user.dict(exclude_unset=True))
 
     session.execute(statement)
     session.commit()
@@ -86,7 +86,6 @@ def delete_all_users(session: Session):
     
     return result
     
-
 
 def delete_single_user(session: Session, user_id: int):
     if not (user_object := if_exists(User, "id", user_id, session)):
