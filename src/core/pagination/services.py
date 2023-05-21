@@ -1,3 +1,5 @@
+from typing import Type
+
 from sqlalchemy import func, Table, select
 from sqlalchemy.orm import Session
 
@@ -6,7 +8,7 @@ from src.core.pagination.schemas import PagedResponseSchema, T
 
 
 def paginate(
-    query, response_schema: BaseModel, table: Table, page_params: PageParams, session: Session
+    query, response_schema: Type[BaseModel], table: Table, page_params: PageParams, session: Session
     ) -> PagedResponseSchema[T]:
     instances = session.scalars(query.offset((page_params.page - 1) * page_params.size).limit(page_params.size)).all()
     total_amount = session.scalar(select(func.count()).select_from(table))
