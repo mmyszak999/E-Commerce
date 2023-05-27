@@ -58,7 +58,7 @@ def test_if_only_one_user_was_returned(
 ):
     user = get_single_user(sync_session, db_users[1].id)
 
-    assert type(user) == UserOutputSchema
+    assert user.id == db_users[1].id
 
 def test_raise_exception_while_getting_nonexistent_user(
     sync_session: Session,

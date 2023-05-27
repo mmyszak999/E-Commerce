@@ -37,7 +37,7 @@ LIST_OF_USER_REGISTER_SCHEMAS = [
         password="jdjdjdjd",
         password_repeat="jdjdjdjd")]
 
-user_register_data = {
+USER_REGISTER_DATA = {
         "first_name": "janusz",
         "last_name": "pawlacz",
         "email": "janpaw@mail.com",
@@ -47,13 +47,14 @@ user_register_data = {
         "password_repeat": "janusz1488"
         }
 
+EXISTING_USER_DATA = LIST_OF_USER_REGISTER_SCHEMAS[0]
+
+USER_UPDATE_DATA = {"email": "kowal@mailedit.com"}
+
 @pytest.fixture
 def register_existing_user_data() -> UserRegisterSchema:
-    return existitng_user_data
+    return EXISTING_USER_DATA
 
-existitng_user_data = LIST_OF_USER_REGISTER_SCHEMAS[0]
-
-user_update_data = {"email": "kowal@mailedit.com"}
     
 @pytest.fixture
 def db_users(sync_session: Session):
@@ -62,7 +63,7 @@ def db_users(sync_session: Session):
 
 @pytest.fixture
 def register_data() -> dict[str, str]:
-    return user_register_data
+    return USER_REGISTER_DATA
 
 @pytest.fixture
 def login_data() -> dict[str, str]:
@@ -80,4 +81,4 @@ def get_token_header(sync_session: Session, db_users: list[UserOutputSchema]) ->
 
 @pytest.fixture
 def update_data() -> dict[str, str]:
-    return user_update_data
+    return USER_UPDATE_DATA
