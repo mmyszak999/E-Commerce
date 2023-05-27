@@ -46,11 +46,10 @@ def update_single_category(session: Session, category: CategoryInputSchema, cate
         raise DoesNotExist(Category.__name__, category_id)
     
     category_name_check = session.scalar(select(Category).filter(Category.name == category.name).limit(1))
-    print(category_name_check, category)
-    if category_name_check is not None and category_name_check.first():
+    if category_name_check:
         raise IsOccupied(Category.__name__, "name", category.name)
 
-    statement = update(Category).filter(Category.id == category_id).values(**category.dict())
+    statement = update(Category).filter(Category.id == category_id).values(**category.dict(exclude_unset=True))
 
     session.execute(statement)
     session.commit()
