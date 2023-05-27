@@ -13,7 +13,8 @@ from src.apps.products.services.category_services import (
     get_all_categories,
     get_single_category,
     update_single_category,
-    delete_single_category
+    delete_single_category,
+    delete_all_categories
 )
 from src.apps.products.services.product_services import (
     create_product,
@@ -59,6 +60,11 @@ def get_category(category_id: int, db: Session = Depends(get_db)) -> CategoryOut
 def update_category(category_id: int, category: CategoryInputSchema, db: Session = Depends(get_db)) -> CategoryOutputSchema:
     db_category = update_single_category(db, category, category_id)
     return db_category
+
+@category_router.delete("/", dependencies=[Depends(authenticate_user)], status_code=status.HTTP_204_NO_CONTENT)
+def delete_categories(db: Session = Depends(get_db)) -> Response:
+    delete_all_categories(db)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @category_router.delete("/{category_id}", dependencies=[Depends(authenticate_user)], status_code=status.HTTP_204_NO_CONTENT)
 def delete_category(category_id: int, db: Session = Depends(get_db)) -> Response:

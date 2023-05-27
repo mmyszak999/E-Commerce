@@ -57,6 +57,13 @@ def update_single_category(session: Session, category: CategoryInputSchema, cate
     
     return get_single_category(session, category_id=category_id)
 
+def delete_all_categories(session: Session):
+    statement = delete(Category)
+    result = session.execute(statement)
+    session.commit()
+
+    return result
+
 def delete_single_category(session: Session, category_id: int):
     if not (category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
