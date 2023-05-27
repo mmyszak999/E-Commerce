@@ -11,15 +11,15 @@ LIST_OF_CATEGORY_INPUT_SCHEMAS = [
     CategoryInputSchema(name="furniture")
 ]
 
-create_category_data = {
+CREATE_CATEGORY_DATA = {
     "name": "cars"
 }
 
-update_category_data = {
+UPDATE_CATEGORY_DATA = {
     "name": "fruits"
 }
 
-existing_category_data = LIST_OF_CATEGORY_INPUT_SCHEMAS[0]
+EXISTING_CATEGORY_DATA = LIST_OF_CATEGORY_INPUT_SCHEMAS[0]
 
 
 @pytest.fixture
@@ -29,14 +29,14 @@ def db_categories(sync_session: Session):
 
 @pytest.fixture
 def post_category() -> dict[str, str]:
-    return create_category_data
+    return CREATE_CATEGORY_DATA
 
 @pytest.fixture
 def update_category() -> dict[str, str]:
-    return update_category_data
+    return UPDATE_CATEGORY_DATA
 
 @pytest.fixture
 def create_existing_category_data() -> CategoryInputSchema:
-    return existing_category_data
+    return EXISTING_CATEGORY_DATA
 
 
