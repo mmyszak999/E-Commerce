@@ -21,7 +21,8 @@ from src.apps.products.services.product_services import (
     get_all_products,
     get_single_product,
     update_single_product,
-    delete_single_product
+    delete_single_product,
+    delete_all_products
 )
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
@@ -54,7 +55,7 @@ def get_category(category_id: int, db: Session = Depends(get_db)) -> CategoryOut
     db_category = get_single_category(db, category_id)
     return db_category
 
-@category_router.put(
+@category_router.patch(
     "/{category_id}", dependencies=[Depends(authenticate_user)], response_model=CategoryOutputSchema, status_code=status.HTTP_200_OK
 )
 def update_category(category_id: int, category: CategoryInputSchema, db: Session = Depends(get_db)) -> CategoryOutputSchema:
@@ -98,6 +99,11 @@ def get_product(product_id: int, db: Session = Depends(get_db)) -> ProductOutput
 def update_product(product_id: int, product: ProductInputSchema, db: Session = Depends(get_db)) -> ProductOutputSchema:
     db_product = update_single_product(db, product, product_id)
     return db_product
+
+@product_router.delete("/", dependencies=[Depends(authenticate_user)], status_code=status.HTTP_204_NO_CONTENT)
+def delete_products(db: Session = Depends(get_db)) -> Response:
+    delete_all_products(db)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @product_router.delete("/{product_id}", dependencies=[Depends(authenticate_user)], status_code=status.HTTP_204_NO_CONTENT)
 def delete_product(product_id: int, db: Session = Depends(get_db)) -> Response:

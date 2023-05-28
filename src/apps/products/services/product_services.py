@@ -78,6 +78,13 @@ def update_single_product(session: Session, product_input: ProductInputSchema, p
     
     return get_single_product(session, product_id=product_id)
 
+def delete_all_products(session: Session):
+    statement = delete(Product)
+    result = session.execute(statement)
+    session.commit()
+
+    return result    
+
 def delete_single_product(session: Session, product_id: int):
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, product_id)

@@ -39,7 +39,7 @@ def test_authenticated_user_can_update_category(
     get_token_header: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.put(f"categories/{db_categories[0].id}", json=update_category, headers=get_token_header)
+    response = sync_client.patch(f"categories/{db_categories[0].id}", json=update_category, headers=get_token_header)
     
     assert response.json()["name"] == update_category["name"]
 
@@ -58,3 +58,6 @@ def test_authenticated_user_can_delete_all_categories(
 ):
     response = sync_client.delete("categories/", headers=get_token_header)
     assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    response = sync_client.get("categories/", headers=get_token_header)
+    assert len(response.json()['results']) == 0
