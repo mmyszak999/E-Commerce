@@ -8,14 +8,12 @@ from src.core.pagination.schemas import PagedResponseSchema, T
 def paginate(
     query, response_schema: BaseModel, table: Table, page_params: PageParams, session: Session
     ) -> PagedResponseSchema[T]:
-    instances = session.scalars(query.offset((page_params.page - 1) * page_params.size).limit(page_params.size)).all()
-    total_amount = session.scalar(select(func.count()).select_from(table))
-    next_page_check = (total_amount - ((page_params.page - 1) * page_params.size)) > page_params.size
+    instances = session.scalars(query.offset((page_params.page - 1) * page_params.size).limit(page_params.size + 1)).all()
+    next_page_check = len(instances) > page_params.size
     
     return PagedResponseSchema(
-        total=total_amount,
         page=page_params.page,
         size=page_params.size,
-        results=[response_schema.from_orm(item) for item in instances],
+        results=[response_schema.from_orm(item) for item in instances[:page_params.size]],
         has_next_page=next_page_check
     )
