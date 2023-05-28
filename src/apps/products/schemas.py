@@ -24,11 +24,11 @@ class CategoryOutputSchema(CategoryBaseSchema):
 
 class ProductBaseSchema(BaseModel):
     name: str = Field(max_length=75)
-    price: Decimal
+    price: Optional[Decimal]
 
 
 class ProductInputSchema(ProductBaseSchema):
-    categories_ids: list[int] = []
+    categories_ids:  Optional[list[int]] = []
 
 
 class ProductOutputSchema(ProductBaseSchema):

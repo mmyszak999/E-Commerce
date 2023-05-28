@@ -1,9 +1,12 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import CategoryInputSchema
-from src.apps.products.services.category_services import create_category, delete_all_categories
+from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
+from src.apps.products.services.category_services import create_category, delete_all_categories, get_all_categories
+from src.apps.products.services.product_services import create_product, delete_all_products
 from tests.test_users.conftest import get_token_header, db_users
+
+from src.core.pagination.models import PageParams
 
 LIST_OF_CATEGORY_INPUT_SCHEMAS = [
     CategoryInputSchema(name="drinks"),
@@ -20,6 +23,12 @@ UPDATE_CATEGORY_DATA = {
 }
 
 EXISTING_CATEGORY_DATA = LIST_OF_CATEGORY_INPUT_SCHEMAS[0]
+
+LIST_OF_PRODUCT_INPUT_SCHEMAS = [
+    ProductInputSchema(name="sprite", price=4.99),
+    ProductInputSchema(name='avocado', price=8.99),
+    ProductInputSchema(name='wardrobe', price=799.99)
+]
 
 
 @pytest.fixture
@@ -39,4 +48,12 @@ def update_category() -> dict[str, str]:
 def create_existing_category_data() -> CategoryInputSchema:
     return EXISTING_CATEGORY_DATA
 
-
+@pytest.fixture
+def db_products(sync_session: Session, db_categories):
+    delete_all_products(sync_session)
+    for product in LIST_OF_PRODUCT_INPUT_SCHEMAS:
+        category_id = db_categories[LIST_OF_PRODUCT_INPUT_SCHEMAS.index(product)].id
+        product.categories_ids.append(category_id)
+    
+    return [create_product(sync_session, product) for product in LIST_OF_PRODUCT_INPUT_SCHEMAS]
+    
