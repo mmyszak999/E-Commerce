@@ -28,7 +28,7 @@ class ProductBaseSchema(BaseModel):
 
 
 class ProductInputSchema(ProductBaseSchema):
-    categories_ids:  Optional[list[int]] = []
+    categories_ids: Optional[list[int]] = []
 
 
 class ProductOutputSchema(ProductBaseSchema):

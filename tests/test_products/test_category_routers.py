@@ -61,3 +61,34 @@ def test_authenticated_user_can_delete_all_categories(
 
     response = sync_client.get("categories/", headers=get_token_header)
     assert len(response.json()['results']) == 0
+
+def test_anonymous_user_cannot_get_categories(
+    sync_client: TestClient,
+):
+    response = sync_client.get("categories/")
+    assert len(response.json()) == 1
+    assert response.json()["detail"] == "Missing Authorization Header"
+
+
+def test_anonymous_user_cannot_get_single_category(
+    sync_client: TestClient,
+):
+    response = sync_client.get("categories/1")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Missing Authorization Header"
+
+def test_anonymous_user_cannot_update_category(
+    sync_client: TestClient,
+    update_category: dict[str, str]
+):
+    response = sync_client.patch("categories/1", json=update_category)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Missing Authorization Header"
+
+
+def test_anonymous_user_cannot_delete_category(
+    sync_client: TestClient
+):
+    response = sync_client.delete("categories/1")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Missing Authorization Header"
