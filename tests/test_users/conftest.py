@@ -5,11 +5,11 @@ import pytest
 from sqlalchemy.orm import Session
 from fastapi_jwt_auth import AuthJWT
 
-from src.apps.user.services import register_user, get_single_user
+from src.apps.user.services import register_user, get_single_user, delete_all_users
 from src.apps.user.schemas import UserRegisterSchema, UserUpdateSchema, UserOutputSchema
 from src.apps.user.models import User
 
-list_of_user_register_schemas = [
+LIST_OF_USER_REGISTER_SCHEMAS = [
     UserRegisterSchema(
         first_name="jan",
         last_name="kowalski",
@@ -37,7 +37,7 @@ list_of_user_register_schemas = [
         password="jdjdjdjd",
         password_repeat="jdjdjdjd")]
 
-user_register_data = {
+USER_REGISTER_DATA = {
         "first_name": "janusz",
         "last_name": "pawlacz",
         "email": "janpaw@mail.com",
@@ -47,36 +47,38 @@ user_register_data = {
         "password_repeat": "janusz1488"
         }
 
-user_update_data = {
-        "first_name": list_of_user_register_schemas[0].first_name,
-        "last_name": list_of_user_register_schemas[0].last_name,
-        "email": "kowal@mailedit.com",
-        "birth_date": "1983-10-12",
-        "username": list_of_user_register_schemas[0].username
-        }
+EXISTING_USER_DATA = LIST_OF_USER_REGISTER_SCHEMAS[0]
+
+USER_UPDATE_DATA = {"email": "kowal@mailedit.com"}
+
+@pytest.fixture
+def register_existing_user_data() -> UserRegisterSchema:
+    return EXISTING_USER_DATA
+
     
-@pytest.fixture(scope="package", autouse=True)
+@pytest.fixture
 def db_users(sync_session: Session):
-    return [register_user(sync_session, user) for user in list_of_user_register_schemas]
+    delete_all_users(sync_session)
+    return [register_user(sync_session, user) for user in LIST_OF_USER_REGISTER_SCHEMAS]
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def register_data() -> dict[str, str]:
-    return user_register_data
+    return USER_REGISTER_DATA
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def login_data() -> dict[str, str]:
     return {
-        "username": user_register_data['username'],
-        "password": user_register_data['password']
+        "username": LIST_OF_USER_REGISTER_SCHEMAS[0].username,
+        "password": LIST_OF_USER_REGISTER_SCHEMAS[0].password
     }
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def get_token_header(sync_session: Session, db_users: list[UserOutputSchema]) -> dict[str, str]:
     user_schema = get_single_user(sync_session, db_users[0].id)
     access_token = AuthJWT().create_access_token(subject=user_schema.json())
     return {"Authorization": f"Bearer {access_token}"}
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def update_data() -> dict[str, str]:
-    return user_update_data
+    return USER_UPDATE_DATA

@@ -21,6 +21,7 @@ def test_login_user(
 ):
     response = sync_client.post("users/login", json=login_data)
     assert response.status_code == status.HTTP_200_OK
+    assert "access_token" in response.json()
 
 
 def test_authenticated_user_can_get_users(
@@ -28,7 +29,6 @@ def test_authenticated_user_can_get_users(
     get_token_header: dict[str, str],
     db_users: list[UserOutputSchema]
 ):
-    sync_client.delete(f"users/{len(db_users)+1}", headers=get_token_header) # deletes the previously created user
     response = sync_client.get("users/", headers=get_token_header)
     
     assert len(response.json()['results']) == len(db_users)
@@ -61,8 +61,9 @@ def test_authenticated_user_can_update_user(
     get_token_header: dict[str, str],
     db_users: list[UserOutputSchema]
 ):
-    response = sync_client.put(f"users/{db_users[0].id}", json=update_data, headers=get_token_header)
-    assert response.json()["username"] == update_data["username"]
+    response = sync_client.patch(f"users/{db_users[0].id}", json=update_data, headers=get_token_header)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["email"] == update_data["email"]
 
 
 def test_authenticated_user_can_delete_user(
@@ -93,7 +94,7 @@ def test_anonymous_user_cannot_get_single_user(
 def test_anonymous_user_cannot_get_their_account(
     sync_client: TestClient,
 ):
-    response = sync_client.get("users/1")
+    response = sync_client.get("users/me")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 
@@ -102,7 +103,7 @@ def test_anonymous_user_cannot_update_user(
     sync_client: TestClient,
     update_data: dict[str, str]
 ):
-    response = sync_client.put("users/1", json=update_data)
+    response = sync_client.patch("users/1", json=update_data)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 
