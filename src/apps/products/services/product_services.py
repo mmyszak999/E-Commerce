@@ -15,6 +15,7 @@ from src.core.exceptions import (
     IsOccupied,
     ServiceException
 )
+from src.core.utils import if_exists
 from src.core.pagination.services import paginate
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.models import PageParams

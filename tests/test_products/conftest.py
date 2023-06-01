@@ -1,4 +1,5 @@
 import pytest
+import copy
 from sqlalchemy.orm import Session
 
 from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
@@ -66,6 +67,7 @@ def create_existing_category_data() -> CategoryInputSchema:
 def db_products(sync_session: Session, db_categories):
     delete_all_products(sync_session)
     for product in LIST_OF_PRODUCT_INPUT_SCHEMAS:
+        product.categories_ids = []
         category_id = db_categories[LIST_OF_PRODUCT_INPUT_SCHEMAS.index(product)].id
         product.categories_ids.append(category_id)
     
@@ -77,7 +79,7 @@ def post_product(db_categories) -> dict[str, str]:
     return CREATE_PRODUCT_DATA
 
 @pytest.fixture
-def update_product() -> dict[str, str]:
+def update_product(db_categories) -> dict[str, str]:
     UPDATE_CATEGORY_DATA['categories_ids'] = [db_categories[0].id]
     return UPDATE_PRODUCT_DATA
 
