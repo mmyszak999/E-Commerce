@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Numeric, ForeignKey, Table
 from sqlalchemy.orm import relationship
 
 from src.database.db_connection import Base
+from src.apps.orders.models import order_product_association_table
 
 
 category_product_association_table = Table(
@@ -25,3 +26,4 @@ class Product(Base):
     name = Column(String(length=75), nullable=False, unique=True)
     price = Column(Numeric, nullable=False)
     categories = relationship("Category", secondary=category_product_association_table, back_populates="products")
+    orders = relationship("Order", secondary=order_product_association_table, back_populates='products')

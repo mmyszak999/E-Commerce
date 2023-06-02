@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from src.database.db_connection import Base
 
+
 order_product_association_table = Table(
     "order_product_association_table",
     Base.metadata,
@@ -12,7 +13,7 @@ order_product_association_table = Table(
 
 
 class Order(Base):
-    __tablename__ = "order"
+    __tablename__ = 'order'
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
-    products = relationship("Product", secondary=order_product_association_table, back_populates="orders")
-    user_id = Column(Integer, ForeignKey("user_id"))
+    products = relationship("Product", secondary=order_product_association_table, back_populates='orders')
+    user_id = Column(Integer, ForeignKey("user.id"))

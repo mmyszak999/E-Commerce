@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, Integer, String, Date
+from sqlalchemy.orm import relationship
 
 from src.database.db_connection import Base
 
@@ -14,6 +15,6 @@ class User(Base):
     password = Column(String, nullable=False)
     birth_date = Column(Date, nullable=False)
     is_active = Column(Boolean, nullable=False, server_default="true")
-    #consider adding 'orders' field with orders of a user
+    orders = relationship("Order", back_populates='users')
 
 
