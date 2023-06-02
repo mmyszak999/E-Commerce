@@ -14,5 +14,6 @@ class User(Base):
     password = Column(String, nullable=False)
     birth_date = Column(Date, nullable=False)
     is_active = Column(Boolean, nullable=False, server_default="true")
+    #consider adding 'orders' field with orders of a user
 
 

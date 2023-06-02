@@ -7,7 +7,7 @@ from src.apps.products.schemas import (
     ProductInputSchema,
     ProductOutputSchema
 )
-from src.apps.products.models import Category, Product, association_table
+from src.apps.products.models import Category, Product, category_product_association_table
 from src.apps.products.services.category_services import get_single_category
 from src.core.exceptions import (
     DoesNotExist,
@@ -64,11 +64,11 @@ def update_single_product(session: Session, product_input: ProductInputSchema, p
     current_categories = set(category.id for category in product_object.categories)
     
     if to_delete := current_categories - incoming_categories:
-        session.execute(delete(association_table).where(Category.id.in_(to_delete)))
+        session.execute(delete(category_product_association_table).where(Category.id.in_(to_delete)))
     
     if to_insert := incoming_categories - current_categories:
         rows = [{"product_id": product_id, "category_id": category_id} for category_id in to_insert]
-        session.execute(insert(association_table).values(rows))
+        session.execute(insert(category_product_association_table).values(rows))
 
     product_data.pop('categories_ids')
     statement = update(Product).filter(Product.id==product_id).values(**product_data)
