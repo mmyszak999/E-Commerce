@@ -40,9 +40,9 @@ def post_category(category: CategoryInputSchema, db: Session = Depends(get_db)) 
     return db_category
 
 @category_router.get(
-    "/", response_model=PagedResponseSchema[T], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
+    "/", response_model=PagedResponseSchema[CategoryOutputSchema], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
 )
-def get_categories(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema[T]:
+def get_categories(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema[CategoryOutputSchema]:
     db_categories = get_all_categories(db, page_params)
     return db_categories
 
@@ -73,9 +73,9 @@ def post_product(product: ProductInputSchema, db: Session = Depends(get_db)) -> 
     return db_product
 
 @product_router.get(
-    "/", response_model=PagedResponseSchema[T], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
+    "/", response_model=PagedResponseSchema[ProductOutputSchema], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK
 )
-def get_products(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema[T]:
+def get_products(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema[ProductOutputSchema]:
     db_products = get_all_products(db, page_params)
     return db_products
 

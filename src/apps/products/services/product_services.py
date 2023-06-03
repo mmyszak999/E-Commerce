@@ -70,7 +70,7 @@ def update_single_product(session: Session, product_input: ProductInputSchema, p
         session.execute(insert(association_table).values(rows))
 
     product_data.pop('categories_ids')
-    statement = update(Product).filter(Product.id==product_id).values(**product_data)
+    statement = update(Product).filter(Product.id==product_id).values(**product_data(exclude_unset=True))
     
     session.execute(statement)
     session.commit()

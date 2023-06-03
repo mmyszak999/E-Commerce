@@ -35,7 +35,7 @@ def get_single_category(session: Session, category_id: int) -> CategoryOutputSch
 
     return CategoryOutputSchema.from_orm(category_object)
 
-def get_all_categories(session: Session, page_params: PageParams) -> PagedResponseSchema:
+def get_all_categories(session: Session, page_params: PageParams) -> PagedResponseSchema[CategoryOutputSchema]:
     query = select(Category)
 
     return paginate(query=query, response_schema=CategoryOutputSchema, table=Category, page_params=page_params, session=session)
