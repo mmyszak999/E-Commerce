@@ -31,7 +31,7 @@ def create_product(session: Session, product: ProductInputSchema) -> ProductOutp
     categories_ids = product_data.pop('categories_ids')
     categories = session.scalars(select(Category).where(Category.id.in_(categories_ids))).all()
     if not len(set(categories_ids)) == len(categories):
-        raise ServiceException("Duplicated categories!")
+        raise ServiceException("Wrong categories!")
     
     product_data['categories'] = categories
     new_product = Product(**product_data)
@@ -46,7 +46,7 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
 
     return ProductOutputSchema.from_orm(product_object)
 
-def get_all_products(session: Session, page_params: PageParams) -> PagedResponseSchema[ProductOutputSchema]:
+def get_all_products(session: Session, page_params: PageParams) -> PagedResponseSchema:
     query = select(Product)
 
     return paginate(query=query, response_schema=ProductOutputSchema, table=Product, page_params=page_params, session=session)
@@ -71,7 +71,7 @@ def update_single_product(session: Session, product_input: ProductInputSchema, p
         session.execute(insert(category_product_association_table).values(rows))
 
     product_data.pop('categories_ids')
-    statement = update(Product).filter(Product.id==product_id).values(**product_data)
+    statement = update(Product).filter(Product.id==product_id).values(**product_data(exclude_unset=True))
     
     session.execute(statement)
     session.commit()
