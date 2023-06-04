@@ -75,7 +75,7 @@ def delete_all_orders(session: Session):
     result = session.execute(statement)
     session.commit()
 
-    return result    
+    return result
 
 def delete_single_order(session: Session, order_id: int):
     if not (order_object := if_exists(Order, "id", order_id, session)):
