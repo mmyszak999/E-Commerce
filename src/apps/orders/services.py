@@ -51,17 +51,19 @@ def update_single_order(session: Session, order_input: OrderInputSchema, order_i
         raise DoesNotExist(Order.__name__, order_id)
     
     order_data = order_input.dict(exclude_none=True, exclude_unset=True)
-    incoming_products = set(order_data['product_ids'])
-    current_products = set(product.id for product in order_object.products)
-    
-    if to_delete := current_products - incoming_products:
-        session.execute(delete(order_product_association_table).where(Product.id.in_(to_delete)))
-    
-    if to_insert := incoming_products - current_products:
-        rows = [{"order_id": order_id, "product_id": product_id} for product_id in to_insert]
-        session.execute(insert(order_product_association_table).values(rows))
+    if order_data.get('product_ids'):
+        incoming_products = set(order_data['product_ids'])
+        current_products = set(product.id for product in order_object.products)
+        
+        if to_delete := current_products - incoming_products:
+            session.execute(delete(order_product_association_table).where(Product.id.in_(to_delete)))
+        
+        if to_insert := incoming_products - current_products:
+            rows = [{"order_id": order_id, "product_id": product_id} for product_id in to_insert]
+            session.execute(insert(order_product_association_table).values(rows))
 
-    order_data.pop('product_ids')
+        order_data.pop('product_ids')
+        
     if order_data:
         statement = update(Order).filter(Order.id==order_id).values(**order_data)
     
