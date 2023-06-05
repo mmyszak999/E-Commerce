@@ -10,8 +10,8 @@ from src.apps.orders.models import Order
 
 
 class OrderBaseSchema(BaseModel):
-    product_ids: list[int] = []
-    user_id: int
+    product_ids: Optional[list[int]] = []
+    user_id: Optional[int]
     
     
 class OrderInputSchema(OrderBaseSchema):
@@ -22,4 +22,7 @@ class OrderOutputSchema(BaseModel):
     id: int
     products: list[ProductOutputSchema]
     user: UserOutputSchema
+    
+    class Config:
+        orm_mode = True
     

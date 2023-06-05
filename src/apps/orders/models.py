@@ -16,4 +16,5 @@ class Order(Base):
     __tablename__ = 'order'
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     products = relationship("Product", secondary=order_product_association_table, back_populates='orders')
-    user = relationship("User", back_populates='orders')
+    user_id = Column(Integer, ForeignKey("user.id", ondelete='cascade', onupdate='cascade'))
+    user = relationship("User", back_populates="orders")

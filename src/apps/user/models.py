@@ -15,6 +15,6 @@ class User(Base):
     password = Column(String, nullable=False)
     birth_date = Column(Date, nullable=False)
     is_active = Column(Boolean, nullable=False, server_default="true")
-    orders = relationship("Order", back_populates='users')
+    orders = relationship("Order", back_populates="user")
 
 

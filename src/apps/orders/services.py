@@ -26,14 +26,14 @@ def create_order(session: Session, order: OrderInputSchema) -> OrderOutputSchema
     user_id = order_data.pop('user_id')
     user = session.scalar(select(User).filter(User.id==user_id).limit(1))
     product_ids = order_data.pop('product_ids')
-    products = session.scalars(select(Product).where(Product.id.in_(categories_ids))).all()
+    products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
 
     order_data['user'], order_data['products'] = user, products
-    new_order = Order(**orderdata)
+    new_order = Order(**order_data)
     session.add(new_order)
     session.commit()
 
-    return OrderOutputSchema.from_orm(new_product)
+    return OrderOutputSchema.from_orm(new_order)
 
 def get_single_order(session: Session, order_id: int) -> OrderOutputSchema:
     if not (order_object := if_exists(Order, "id", order_id, session)):
@@ -50,8 +50,8 @@ def update_single_order(session: Session, order_input: OrderInputSchema, order_i
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, order_id)
     
-    order_data = order_input.dict()
-    incoming_products = set(order_data['products_ids'])
+    order_data = order_input.dict(exclude_none=True, exclude_unset=True)
+    incoming_products = set(order_data['product_ids'])
     current_products = set(product.id for product in order_object.products)
     
     if to_delete := current_products - incoming_products:
@@ -61,12 +61,13 @@ def update_single_order(session: Session, order_input: OrderInputSchema, order_i
         rows = [{"order_id": order_id, "product_id": product_id} for product_id in to_insert]
         session.execute(insert(order_product_association_table).values(rows))
 
-    order_data.pop('products_ids')
-    statement = update(Order).filter(Order.id==order_id).values(**order_data(exclude_unset=True))
+    order_data.pop('product_ids')
+    if order_data:
+        statement = update(Order).filter(Order.id==order_id).values(**order_data)
     
-    session.execute(statement)
-    session.commit()
-    session.refresh(order_object)
+        session.execute(statement)
+        session.commit()
+        session.refresh(order_object)
     
     return get_single_order(session, order_id=order_id)
 

@@ -24,7 +24,7 @@ order_router = APIRouter(prefix="/orders", tags=["order"])
 
 
 @order_router.post(
-    "/", dependencies=[Depends(authenticate_user)], response_model=OrderInputSchema, status_code=status.HTTP_201_CREATED
+    "/", dependencies=[Depends(authenticate_user)], response_model=OrderOutputSchema, status_code=status.HTTP_201_CREATED
 )
 def post_order(order: OrderInputSchema, db: Session = Depends(get_db)) -> OrderOutputSchema:
     db_order = create_order(db, order)
