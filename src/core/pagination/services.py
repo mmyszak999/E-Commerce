@@ -10,7 +10,7 @@ def paginate(
     ) -> PagedResponseSchema[T]:
     instances = session.scalars(query.offset((page_params.page - 1) * page_params.size).limit(page_params.size + 1)).all()
     next_page_check = len(instances) > page_params.size
-    
+    print(instances, [response_schema.from_orm(item) for item in instances])
     return PagedResponseSchema(
         page=page_params.page,
         size=page_params.size,

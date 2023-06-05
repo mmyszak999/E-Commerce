@@ -7,7 +7,7 @@ from src.apps.user.schemas import (
     UserUpdateSchema,
     UserOutputSchema,
     UserRegisterSchema,
-    UserLoginInputSchema
+    UserLoginInputSchema,
 )
 from src.apps.user.services import (
     register_user,
@@ -17,6 +17,8 @@ from src.apps.user.services import (
     update_single_user,
     authenticate
 )
+from src.apps.orders.services import get_all_user_orders
+from src.apps.orders.schemas import OrderOutputSchema
 
 from src.apps.user.models import User
 from src.dependencies.get_db import get_db
@@ -45,8 +47,8 @@ def login_user(user_login_schema: UserLoginInputSchema, auth_jwt: AuthJWT = Depe
 def get_logged_user(request_user: User = Depends(authenticate_user)) -> UserOutputSchema:
     return UserOutputSchema.from_orm(request_user)
 
-@router.get("/", response_model=PagedResponseSchema[T], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK)
-def get_users(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema[T]:
+@router.get("/", response_model=PagedResponseSchema[UserOutputSchema], dependencies=[Depends(authenticate_user)], status_code=status.HTTP_200_OK)
+def get_users(db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema[UserOutputSchema]:
     db_users = get_all_users(db, page_params)
     return db_users
 
@@ -54,6 +56,11 @@ def get_users(db: Session = Depends(get_db), page_params: PageParams = Depends()
 def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
     db_user = get_single_user(db, user_id)
     return db_user
+
+@router.get("/{user_id}/orders", dependencies=[Depends(authenticate_user)], response_model=PagedResponseSchema[OrderOutputSchema], status_code=status.HTTP_200_OK)
+def get_user_orders(user_id: int, db: Session = Depends(get_db), page_params: PageParams = Depends()) -> PagedResponseSchema[OrderOutputSchema]:
+    db_orders = get_all_user_orders(db, user_id, page_params)
+    return db_orders
 
 @router.patch("/{user_id}", dependencies=[Depends(authenticate_user)], response_model=UserOutputSchema, status_code=status.HTTP_200_OK)
 def update_user(user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db)) -> UserOutputSchema:

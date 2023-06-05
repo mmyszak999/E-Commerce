@@ -5,7 +5,7 @@ from src.apps.user.models import User
 from src.apps.products.models import Product
 from src.apps.orders.schemas import (
     OrderInputSchema,
-    OrderOutputSchema
+    OrderOutputSchema,
 )
 from src.apps.orders.models import Order, order_product_association_table
 from src.core.exceptions import (
@@ -44,6 +44,11 @@ def get_single_order(session: Session, order_id: int) -> OrderOutputSchema:
 def get_all_orders(session: Session, page_params: PageParams) -> PagedResponseSchema[OrderOutputSchema]:
     query = select(Order)
 
+    return paginate(query=query, response_schema=OrderOutputSchema, table=Order, page_params=page_params, session=session)
+
+def get_all_user_orders(session: Session, user_id: int, page_params: PageParams) -> PagedResponseSchema[OrderOutputSchema]:
+    query = select(Order).filter(Order.user_id==user_id)
+    
     return paginate(query=query, response_schema=OrderOutputSchema, table=Order, page_params=page_params, session=session)
 
 def update_single_order(session: Session, order_input: OrderInputSchema, order_id: int) -> OrderOutputSchema:
