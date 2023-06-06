@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from src.apps.products.services.product_services import (
    create_product, get_all_products, get_single_product,
-   update_single_product, delete_single_product, delete_all_products
+   update_single_product, delete_single_product
 )
 from src.apps.products.schemas import ProductOutputSchema, ProductInputSchema
 from src.apps.products.models import Product
@@ -42,7 +42,7 @@ def test_raise_exception_while_getting_nonexistent_product(
     db_products: list[ProductOutputSchema]
 ):
     with pytest.raises(DoesNotExist) as exc:
-        get_single_product(sync_session, len(db_products)+2)
+        get_single_product(sync_session, db_products[-1].id+2)
 
 
 def test_if_multiple_products_were_returned(
@@ -59,7 +59,7 @@ def test_raise_exception_while_updating_nonexistent_product(
     db_products: list[ProductOutputSchema]
 ):
     with pytest.raises(DoesNotExist) as exc:
-        update_single_product(sync_session, ProductInputSchema(**update_product), len(db_products)+2)
+        update_single_product(sync_session, ProductInputSchema(**update_product), db_products[-1].id+2)
 
 def test_if_product_can_have_occupied_name(
     sync_session: Session,
@@ -76,4 +76,4 @@ def test_raise_exception_while_deleting_nonexistent_product(
     db_products: list[ProductOutputSchema]
 ):
     with pytest.raises(DoesNotExist) as exc:
-        delete_single_product(sync_session, len(db_products)+2)
+        delete_single_product(sync_session, db_products[-1].id+2)
