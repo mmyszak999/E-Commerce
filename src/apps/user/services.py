@@ -64,18 +64,25 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
     if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, user_id)
     
-    username_check = session.scalar(select(User).filter(User.username == user.username).limit(1))
-    email_check = session.scalar(select(User).filter(User.email == user.email).limit(1))
+    user_dict = user.dict(exclude_none=True, exclude_unset=True, exclude_defaults=True)
     
-    if username_check: 
-        raise IsOccupied(User.__name__, "username", user.username)
-    if email_check:
-        raise IsOccupied(User.__name__, "email", user.email)
+    if user_dict.get('username'):
+        username_check = session.scalar(select(User).filter(User.username == user.username).limit(1))
+        
+        if username_check: 
+            raise IsOccupied(User.__name__, "username", user.username)
+        
+    if user_dict.get('email'):
+        email_check = session.scalar(select(User).filter(User.email == user.email).limit(1))
 
-    statement = update(User).filter(User.id == user_id).values(**user.dict(exclude_unset=True))
+        if email_check:
+            raise IsOccupied(User.__name__, "email", user.email)
 
-    session.execute(statement)
-    session.commit()
+    if user_dict:
+        statement = update(User).filter(User.id == user_id).values(**user_dict)
+
+        session.execute(statement)
+        session.commit()
     
     return get_single_user(session, user_id=user_id)
 

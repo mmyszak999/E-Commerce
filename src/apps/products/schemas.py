@@ -23,7 +23,7 @@ class CategoryOutputSchema(CategoryBaseSchema):
 
 
 class ProductBaseSchema(BaseModel):
-    name: str = Field(max_length=75)
+    name: Optional[str] = Field(max_length=75)
     price: Optional[Decimal]
 
 

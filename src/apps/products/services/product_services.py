@@ -55,27 +55,32 @@ def update_single_product(session: Session, product_input: ProductInputSchema, p
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, product_id)
     
-    product_name_check = session.scalar(select(Product).filter(Product.name == product_input.name).limit(1))
-    if product_name_check and (product_name_check.id != product_id):
-        raise IsOccupied(Product.__name__, "name", product_input.name)
+    product_data = product_input.dict(exclude_none=True, exclude_unset=True, exclude_defaults=True)
     
-    product_data = product_input.dict()
-    incoming_categories = set(product_data['categories_ids'])
-    current_categories = set(category.id for category in product_object.categories)
+    if product_data.get('name'):
+        product_name_check = session.scalar(select(Product).filter(Product.name == product_input.name).limit(1))
+        if product_name_check:
+            raise IsOccupied(Product.__name__, "name", product_input.name)
     
-    if to_delete := current_categories - incoming_categories:
-        session.execute(delete(category_product_association_table).where(Category.id.in_(to_delete)))
-    
-    if to_insert := incoming_categories - current_categories:
-        rows = [{"product_id": product_id, "category_id": category_id} for category_id in to_insert]
-        session.execute(insert(category_product_association_table).values(rows))
+    if product_data.get('categories_ids'):
+        incoming_categories = set(product_data['categories_ids'])
+        current_categories = set(category.id for category in product_object.categories)
+        
+        if to_delete := current_categories - incoming_categories:
+            session.execute(delete(category_product_association_table).where(Category.id.in_(to_delete)))
+        
+        if to_insert := incoming_categories - current_categories:
+            rows = [{"product_id": product_id, "category_id": category_id} for category_id in to_insert]
+            session.execute(insert(category_product_association_table).values(rows))
 
-    product_data.pop('categories_ids')
-    statement = update(Product).filter(Product.id==product_id).values(**product_data(exclude_unset=True))
+        product_data.pop('categories_ids')
     
-    session.execute(statement)
-    session.commit()
-    session.refresh(product_object)
+    if product_data:
+        statement = update(Product).filter(Product.id==product_id).values(**product_data)
+        
+        session.execute(statement)
+        session.commit()
+        session.refresh(product_object)
     
     return get_single_product(session, product_id=product_id)
 

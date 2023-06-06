@@ -46,14 +46,17 @@ def update_single_category(session: Session, category: CategoryInputSchema, cate
     if not (category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
     
-    category_name_check = session.scalar(select(Category).filter(Category.name == category.name).limit(1))
-    if category_name_check:
-        raise IsOccupied(Category.__name__, "name", category.name)
+    category_dict = category.dict(exclude_none=True, exclude_unset=True)
+    
+    if category_dict.get('name'):
+        category_name_check = session.scalar(select(Category).filter(Category.name == category.name).limit(1))
+        if category_name_check:
+            raise IsOccupied(Category.__name__, "name", category.name)
 
-    statement = update(Category).filter(Category.id == category_id).values(**category.dict(exclude_unset=True))
+        statement = update(Category).filter(Category.id == category_id).values(**category.dict(exclude_unset=True))
 
-    session.execute(statement)
-    session.commit()
+        session.execute(statement)
+        session.commit()
     
     return get_single_category(session, category_id=category_id)
 
