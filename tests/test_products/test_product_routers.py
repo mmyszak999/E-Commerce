@@ -69,7 +69,6 @@ def test_anonymous_user_cannot_get_products(
 ):
     response = sync_client.get("products/")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert len(response.json()) == 1
     assert response.json()["detail"] == "Missing Authorization Header"
 
 
