@@ -1,10 +1,14 @@
 db-user = postgres
+location = tests
 
 build:
 		docker-compose build
 
 up:		
 		docker-compose up	
+
+down:
+		docker-compose down
 
 migrations:
 		docker-compose exec web bash -c "alembic revision --autogenerate"
@@ -14,10 +18,10 @@ stamp-migrations:
 		docker-compose exec web bash -c "alembic stamp base"
 
 test:
-		docker-compose exec app_backend bash -c "pytest ${location}"
+		docker-compose exec web bash -c "pytest $(location)"
 
 backend-bash:
-		docker-compose exec app_backend bash
+		docker-compose exec -it web bash
 
 db-bash: 
 		docker-compose exec db bash

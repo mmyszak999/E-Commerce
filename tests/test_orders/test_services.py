@@ -43,7 +43,6 @@ def test_if_user_retrieve_only_their_orders(
     db_users: list[UserOutputSchema]
 ):
     user_orders = get_all_user_orders(sync_session, db_users[0].id, PageParams(page=1, size=5))
-    print(set(order.id for order in user_orders.results), {order.id for order in db_orders if order.user.id == db_users[0].id})
     
     assert {order.id for order in user_orders.results} == {order.id for order in db_orders if order.user.id == db_users[0].id}
 
