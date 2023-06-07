@@ -5,6 +5,8 @@ from typing import Any
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
+from src.apps.user.schemas import UserOutputSchema
+from src.apps.products.schemas import ProductOutputSchema
 from src.apps.orders.services import (
    create_order, get_single_order, get_all_orders, get_all_user_orders,
    update_single_order, delete_single_order
@@ -35,6 +37,15 @@ def test_raise_exception_while_getting_nonexistent_order(
     with pytest.raises(DoesNotExist) as exc:
         get_single_order(sync_session, db_orders[-1].id+2)
 
+def test_if_user_retrieve_only_their_orders(
+    sync_session: Session,
+    db_orders: list[OrderOutputSchema],
+    db_users: list[UserOutputSchema]
+):
+    user_orders = get_all_user_orders(sync_session, db_users[0].id, PageParams(page=1, size=5))
+    
+    assert set(order.id for order in user_orders.results) == {db_users[0].id}
+
 def test_if_multiple_orders_were_returned(
     sync_session: Session,
     db_orders: list[OrderOutputSchema]
@@ -42,7 +53,27 @@ def test_if_multiple_orders_were_returned(
     orders = get_all_orders(sync_session, PageParams(page=1, size=5))
     assert len(orders.results) == len(db_orders)
 
+def test_update_order_with_one_field_to_update_in_a_schema(
+    sync_session: Session,
+    db_orders: list[OrderOutputSchema],
+    db_products: list[ProductOutputSchema]
+):
+    update_data = {'product_ids': [product.id for product in db_products]}
+    update_order = update_single_order(sync_session, OrderInputSchema(**update_data), db_orders[0].id)
+    
+    retrieved_order = get_single_order(sync_session, db_orders[0].id)
+    assert [product.id for product in retrieved_order.products] == [product.id for product in db_products]
 
+def test_update_order_with_no_update_data(
+    sync_session: Session,
+    db_orders: list[OrderOutputSchema]
+):
+    update_data = {}
+    updated_order = update_single_order(sync_session, OrderInputSchema(**update_data), db_orders[0].id)
+    
+    retrieved_order = get_single_order(sync_session, db_orders[0].id)
+    assert updated_order == retrieved_order
+    
 def test_raise_exception_while_updating_nonexistent_order(
     sync_session: Session,
     update_order: dict[str, Any],

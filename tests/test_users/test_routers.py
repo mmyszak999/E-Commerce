@@ -3,7 +3,10 @@ from typing import Any
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from tests.test_users.conftest import UserOutputSchema
+from src.apps.user.schemas import UserOutputSchema
+from src.apps.orders.schemas import OrderOutputSchema
+from tests.test_orders.conftest import db_orders
+from tests.test_products.conftest import db_products, db_categories
 
 
 def test_create_user(
@@ -50,10 +53,19 @@ def test_authenticated_user_can_get_their_account(
     get_token_header: dict[str, str],
     db_users: list[UserOutputSchema]
 ):
-    response = sync_client.get(f"users/me", headers=get_token_header)
-    assert response.json()["id"] == db_users[0].id
+    response = sync_client.get("users/me", headers=get_token_header)
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()["id"] == db_users[0].id
 
+def test_authenticated_user_can_get_their_orders(
+    sync_client: TestClient,
+    get_token_header: dict[str, str],
+    db_users: list[UserOutputSchema],
+    db_orders: list[OrderOutputSchema]
+):
+    response = sync_client.get(f"users/{db_users[0].id}/orders", headers=get_token_header)
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()['results']) == 1
 
 def test_authenticated_user_can_update_user(
     sync_client: TestClient,
