@@ -9,11 +9,11 @@ class UserLoginInputSchema(BaseModel):
 
 
 class UserBaseSchema(BaseModel):
-    first_name : Optional[str] = Field(max_length=50)
-    last_name : Optional[str] = Field(max_length=75)
-    email : Optional[str] = Field(max_length=50)
-    birth_date : Optional[datetime.date]
-    username : Optional[str] = Field(max_length=50)
+    first_name: str = Field(max_length=50)
+    last_name: str = Field(max_length=75)
+    email: str = Field(max_length=50)
+    birth_date: datetime.date
+    username: str = Field(max_length=50)
     
     class Config:
         orm_mode = True
