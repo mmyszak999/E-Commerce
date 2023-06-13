@@ -23,7 +23,7 @@ def sync_engine():
     Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def sync_session(sync_engine: Engine):
     connection = sync_engine.connect()
     transaction = connection.begin()

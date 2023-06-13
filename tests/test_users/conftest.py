@@ -15,7 +15,6 @@ DB_USER_SCHEMA = UserFactory.build(password="vgo39845n", password_repeat="vgo398
 
 @pytest.fixture
 def db_user(sync_session: Session):
-    delete_all_users(sync_session)
     return register_user(sync_session, DB_USER_SCHEMA)
 
 @pytest.fixture

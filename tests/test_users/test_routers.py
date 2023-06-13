@@ -59,11 +59,11 @@ def test_authenticated_user_can_update_user(
     access_token: dict[str, str],
     db_user: UserOutputSchema
 ):
-    update_data = {"first_name": "alex"}
+    update_data = {"username": "alex123"}
     response = sync_client.patch(f"users/{db_user.id}", json=update_data, headers=access_token)
     print(response.json())
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["first_name"] == update_data["first_name"]
+    assert response.json()["username"] == update_data["username"]
 
 
 def test_authenticated_user_can_delete_user(
