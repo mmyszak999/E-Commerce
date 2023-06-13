@@ -36,8 +36,11 @@ class UserRegisterSchema(UserBaseSchema):
         return rep_password
 
 
-class UserUpdateSchema(UserBaseSchema):
-    pass
+class UserUpdateSchema(BaseModel):
+    first_name: Optional[str] = Field(max_length=50)
+    last_name: Optional[str] = Field(max_length=75)
+    birth_date: Optional[datetime.date]
+    username: Optional[str] = Field(max_length=50)
 
     class Config:
         orm_mode = True

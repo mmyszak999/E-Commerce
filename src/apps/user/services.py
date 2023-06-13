@@ -65,12 +65,9 @@ def update_single_user(session: Session, user: UserUpdateSchema, user_id: int) -
         raise DoesNotExist(User.__name__, user_id)
     
     username_check = session.scalar(select(User).filter(User.username == user.username).limit(1))
-    email_check = session.scalar(select(User).filter(User.email == user.email).limit(1))
     
     if username_check: 
         raise IsOccupied(User.__name__, "username", user.username)
-    if email_check:
-        raise IsOccupied(User.__name__, "email", user.email)
 
     statement = update(User).filter(User.id == user_id).values(**user.dict(exclude_unset=True))
 
