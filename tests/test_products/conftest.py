@@ -25,5 +25,5 @@ def db_categories(sync_session: Session):
 def db_products(sync_session: Session, db_categories):
     for product in DB_PRODUCT_SCHEMAS:
         category_id = db_categories[DB_PRODUCT_SCHEMAS.index(product)].id
-        product.categories_ids.append(category_id)
+        product.categories_ids = [category_id]
     return [create_product(sync_session, product) for product in DB_PRODUCT_SCHEMAS]

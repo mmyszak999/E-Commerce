@@ -18,16 +18,16 @@ from src.core.exceptions import (
     AuthException
 )
 from src.core.pagination.models import PageParams
+from src.core.factories import ProductFactory
+from tests.test_products.conftest import DB_PRODUCT_SCHEMAS
 
 
 def test_create_product_that_already_exists(
     sync_session: Session,
-    create_existing_product_data: ProductInputSchema,
     db_products: list[ProductOutputSchema]
 ):
     with pytest.raises(AlreadyExists) as exc:
-        create_product(sync_session, create_existing_product_data)
-
+        create_product(sync_session, DB_PRODUCT_SCHEMAS[0])
 
 def test_if_only_one_product_was_returned(
     sync_session: Session,
@@ -50,26 +50,23 @@ def test_if_multiple_products_were_returned(
     db_products: list[ProductOutputSchema]
 ):
     products = get_all_products(sync_session, PageParams(page=1, size=5))
-    assert len(products.results) == len(db_products)
-
+    assert products.total == len(db_products)
 
 def test_raise_exception_while_updating_nonexistent_product(
     sync_session: Session,
-    update_product: dict[str, Any],
     db_products: list[ProductOutputSchema]
 ):
+    update_data = ProductFactory.build()
     with pytest.raises(DoesNotExist) as exc:
-        update_single_product(sync_session, ProductInputSchema(**update_product), len(db_products)+2)
+        update_single_product(sync_session, update_data, len(db_products)+2)
 
 def test_if_product_can_have_occupied_name(
     sync_session: Session,
-    update_product: dict[str, Any],
     db_products: list[ProductOutputSchema]
 ):
-    product_data = copy.copy(update_product)
-    product_data['name'] = db_products[1].name
+    product_data = ProductFactory.build(name=DB_PRODUCT_SCHEMAS[0].name, categories_ids=[])
     with pytest.raises(IsOccupied):
-        update_single_product(sync_session, ProductInputSchema(**product_data), db_products[0].id)
+        update_single_product(sync_session, product_data, db_products[1].id)
 
 def test_raise_exception_while_deleting_nonexistent_product(
     sync_session: Session,

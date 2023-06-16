@@ -59,7 +59,7 @@ def update_single_product(session: Session, product_input: ProductInputSchema, p
     if product_name_check and (product_name_check.id != product_id):
         raise IsOccupied(Product.__name__, "name", product_input.name)
     
-    product_data = product_input.dict()
+    product_data = product_input.dict(exclude_unset=True)
     incoming_categories = set(product_data['categories_ids'])
     current_categories = set(category.id for category in product_object.categories)
     
@@ -71,7 +71,7 @@ def update_single_product(session: Session, product_input: ProductInputSchema, p
         session.execute(insert(association_table).values(rows))
 
     product_data.pop('categories_ids')
-    statement = update(Product).filter(Product.id==product_id).values(**product_data(exclude_unset=True))
+    statement = update(Product).filter(Product.id==product_id).values(**product_data)
     
     session.execute(statement)
     session.commit()
