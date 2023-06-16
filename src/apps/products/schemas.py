@@ -8,11 +8,14 @@ from src.apps.products.models import Category, Product
 
 
 class CategoryBaseSchema(BaseModel):
-    name: Optional[str] = Field(max_length=75)
+    name: str = Field(max_length=75)
 
 
 class CategoryInputSchema(CategoryBaseSchema):
     pass
+
+class CategoryUpdateSchema(BaseModel):
+    name: Optional[str] = Field(max_length=75)
 
 
 class CategoryOutputSchema(CategoryBaseSchema):

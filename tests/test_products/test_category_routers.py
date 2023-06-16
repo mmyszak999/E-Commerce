@@ -1,66 +1,68 @@
 from typing import Any
+import json
 
 from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.apps.products.schemas import CategoryOutputSchema
+from src.core.factories import CategoryFactory
 
 
 def test_authenticated_user_can_create_category(
-    post_category: dict[str, Any],
     sync_client: TestClient,
-    get_token_header: dict[str, str],
+    access_token: dict[str, str],
 ):
-    response = sync_client.post("categories/", json=post_category, headers=get_token_header)
+    create_data = CategoryFactory.build()
+    response = sync_client.post("categories/", json=json.loads(create_data.json()), headers=access_token)
     assert response.status_code == status.HTTP_201_CREATED
 
 def test_authenticated_user_can_get_categories(
     sync_client: TestClient,
-    get_token_header: dict[str, str],
+    access_token: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.get("categories/", headers=get_token_header)
+    response = sync_client.get("categories/", headers=access_token)
     
-    assert len(response.json()['results']) == len(db_categories)
+    assert response.json()['total'] == len(db_categories)
     assert response.status_code == status.HTTP_200_OK
 
 def test_authenticated_user_get_single_category(
     sync_client: TestClient,
-    get_token_header: dict[str, str],
+    access_token: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.get(f"categories/{db_categories[1].id}", headers=get_token_header)
+    response = sync_client.get(f"categories/{db_categories[1].id}", headers=access_token)
     assert response.json()["id"] == db_categories[1].id
     assert response.status_code == status.HTTP_200_OK
 
 def test_authenticated_user_can_update_category(
     sync_client: TestClient,
-    update_category: dict[str, str],
-    get_token_header: dict[str, str],
+    access_token: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.patch(f"categories/{db_categories[0].id}", json=update_category, headers=get_token_header)
+    update_data = CategoryFactory.build()
+    response = sync_client.patch(f"categories/{db_categories[0].id}", json=json.loads(update_data.json()), headers=access_token)
     
-    assert response.json()["name"] == update_category["name"]
+    assert response.json()["name"] == update_data.name
 
 def test_authenticated_user_can_delete_category(
     sync_client: TestClient,
-    get_token_header: dict[str, str],
+    access_token: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.delete(f"categories/{db_categories[0].id}", headers=get_token_header)
+    response = sync_client.delete(f"categories/{db_categories[0].id}", headers=access_token)
     assert response.status_code == status.HTTP_204_NO_CONTENT
     
 def test_authenticated_user_can_delete_all_categories(
     sync_client: TestClient,
-    get_token_header: dict[str, str],
+    access_token: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.delete("categories/", headers=get_token_header)
+    response = sync_client.delete("categories/", headers=access_token)
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
-    response = sync_client.get("categories/", headers=get_token_header)
-    assert len(response.json()['results']) == 0
+    response = sync_client.get("categories/", headers=access_token)
+    assert response.json()['total'] == 0
 
 def test_anonymous_user_cannot_get_categories(
     sync_client: TestClient,
@@ -78,10 +80,10 @@ def test_anonymous_user_cannot_get_single_category(
     assert response.json()["detail"] == "Missing Authorization Header"
 
 def test_anonymous_user_cannot_update_category(
-    sync_client: TestClient,
-    update_category: dict[str, str]
+    sync_client: TestClient
 ):
-    response = sync_client.patch("categories/1", json=update_category)
+    update_data = CategoryFactory.build()
+    response = sync_client.patch("categories/1", json=json.loads(update_data.json()))
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 
