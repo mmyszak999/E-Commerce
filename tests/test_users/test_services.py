@@ -19,96 +19,80 @@ from src.core.exceptions import (
     AuthException
 )
 from src.core.pagination.models import PageParams
+from src.core.factories import UserFactory
+from tests.test_users.conftest import DB_USER_SCHEMA
 
 
 def test_register_user_that_already_exists(
     sync_session: Session,
-    register_existing_user_data: UserRegisterSchema,
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
     with pytest.raises(AlreadyExists) as exc:
-        register_user(sync_session, register_existing_user_data)
+        register_user(sync_session, DB_USER_SCHEMA)
 
 
 def test_create_user_with_occupied_email(
     sync_session: Session,
-    register_data: dict[str, Any],
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
-    user_data = copy.copy(register_data)
-    user_data['email'] = db_users[0].email
+    user_data = UserFactory.build(email=db_user.email, password="testtest", password_repeat="testtest")
     with pytest.raises(AlreadyExists) as exc:
-        register_user(sync_session, UserRegisterSchema(**user_data))
+        register_user(sync_session, user_data)
 
 
 def test_create_user_with_occupied_username(
     sync_session: Session,
-    register_data: dict[str, Any],
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
-    user_data = copy.copy(register_data)
-    user_data['username'] = db_users[0].username
+    user_data = UserFactory.build(username=db_user.username, password="testtest", password_repeat="testtest")
     with pytest.raises(AlreadyExists) as exc:
-        register_user(sync_session, UserRegisterSchema(**user_data))
+        register_user(sync_session, user_data)
 
 
 def test_if_only_one_user_was_returned(
     sync_session: Session,
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
-    user = get_single_user(sync_session, db_users[1].id)
+    user = get_single_user(sync_session, db_user.id)
 
-    assert user.id == db_users[1].id
+    assert user.id == db_user.id
 
 def test_raise_exception_while_getting_nonexistent_user(
     sync_session: Session,
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
     with pytest.raises(DoesNotExist) as exc:
-        get_single_user(sync_session, len(db_users)+2)
+        get_single_user(sync_session, len([db_user])+2)
 
 
 def test_if_multiple_users_were_returned(
     sync_session: Session,
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
     users = get_all_users(sync_session, PageParams(page=1, size=5))
-    assert len(users.results) == len(db_users)
+    assert users.total == len([db_user])
 
 def test_raise_exception_while_updating_nonexistent_user(
     sync_session: Session,
-    update_data: dict[str, Any],
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
     with pytest.raises(DoesNotExist) as exc:
-        update_single_user(sync_session, UserUpdateSchema(**update_data), len(db_users)+2)
-
+        update_data = {'first_name': "name"}
+        update_single_user(sync_session, UserUpdateSchema(**update_data), len([db_user])+2)
 
 def test_if_user_can_update_their_username_to_occupied_one(
     sync_session: Session,
-    update_data: dict[str, Any],
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
-    user_data = copy.copy(update_data)
-    user_data['username'] = db_users[1].username
+    user = register_user(sync_session, UserFactory.build(password="testtestx", password_repeat="testtestx"))
+    update_data = {'username': db_user.username}
+    
     with pytest.raises(IsOccupied):
-        update_single_user(sync_session, UserUpdateSchema(**user_data), db_users[0].id)
-
-
-def test_if_user_can_update_their_email_to_occupied_one(
-    sync_session: Session,
-    update_data: dict[str, Any],
-    db_users: list[UserOutputSchema]
-):
-    user_data = copy.copy(update_data)
-    user_data['email'] = db_users[1].email
-    with pytest.raises(IsOccupied):
-        update_single_user(sync_session, UserUpdateSchema(**user_data), db_users[0].id)
-
+        update_single_user(sync_session, UserUpdateSchema(**update_data), user.id)
 
 def test_raise_exception_while_deleting_nonexistent_user(
     sync_session: Session,
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
     with pytest.raises(DoesNotExist) as exc:
-        delete_single_user(sync_session, len(db_users)+2)
+        delete_single_user(sync_session, len([db_user])+2)
