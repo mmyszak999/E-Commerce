@@ -20,8 +20,10 @@ from src.core.exceptions import (
     AuthException
 )
 from src.core.pagination.models import PageParams
+from src.core.factories import OrderFactory
+from tests.test_orders.conftest import DB_ORDER_SCHEMAS
 
-
+        
 def test_if_only_one_order_was_returned(
     sync_session: Session,
     db_orders: list[OrderOutputSchema]
@@ -40,26 +42,26 @@ def test_raise_exception_while_getting_nonexistent_order(
 def test_if_user_retrieve_only_their_orders(
     sync_session: Session,
     db_orders: list[OrderOutputSchema],
-    db_users: list[UserOutputSchema]
+    db_user: UserOutputSchema
 ):
-    user_orders = get_all_user_orders(sync_session, db_users[0].id, PageParams(page=1, size=5))
+    user_orders = get_all_user_orders(sync_session, db_user.id, PageParams(page=1, size=5))
     
-    assert {order.id for order in user_orders.results} == {order.id for order in db_orders if order.user.id == db_users[0].id}
+    assert {order.id for order in user_orders.results} == {order.id for order in db_orders if order.user.id == db_user.id}
 
 def test_if_multiple_orders_were_returned(
     sync_session: Session,
     db_orders: list[OrderOutputSchema]
 ):
     orders = get_all_orders(sync_session, PageParams(page=1, size=5))
-    assert len(orders.results) == len(db_orders)
+    assert orders.total == len(db_orders)
 
 def test_update_order_with_one_field_to_update_in_a_schema(
     sync_session: Session,
     db_orders: list[OrderOutputSchema],
     db_products: list[ProductOutputSchema]
 ):
-    update_data = {'product_ids': [product.id for product in db_products]}
-    update_order = update_single_order(sync_session, OrderInputSchema(**update_data), db_orders[0].id)
+    update_data = OrderFactory.build(product_ids=[product.id for product in db_products])
+    update_order = update_single_order(sync_session, update_data, db_orders[0].id)
     
     retrieved_order = get_single_order(sync_session, db_orders[0].id)
     assert [product.id for product in retrieved_order.products] == [product.id for product in db_products]
@@ -76,11 +78,11 @@ def test_update_order_with_no_update_data(
     
 def test_raise_exception_while_updating_nonexistent_order(
     sync_session: Session,
-    update_order: dict[str, Any],
     db_orders: list[OrderOutputSchema]
 ):
+    update_data = OrderFactory.build()
     with pytest.raises(DoesNotExist) as exc:
-        update_single_order(sync_session, OrderInputSchema(**update_order), db_orders[-1].id+2)
+        update_single_order(sync_session, update_data, db_orders[-1].id+2)
 
 def test_raise_exception_while_deleting_nonexistent_order(
     sync_session: Session,
