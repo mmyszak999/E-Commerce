@@ -31,7 +31,7 @@ class ProductBaseSchema(BaseModel):
 
 
 class ProductInputSchema(ProductBaseSchema):
-    categories_ids: Optional[list[int]] = []
+    category_ids: Optional[list[int]] = []
 
 
 class ProductOutputSchema(ProductBaseSchema):

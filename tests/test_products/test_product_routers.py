@@ -13,7 +13,7 @@ def test_authenticated_user_can_create_product(
     access_token: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    product_data = ProductFactory.build(categories_ids=[db_categories[0].id])
+    product_data = ProductFactory.build(category_ids=[db_categories[0].id])
     response = sync_client.post("products/", json=json.loads(product_data.json()), headers=access_token)
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -42,7 +42,7 @@ def test_authenticated_user_can_update_product(
     db_products: list[ProductOutputSchema],
     db_categories: list[CategoryOutputSchema]
 ):
-    update_data = ProductFactory.build(name="test_name", price=14.88, categories_ids=[db_categories[0].id])
+    update_data = ProductFactory.build(name="test_name", price=14.88, category_ids=[db_categories[0].id])
     response = sync_client.patch(f"products/{db_products[0].id}", json=json.loads(update_data.json()), headers=access_token)
     
     assert response.status_code == status.HTTP_200_OK

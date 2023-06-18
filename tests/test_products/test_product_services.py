@@ -64,7 +64,7 @@ def test_if_product_can_have_occupied_name(
     sync_session: Session,
     db_products: list[ProductOutputSchema]
 ):
-    product_data = ProductFactory.build(name=DB_PRODUCT_SCHEMAS[0].name, categories_ids=[])
+    product_data = ProductFactory.build(name=DB_PRODUCT_SCHEMAS[0].name, category_ids=[])
     with pytest.raises(IsOccupied):
         update_single_product(sync_session, product_data, db_products[1].id)
 
