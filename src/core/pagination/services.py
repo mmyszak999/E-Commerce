@@ -9,7 +9,7 @@ def paginate(
     query, response_schema: BaseModel, table: Table, page_params: PageParams, session: Session
     ) -> PagedResponseSchema[T]:
     instances = session.scalars(query.offset((page_params.page - 1) * page_params.size).limit(page_params.size + 1)).all()
-    total_amount = session.scalar(select(func.count()).select_from(table))
+    total_amount = len(instances)
     next_page_check = (total_amount - ((page_params.page - 1) * page_params.size)) > page_params.size
     
     return PagedResponseSchema(

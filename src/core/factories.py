@@ -3,5 +3,5 @@ from pydantic_factories import ModelFactory
 from src.apps.user.schemas import UserRegisterSchema
 
 
-class UserFactory(ModelFactory):
+class UserRegisterSchemaFactory(ModelFactory):
     __model__ = UserRegisterSchema

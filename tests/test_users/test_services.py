@@ -19,7 +19,7 @@ from src.core.exceptions import (
     AuthException
 )
 from src.core.pagination.models import PageParams
-from src.core.factories import UserFactory
+from src.core.factories import UserRegisterSchema
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
@@ -35,7 +35,7 @@ def test_create_user_with_occupied_email(
     sync_session: Session,
     db_user: UserOutputSchema
 ):
-    user_data = UserFactory.build(email=db_user.email, password="testtest", password_repeat="testtest")
+    user_data = UserRegisterSchema.build(email=db_user.email, password="testtest", password_repeat="testtest")
     with pytest.raises(AlreadyExists) as exc:
         register_user(sync_session, user_data)
 
@@ -44,7 +44,7 @@ def test_create_user_with_occupied_username(
     sync_session: Session,
     db_user: UserOutputSchema
 ):
-    user_data = UserFactory.build(username=db_user.username, password="testtest", password_repeat="testtest")
+    user_data = UserRegisterSchema.build(username=db_user.username, password="testtest", password_repeat="testtest")
     with pytest.raises(AlreadyExists) as exc:
         register_user(sync_session, user_data)
 
@@ -84,7 +84,7 @@ def test_if_user_can_update_their_username_to_occupied_one(
     sync_session: Session,
     db_user: UserOutputSchema
 ):
-    user = register_user(sync_session, UserFactory.build(password="testtestx", password_repeat="testtestx"))
+    user = register_user(sync_session, UserRegisterSchema.build(password="testtestx", password_repeat="testtestx"))
     update_data = {'username': db_user.username}
     
     with pytest.raises(IsOccupied):
