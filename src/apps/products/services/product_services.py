@@ -28,9 +28,9 @@ def create_product(session: Session, product: ProductInputSchema) -> ProductOutp
     if name_check:
         raise AlreadyExists(Product.__name__, "name", product.name)
     
-    categories_ids = product_data.pop('categories_ids')
-    categories = session.scalars(select(Category).where(Category.id.in_(categories_ids))).all()
-    if not len(set(categories_ids)) == len(categories):
+    category_ids = product_data.pop('category_ids')
+    categories = session.scalars(select(Category).where(Category.id.in_(category_ids))).all()
+    if not len(set(category_ids)) == len(categories):
         raise ServiceException("Wrong categories!")
     
     product_data['categories'] = categories
@@ -55,12 +55,9 @@ def update_single_product(session: Session, product_input: ProductInputSchema, p
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, product_id)
     
-    product_data = product_input.dict(exclude_none=True, exclude_unset=True, exclude_defaults=True)
-    
-    if product_data.get('name'):
-        product_name_check = session.scalar(select(Product).filter(Product.name == product_input.name).limit(1))
-        if product_name_check:
-            raise IsOccupied(Product.__name__, "name", product_input.name)
+    product_data = product_input.dict(exclude_unset=True)
+    incoming_categories = set(product_data['category_ids'])
+    current_categories = set(category.id for category in product_object.categories)
     
     if product_data.get('categories_ids'):
         incoming_categories = set(product_data['categories_ids'])
@@ -73,7 +70,8 @@ def update_single_product(session: Session, product_input: ProductInputSchema, p
             rows = [{"product_id": product_id, "category_id": category_id} for category_id in to_insert]
             session.execute(insert(category_product_association_table).values(rows))
 
-        product_data.pop('categories_ids')
+    product_data.pop('category_ids')
+    statement = update(Product).filter(Product.id==product_id).values(**product_data)
     
     if product_data:
         statement = update(Product).filter(Product.id==product_id).values(**product_data)

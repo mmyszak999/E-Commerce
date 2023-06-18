@@ -2,6 +2,7 @@ from pydantic_factories import ModelFactory
 
 from src.apps.user.schemas import UserRegisterSchema
 from src.apps.orders.schemas import OrderInputSchema
+from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
 
 
 class UserFactory(ModelFactory):
@@ -11,3 +12,10 @@ class UserFactory(ModelFactory):
 class OrderFactory(ModelFactory):
     __model__ = OrderInputSchema
     
+class CategoryFactory(ModelFactory):
+    __model__ = CategoryInputSchema
+   
+    
+class ProductFactory(ModelFactory):
+    __model__ = ProductInputSchema
+
