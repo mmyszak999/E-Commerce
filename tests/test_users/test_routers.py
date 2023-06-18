@@ -4,26 +4,27 @@ import json
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from tests.test_users.conftest import UserOutputSchema, DB_USER_SCHEMA
-from src.core.factories import UserRegisterSchema
-
-
+from src.apps.user.schemas import UserLoginInputSchema, UserOutputSchema
+from tests.test_users.conftest import DB_USER_SCHEMA
+from src.core.factories import UserRegisterSchemaFactory
 
 def test_create_user(
     sync_client: TestClient,
 ):
-    register_data = UserRegisterSchema.build(password="mtdqwc241", password_repeat="mtdqwc241")
-    response = sync_client.post("users/register", json=json.loads(register_data.json()))
+    register_data = UserRegisterSchemaFactory.build(password="mtdqwc241", password_repeat="mtdqwc241")
+    register_data.birth_date = str(register_data.birth_date)
+    response = sync_client.post("users/register", json=register_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
-    
+
+
 def test_login_user(
     sync_client: TestClient,
     db_user: UserOutputSchema
 ):
-    login_data = {'username': DB_USER_SCHEMA['username'], 'password': DB_USER_SCHEMA['password']}
+    login_data = {'username': DB_USER_SCHEMA.username, 'password': DB_USER_SCHEMA.password}
     response = sync_client.post("users/login", json=login_data)
     assert response.status_code == status.HTTP_200_OK
-    assert "auth_headers" in response.json()
+    assert "access_token" in response.json()
 
 def test_authenticated_user_can_get_users(
     sync_client: TestClient,
@@ -31,8 +32,9 @@ def test_authenticated_user_can_get_users(
     db_user: UserOutputSchema
 ):
     response = sync_client.get("users/", headers=auth_headers)
+    print(response.json())
     
-    assert response.json()['total'] == len([db_user])
+    assert response.json()['total'] == 1
     assert response.status_code == status.HTTP_200_OK
     
 def test_authenticated_user_can_get_single_user(
@@ -62,9 +64,8 @@ def test_authenticated_user_can_update_user(
 ):
     update_data = {"username": "alex123"}
     response = sync_client.patch(f"users/{db_user.id}", json=update_data, headers=auth_headers)
-    print(response.json())
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["username"] == update_data["username"]
+    assert response.json()["username"] == update_data['username']
 
 
 def test_authenticated_user_can_delete_user(

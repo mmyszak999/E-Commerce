@@ -19,7 +19,7 @@ from src.core.exceptions import (
     AuthException
 )
 from src.core.pagination.models import PageParams
-from src.core.factories import UserRegisterSchema
+from src.core.factories import UserRegisterSchemaFactory
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
@@ -35,7 +35,7 @@ def test_create_user_with_occupied_email(
     sync_session: Session,
     db_user: UserOutputSchema
 ):
-    user_data = UserRegisterSchema.build(email=db_user.email, password="testtest", password_repeat="testtest")
+    user_data = UserRegisterSchemaFactory.build(email=db_user.email, password="testtest", password_repeat="testtest")
     with pytest.raises(AlreadyExists) as exc:
         register_user(sync_session, user_data)
 
@@ -44,7 +44,7 @@ def test_create_user_with_occupied_username(
     sync_session: Session,
     db_user: UserOutputSchema
 ):
-    user_data = UserRegisterSchema.build(username=db_user.username, password="testtest", password_repeat="testtest")
+    user_data = UserRegisterSchemaFactory.build(username=db_user.username, password="testtest", password_repeat="testtest")
     with pytest.raises(AlreadyExists) as exc:
         register_user(sync_session, user_data)
 
@@ -70,7 +70,7 @@ def test_if_multiple_users_were_returned(
     db_user: UserOutputSchema
 ):
     users = get_all_users(sync_session, PageParams(page=1, size=5))
-    assert users.total == len([db_user])
+    assert users.total == 1
 
 def test_raise_exception_while_updating_nonexistent_user(
     sync_session: Session,
@@ -78,13 +78,13 @@ def test_raise_exception_while_updating_nonexistent_user(
 ):
     with pytest.raises(DoesNotExist) as exc:
         update_data = {'first_name': "name"}
-        update_single_user(sync_session, UserUpdateSchema(**update_data), len([db_user])+2)
+        update_single_user(sync_session, UserUpdateSchema(**update_data), 888888888)
 
 def test_if_user_can_update_their_username_to_occupied_one(
     sync_session: Session,
     db_user: UserOutputSchema
 ):
-    user = register_user(sync_session, UserRegisterSchema.build(password="testtestx", password_repeat="testtestx"))
+    user = register_user(sync_session, UserRegisterSchemaFactory.build(password="testtestx", password_repeat="testtestx"))
     update_data = {'username': db_user.username}
     
     with pytest.raises(IsOccupied):

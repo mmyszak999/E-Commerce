@@ -13,8 +13,8 @@ from src.core.exceptions import AuthException
 
 def authenticate_user(auth_jwt: AuthJWT = Depends(), session: Session = Depends(get_db)) -> User:
     auth_jwt.jwt_required()
-    user = json.loads(auth_jwt.get_jwt_subject())
-    user = session.scalar(select(User).filter(User.id==user["id"]).limit(1))
+    user_subject_id = json.loads(auth_jwt.get_jwt_subject())
+    user = session.scalar(select(User).filter(User.id==user_subject_id).limit(1))
 
     if not user:
         raise AuthException("Cannot find user")
