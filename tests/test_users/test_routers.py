@@ -33,7 +33,6 @@ def test_authenticated_user_can_get_users(
     db_user: UserOutputSchema
 ):
     response = sync_client.get("users/", headers=auth_headers)
-    print(response.json())
     
     assert response.json()['total'] == 1
     assert response.status_code == status.HTTP_200_OK
