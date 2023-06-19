@@ -7,12 +7,13 @@ from fastapi.testclient import TestClient
 from src.apps.user.schemas import UserLoginInputSchema, UserOutputSchema
 from tests.test_users.conftest import DB_USER_SCHEMA
 from src.core.factories import UserRegisterSchemaFactory
+from src.core.utils import datetime_encoder
 
 def test_create_user(
     sync_client: TestClient,
 ):
     register_data = UserRegisterSchemaFactory.build(password="mtdqwc241", password_repeat="mtdqwc241")
-    register_data.birth_date = str(register_data.birth_date)
+    register_data.birth_date = datetime_encoder(register_data.birth_date)
     response = sync_client.post("users/register", json=register_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
 
