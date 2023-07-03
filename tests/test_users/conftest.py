@@ -1,14 +1,10 @@
-from datetime import date
-from typing import Any
-import json
-
 import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from fastapi_jwt_auth import AuthJWT
 
 from src.apps.user.services import register_user, get_single_user, delete_all_users
-from src.apps.user.schemas import UserRegisterSchema, UserUpdateSchema, UserOutputSchema
+from src.apps.user.schemas import UserOutputSchema
 from src.apps.user.models import User
 from src.core.factories import UserRegisterSchemaFactory
 

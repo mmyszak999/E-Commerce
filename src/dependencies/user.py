@@ -1,6 +1,4 @@
-import json
-
-from fastapi import Depends, status
+from fastapi import Depends
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy import select
 from sqlalchemy.orm import Session

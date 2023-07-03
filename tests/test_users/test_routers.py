@@ -1,20 +1,17 @@
 from typing import Any
-import json
-import orjson
 
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from src.apps.user.schemas import UserLoginInputSchema, UserOutputSchema, UserRegisterSchema
+from src.apps.user.schemas import UserLoginInputSchema, UserOutputSchema
 from tests.test_users.conftest import DB_USER_SCHEMA
 from src.core.factories import UserRegisterSchemaFactory
-from src.core.utils import DateJSONEncoder
 
 def test_create_user(
     sync_client: TestClient
 ):
     register_data = UserRegisterSchemaFactory.build(password="mtdqwc241", password_repeat="mtdqwc241")
-    response = sync_client.post("users/register", data=register_data.dict())
+    response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
 
 def test_login_user(
