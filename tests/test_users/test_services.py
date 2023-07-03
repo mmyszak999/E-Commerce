@@ -77,7 +77,7 @@ def test_raise_exception_while_updating_nonexistent_user(
     db_user: UserOutputSchema
 ):
     with pytest.raises(DoesNotExist) as exc:
-        update_data = {'first_name': "name"}
+        update_data = {"first_name": "name"}
         update_single_user(sync_session, UserUpdateSchema(**update_data), 888888888)
 
 def test_if_user_can_update_their_username_to_occupied_one(
@@ -85,7 +85,7 @@ def test_if_user_can_update_their_username_to_occupied_one(
     db_user: UserOutputSchema
 ):
     user = register_user(sync_session, UserRegisterSchemaFactory.build(password="testtestx", password_repeat="testtestx"))
-    update_data = {'username': db_user.username}
+    update_data = {"username": db_user.username}
     
     with pytest.raises(IsOccupied):
         update_single_user(sync_session, UserUpdateSchema(**update_data), user.id)
