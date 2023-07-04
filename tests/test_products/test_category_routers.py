@@ -1,19 +1,18 @@
 from typing import Any
-import json
 
 from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.apps.products.schemas import CategoryOutputSchema
-from src.core.factories import CategoryFactory
+from src.core.factories import CategoryInputSchemaFactory
 
 
 def test_authenticated_user_can_create_category(
     sync_client: TestClient,
     auth_headers: dict[str, str],
 ):
-    create_data = CategoryFactory.build()
-    response = sync_client.post("categories/", json=json.loads(create_data.json()), headers=auth_headers)
+    create_data = CategoryInputSchemaFactory.build()
+    response = sync_client.post("categories/", data=create_data.json(), headers=auth_headers)
     assert response.status_code == status.HTTP_201_CREATED
 
 def test_authenticated_user_can_get_categories(
@@ -40,8 +39,8 @@ def test_authenticated_user_can_update_category(
     auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    update_data = CategoryFactory.build()
-    response = sync_client.patch(f"categories/{db_categories[0].id}", json=json.loads(update_data.json()), headers=auth_headers)
+    update_data = CategoryInputSchemaFactory.build()
+    response = sync_client.patch(f"categories/{db_categories[0].id}", data=update_data.json(), headers=auth_headers)
     
     assert response.json()["name"] == update_data.name
 
@@ -82,8 +81,8 @@ def test_anonymous_user_cannot_get_single_category(
 def test_anonymous_user_cannot_update_category(
     sync_client: TestClient
 ):
-    update_data = CategoryFactory.build()
-    response = sync_client.patch("categories/1", json=json.loads(update_data.json()))
+    update_data = CategoryInputSchemaFactory.build()
+    response = sync_client.patch("categories/1", data=update_data.json())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 

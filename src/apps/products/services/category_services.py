@@ -52,7 +52,7 @@ def update_single_category(session: Session, category_input: CategoryInputSchema
     if category_data:
         category_name_check = session.scalar(select(Category).filter(Category.name == category_input.name).limit(1))
         if category_name_check:
-            raise IsOccupied(Category.__name__, "name", category.name)
+            raise IsOccupied(Category.__name__, "name", category_input.name)
 
     statement = update(Category).filter(Category.id == category_id).values(**category_data)
 

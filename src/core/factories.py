@@ -8,9 +8,9 @@ class UserRegisterSchemaFactory(ModelFactory):
     __model__ = UserRegisterSchema
 
 
-class CategoryFactory(ModelFactory):
+class CategoryInputSchemaFactory(ModelFactory):
     __model__ = CategoryInputSchema
    
     
-class ProductFactory(ModelFactory):
+class ProductInputSchemaFactory(ModelFactory):
     __model__ = ProductInputSchema

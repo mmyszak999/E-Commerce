@@ -18,7 +18,7 @@ from src.core.exceptions import (
     AuthException
 )
 from src.core.pagination.models import PageParams
-from src.core.factories import CategoryFactory
+from src.core.factories import CategoryInputSchemaFactory
 from tests.test_products.conftest import DB_CATEGORY_SCHEMAS
 
 
@@ -55,7 +55,7 @@ def test_raise_exception_while_updating_nonexistent_category(
     sync_session: Session,
     db_categories: list[CategoryOutputSchema]
 ):
-    update_data = CategoryFactory.build()
+    update_data = CategoryInputSchemaFactory.build()
     with pytest.raises(DoesNotExist) as exc:
         update_single_category(sync_session, update_data, len(db_categories)+2)
 
@@ -63,7 +63,7 @@ def test_if_category_can_have_occupied_name(
     sync_session: Session,
     db_categories: list[CategoryOutputSchema]
 ):
-    category_data = CategoryFactory.build(name=DB_CATEGORY_SCHEMAS[0].name)
+    category_data = CategoryInputSchemaFactory.build(name=DB_CATEGORY_SCHEMAS[0].name)
     with pytest.raises(IsOccupied):
         update_single_category(sync_session, category_data, db_categories[1].id)
 
