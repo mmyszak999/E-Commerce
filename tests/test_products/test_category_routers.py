@@ -10,58 +10,58 @@ from src.core.factories import CategoryFactory
 
 def test_authenticated_user_can_create_category(
     sync_client: TestClient,
-    access_token: dict[str, str],
+    auth_headers: dict[str, str],
 ):
     create_data = CategoryFactory.build()
-    response = sync_client.post("categories/", json=json.loads(create_data.json()), headers=access_token)
+    response = sync_client.post("categories/", json=json.loads(create_data.json()), headers=auth_headers)
     assert response.status_code == status.HTTP_201_CREATED
 
 def test_authenticated_user_can_get_categories(
     sync_client: TestClient,
-    access_token: dict[str, str],
+    auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.get("categories/", headers=access_token)
+    response = sync_client.get("categories/", headers=auth_headers)
     
     assert response.json()['total'] == len(db_categories)
     assert response.status_code == status.HTTP_200_OK
 
 def test_authenticated_user_get_single_category(
     sync_client: TestClient,
-    access_token: dict[str, str],
+    auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.get(f"categories/{db_categories[1].id}", headers=access_token)
+    response = sync_client.get(f"categories/{db_categories[1].id}", headers=auth_headers)
     assert response.json()["id"] == db_categories[1].id
     assert response.status_code == status.HTTP_200_OK
 
 def test_authenticated_user_can_update_category(
     sync_client: TestClient,
-    access_token: dict[str, str],
+    auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
     update_data = CategoryFactory.build()
-    response = sync_client.patch(f"categories/{db_categories[0].id}", json=json.loads(update_data.json()), headers=access_token)
+    response = sync_client.patch(f"categories/{db_categories[0].id}", json=json.loads(update_data.json()), headers=auth_headers)
     
     assert response.json()["name"] == update_data.name
 
 def test_authenticated_user_can_delete_category(
     sync_client: TestClient,
-    access_token: dict[str, str],
+    auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.delete(f"categories/{db_categories[0].id}", headers=access_token)
+    response = sync_client.delete(f"categories/{db_categories[0].id}", headers=auth_headers)
     assert response.status_code == status.HTTP_204_NO_CONTENT
     
 def test_authenticated_user_can_delete_all_categories(
     sync_client: TestClient,
-    access_token: dict[str, str],
+    auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema]
 ):
-    response = sync_client.delete("categories/", headers=access_token)
+    response = sync_client.delete("categories/", headers=auth_headers)
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
-    response = sync_client.get("categories/", headers=access_token)
+    response = sync_client.get("categories/", headers=auth_headers)
     assert response.json()['total'] == 0
 
 def test_anonymous_user_cannot_get_categories(

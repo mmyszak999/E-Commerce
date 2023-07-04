@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
 from src.apps.products.services.category_services import create_category, delete_all_categories, get_single_category
 from src.apps.products.services.product_services import create_product, delete_all_products
-from tests.test_users.conftest import access_token, db_user
+from tests.test_users.conftest import auth_headers, db_user
 from src.core.pagination.models import PageParams
 from src.core.factories import CategoryFactory, ProductFactory
 
