@@ -4,7 +4,7 @@ from src.apps.user.schemas import UserRegisterSchema
 from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
 
 
-class UserFactory(ModelFactory):
+class UserRegisterSchemaFactory(ModelFactory):
     __model__ = UserRegisterSchema
 
 
@@ -14,4 +14,3 @@ class CategoryFactory(ModelFactory):
     
 class ProductFactory(ModelFactory):
     __model__ = ProductInputSchema
-

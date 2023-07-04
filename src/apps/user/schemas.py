@@ -37,10 +37,10 @@ class UserRegisterSchema(UserBaseSchema):
 
 
 class UserUpdateSchema(BaseModel):
-    first_name: Optional[str] = Field(max_length=50)
-    last_name: Optional[str] = Field(max_length=75)
-    birth_date: Optional[datetime.date]
-    username: Optional[str] = Field(max_length=50)
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    birth_date: Optional[datetime.date] = None
+    username: Optional[str] = None
 
     class Config:
         orm_mode = True
