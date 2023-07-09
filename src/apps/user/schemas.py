@@ -1,5 +1,6 @@
 import datetime
 from typing import Any, Optional
+
 from pydantic import BaseModel, Field, validator
 
 
@@ -14,7 +15,7 @@ class UserBaseSchema(BaseModel):
     email: str = Field(max_length=50)
     birth_date: datetime.date
     username: str = Field(max_length=50)
-    
+
     class Config:
         orm_mode = True
 
@@ -52,4 +53,3 @@ class UserOutputSchema(UserBaseSchema):
 
     class Config:
         orm_mode = True
-     
