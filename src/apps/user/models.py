@@ -5,7 +5,7 @@ from src.database.db_connection import Base
 
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     first_name = Column(String(length=50), nullable=False)

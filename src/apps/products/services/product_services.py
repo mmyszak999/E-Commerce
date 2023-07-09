@@ -1,9 +1,7 @@
-from sqlalchemy import delete, select, update, insert
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
 from src.apps.products.schemas import (
-    CategoryInputSchema,
-    CategoryOutputSchema,
     ProductInputSchema,
     ProductOutputSchema
 )
@@ -16,12 +14,14 @@ from src.core.exceptions import (
     ServiceException
 )
 from src.core.utils import if_exists
-from src.core.pagination.services import paginate
-from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.models import PageParams
+from src.core.pagination.schemas import PagedResponseSchema
+from src.core.pagination.services import paginate
 
 
-def create_product(session: Session, product: ProductInputSchema) -> ProductOutputSchema:
+def create_product(
+    session: Session, product: ProductInputSchema
+) -> ProductOutputSchema:
     product_data = product.dict()
 
     if product_data:
@@ -36,13 +36,14 @@ def create_product(session: Session, product: ProductInputSchema) -> ProductOutp
             if not len(set(category_ids)) == len(categories):
                 raise ServiceException("Wrong categories!")
         
-        product_data['categories'] = categories
+            product_data['categories'] = categories
         
-    new_product = Product(**product_data)
-    session.add(new_product)
-    session.commit()
+        new_product = Product(**product_data)
+        session.add(new_product)
+        session.commit()
 
     return ProductOutputSchema.from_orm(new_product)
+
 
 def get_single_product(session: Session, product_id: int) -> ProductOutputSchema:
     if not (product_object := if_exists(Product, "id", product_id, session)):
@@ -50,13 +51,23 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
 
     return ProductOutputSchema.from_orm(product_object)
 
+
 def get_all_products(session: Session, page_params: PageParams) -> PagedResponseSchema:
     query = select(Product)
 
-    return paginate(query=query, response_schema=ProductOutputSchema, table=Product, page_params=page_params, session=session)
+    return paginate(
+        query=query,
+        response_schema=ProductOutputSchema,
+        table=Product,
+        page_params=page_params,
+        session=session,
+    )
 
-def update_single_product(session: Session, product_input: ProductInputSchema, product_id: int) -> ProductOutputSchema:
-    if not (product_object := if_exists(Product, "id", product_id, session)):
+
+def update_single_product(
+    session: Session, product_input: ProductInputSchema, product_id: int
+) -> ProductOutputSchema:
+    if not if_exists(Product, "id", product_id, session):
         raise DoesNotExist(Product.__name__, product_id)
 
     product_data = product_input.dict(exclude_unset=True)

@@ -1,24 +1,21 @@
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import (
-    CategoryInputSchema,
-    CategoryOutputSchema
-)
 from src.apps.products.models import Category
 from src.core.exceptions import (
     DoesNotExist,
     AlreadyExists,
     IsOccupied
 )
-from src.core.utils import if_exists
-from src.core.pagination.services import paginate
-from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.models import PageParams
+from src.core.pagination.schemas import PagedResponseSchema
+from src.core.pagination.services import paginate
 from src.core.utils import if_exists
 
 
-def create_category(session: Session, category: CategoryInputSchema) -> CategoryOutputSchema:
+def create_category(
+    session: Session, category: CategoryInputSchema
+) -> CategoryOutputSchema:
     category_data = category.dict()
 
     if category_data:
@@ -32,19 +29,29 @@ def create_category(session: Session, category: CategoryInputSchema) -> Category
 
     return CategoryOutputSchema.from_orm(new_category)
 
+
 def get_single_category(session: Session, category_id: int) -> CategoryOutputSchema:
     if not (category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
 
     return CategoryOutputSchema.from_orm(category_object)
 
-def get_all_categories(session: Session, page_params: PageParams) -> PagedResponseSchema[CategoryOutputSchema]:
+
+def get_all_categories(
+    session: Session, page_params: PageParams
+) -> PagedResponseSchema[CategoryOutputSchema]:
     query = select(Category)
 
-    return paginate(query=query, response_schema=CategoryOutputSchema, table=Category, page_params=page_params, session=session)
+    return paginate(
+        query=query,
+        response_schema=CategoryOutputSchema,
+        table=Category,
+        page_params=page_params,
+        session=session,
+    )
 
 def update_single_category(session: Session, category_input: CategoryInputSchema, category_id: int) -> CategoryOutputSchema:
-    if not (category_object := if_exists(Category, "id", category_id, session)):
+    if not if_exists(Category, "id", category_id, session):
         raise DoesNotExist(Category.__name__, category_id)
     
     category_dict = category.dict(exclude_none=True, exclude_unset=True)

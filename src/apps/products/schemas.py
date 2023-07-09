@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Optional
+from typing import Optional
 from decimal import Decimal
 
 from pydantic import BaseModel, Field, validator
@@ -35,9 +35,8 @@ class ProductInputSchema(ProductBaseSchema):
 
 
 class ProductOutputSchema(ProductBaseSchema):
-    id: int    
+    id: int
     categories: list[CategoryOutputSchema] = []
-
 
     class Config:
         orm_mode = True
