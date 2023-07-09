@@ -1,5 +1,3 @@
-import copy
-
 import pytest
 from sqlalchemy.orm import Session
 
@@ -31,6 +29,5 @@ def db_products(sync_session: Session, db_categories):
         ].id  # gets a category with the same id as the schema list index
         product.category_ids = [
             category_id
-        ]  # assign the category to the product input schema,
-           # one category per product as default
+        ]  # assign the category to the product input schema, one category per product as default
     return [create_product(sync_session, product) for product in DB_PRODUCT_SCHEMAS]

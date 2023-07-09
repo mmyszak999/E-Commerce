@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 
 from src.apps.products.schemas import ProductOutputSchema
 from src.apps.products.services.product_services import (create_product,
-                                                         delete_all_products,
                                                          delete_single_product,
                                                          get_all_products,
                                                          get_single_product,
