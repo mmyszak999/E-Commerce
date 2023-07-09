@@ -14,6 +14,7 @@ class CategoryBaseSchema(BaseModel):
 class CategoryInputSchema(CategoryBaseSchema):
     pass
 
+
 class CategoryUpdateSchema(BaseModel):
     name: Optional[str] = Field(max_length=75)
 

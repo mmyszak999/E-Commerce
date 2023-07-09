@@ -16,7 +16,9 @@ def create_category(
     category_data = category.dict()
 
     if category_data:
-        category_name_check = session.scalar(select(Category).filter(Category.name == category_data["name"]).limit(1))
+        category_name_check = session.scalar(
+            select(Category).filter(Category.name == category_data["name"]).limit(1)
+        )
         if category_name_check:
             raise AlreadyExists(Category.__name__, "name", category.name)
 
@@ -47,23 +49,31 @@ def get_all_categories(
         session=session,
     )
 
-def update_single_category(session: Session, category_input: CategoryInputSchema, category_id: int) -> CategoryOutputSchema:
+
+def update_single_category(
+    session: Session, category_input: CategoryInputSchema, category_id: int
+) -> CategoryOutputSchema:
     if not (category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
-    
+
     category_data = category_input.dict(exclude_unset=True)
-    
+
     if category_data:
-        category_name_check = session.scalar(select(Category).filter(Category.name == category_input.name).limit(1))
+        category_name_check = session.scalar(
+            select(Category).filter(Category.name == category_input.name).limit(1)
+        )
         if category_name_check:
             raise IsOccupied(Category.__name__, "name", category_input.name)
 
-    statement = update(Category).filter(Category.id == category_id).values(**category_data)
+    statement = (
+        update(Category).filter(Category.id == category_id).values(**category_data)
+    )
 
     session.execute(statement)
     session.commit()
 
     return get_single_category(session, category_id=category_id)
+
 
 def delete_all_categories(session: Session):
     statement = delete(Category)
@@ -71,6 +81,7 @@ def delete_all_categories(session: Session):
     session.commit()
 
     return result
+
 
 def delete_single_category(session: Session, category_id: int):
     if not (category_object := if_exists(Category, "id", category_id, session)):
