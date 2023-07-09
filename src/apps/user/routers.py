@@ -55,7 +55,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
     db_user = get_single_user(db, user_id)
     return db_user
 
-@router.put("/{user_id}", dependencies=[Depends(authenticate_user)], response_model=UserOutputSchema, status_code=status.HTTP_200_OK)
+@router.patch("/{user_id}", dependencies=[Depends(authenticate_user)], response_model=UserOutputSchema, status_code=status.HTTP_200_OK)
 def update_user(user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db)) -> UserOutputSchema:
     db_user = update_single_user(db, user, user_id)
     return db_user
