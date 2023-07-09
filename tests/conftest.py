@@ -23,7 +23,7 @@ def sync_engine():
     Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def sync_session(sync_engine: Engine):
     connection = sync_engine.connect()
     transaction = connection.begin()
@@ -43,7 +43,7 @@ def sync_session(sync_engine: Engine):
     connection.close()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def sync_client():
     with TestClient(app=app, base_url="http://localhost:8000/api/") as sync_client:
         yield sync_client
