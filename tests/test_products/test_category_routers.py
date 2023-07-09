@@ -52,7 +52,6 @@ def test_authenticated_user_can_update_category(
         data=update_data.json(),
         headers=auth_headers,
     )
-
     assert response.json()["name"] == update_data.name
 
 
