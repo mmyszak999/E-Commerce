@@ -1,9 +1,7 @@
-from typing import Any
-
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from src.apps.user.schemas import UserLoginInputSchema, UserOutputSchema
+from src.apps.user.schemas import UserOutputSchema
 from src.core.factories import UserRegisterSchemaFactory
 from tests.test_users.conftest import DB_USER_SCHEMA
 
@@ -46,7 +44,7 @@ def test_authenticated_user_can_get_single_user(
 def test_authenticated_user_can_get_their_account(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
-    response = sync_client.get(f"users/me", headers=auth_headers)
+    response = sync_client.get("users/me", headers=auth_headers)
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
 

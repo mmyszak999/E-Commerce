@@ -2,10 +2,7 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
 from src.apps.products.models import Category, Product, association_table
-from src.apps.products.schemas import (CategoryInputSchema,
-                                       CategoryOutputSchema,
-                                       ProductInputSchema, ProductOutputSchema)
-from src.apps.products.services.category_services import get_single_category
+from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema
 from src.core.exceptions import (AlreadyExists, DoesNotExist, IsOccupied,
                                  ServiceException)
 from src.core.pagination.models import PageParams
@@ -119,7 +116,7 @@ def delete_all_products(session: Session):
 
 
 def delete_single_product(session: Session, product_id: int):
-    if not (product_object := if_exists(Product, "id", product_id, session)):
+    if not if_exists(Product, "id", product_id, session):
         raise DoesNotExist(Product.__name__, product_id)
 
     statement = delete(Product).filter(Product.id == product_id)

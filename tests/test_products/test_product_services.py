@@ -1,19 +1,13 @@
-import copy
-from typing import Any
-
 import pytest
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.apps.products.models import Product
-from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema
+from src.apps.products.schemas import ProductOutputSchema
 from src.apps.products.services.product_services import (create_product,
                                                          delete_all_products,
                                                          delete_single_product,
-                                                         get_all_products,
                                                          get_single_product,
                                                          update_single_product)
-from src.core.exceptions import (AlreadyExists, AuthException, DoesNotExist,
+from src.core.exceptions import (AlreadyExists, DoesNotExist,
                                  IsOccupied)
 from src.core.factories import ProductInputSchemaFactory
 from src.core.pagination.models import PageParams
@@ -23,7 +17,7 @@ from tests.test_products.conftest import DB_PRODUCT_SCHEMAS
 def test_create_product_that_already_exists(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
-    with pytest.raises(AlreadyExists) as exc:
+    with pytest.raises(AlreadyExists):
         create_product(sync_session, DB_PRODUCT_SCHEMAS[0])
 
 
@@ -38,7 +32,7 @@ def test_if_only_one_product_was_returned(
 def test_raise_exception_while_getting_nonexistent_product(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
-    with pytest.raises(DoesNotExist) as exc:
+    with pytest.raises(DoesNotExist):
         get_single_product(sync_session, len(db_products) + 2)
 
 
@@ -53,7 +47,7 @@ def test_raise_exception_while_updating_nonexistent_product(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
     update_data = ProductInputSchemaFactory.build()
-    with pytest.raises(DoesNotExist) as exc:
+    with pytest.raises(DoesNotExist):
         update_single_product(sync_session, update_data, len(db_products) + 2)
 
 
@@ -70,5 +64,5 @@ def test_if_product_can_have_occupied_name(
 def test_raise_exception_while_deleting_nonexistent_product(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
-    with pytest.raises(DoesNotExist) as exc:
+    with pytest.raises(DoesNotExist):
         delete_single_product(sync_session, len(db_products) + 2)

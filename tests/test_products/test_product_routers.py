@@ -1,12 +1,8 @@
-from decimal import Decimal
-from typing import Any
-
 from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
-from src.core.factories import (CategoryInputSchemaFactory,
-                                ProductInputSchemaFactory)
+from src.core.factories import ProductInputSchemaFactory
 
 
 def test_authenticated_user_can_create_product(

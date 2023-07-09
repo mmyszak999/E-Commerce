@@ -17,7 +17,8 @@ def create_category(
 
     if category_data:
         category_name_check = session.scalar(
-            select(Category).filter(Category.name == category_data["name"]).limit(1)
+            select(Category).filter(
+                Category.name == category_data["name"]).limit(1)
         )
         if category_name_check:
             raise AlreadyExists(Category.__name__, "name", category.name)
@@ -29,8 +30,10 @@ def create_category(
     return CategoryOutputSchema.from_orm(new_category)
 
 
-def get_single_category(session: Session, category_id: int) -> CategoryOutputSchema:
-    if not (category_object := if_exists(Category, "id", category_id, session)):
+def get_single_category(session: Session,
+                        category_id: int) -> CategoryOutputSchema:
+    if not (
+        category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
 
     return CategoryOutputSchema.from_orm(category_object)
@@ -53,20 +56,22 @@ def get_all_categories(
 def update_single_category(
     session: Session, category_input: CategoryInputSchema, category_id: int
 ) -> CategoryOutputSchema:
-    if not (category_object := if_exists(Category, "id", category_id, session)):
+    if not if_exists(Category, "id", category_id, session):
         raise DoesNotExist(Category.__name__, category_id)
 
     category_data = category_input.dict(exclude_unset=True)
 
     if category_data:
         category_name_check = session.scalar(
-            select(Category).filter(Category.name == category_input.name).limit(1)
+            select(Category).filter(
+                Category.name == category_input.name).limit(1)
         )
         if category_name_check:
             raise IsOccupied(Category.__name__, "name", category_input.name)
 
     statement = (
-        update(Category).filter(Category.id == category_id).values(**category_data)
+        update(Category).filter(
+            Category.id == category_id).values(**category_data)
     )
 
     session.execute(statement)
@@ -84,7 +89,7 @@ def delete_all_categories(session: Session):
 
 
 def delete_single_category(session: Session, category_id: int):
-    if not (category_object := if_exists(Category, "id", category_id, session)):
+    if not if_exists(Category, "id", category_id, session):
         raise DoesNotExist(Category.__name__, category_id)
 
     statement = delete(Category).filter(Category.id == category_id)

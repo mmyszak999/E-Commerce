@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import status
 from fastapi.testclient import TestClient
 

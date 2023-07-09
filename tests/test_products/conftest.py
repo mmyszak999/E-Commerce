@@ -3,14 +3,10 @@ import copy
 import pytest
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
-from src.apps.products.services.category_services import (
-    create_category, delete_all_categories, get_single_category)
-from src.apps.products.services.product_services import (create_product,
-                                                         delete_all_products)
+from src.apps.products.services.category_services import create_category
+from src.apps.products.services.product_services import create_product
 from src.core.factories import (CategoryInputSchemaFactory,
                                 ProductInputSchemaFactory)
-from src.core.pagination.models import PageParams
 from tests.test_users.conftest import auth_headers, db_user
 
 DB_CATEGORY_SCHEMAS = [CategoryInputSchemaFactory.build() for _ in range(3)]
@@ -35,5 +31,6 @@ def db_products(sync_session: Session, db_categories):
         ].id  # gets a category with the same id as the schema list index
         product.category_ids = [
             category_id
-        ]  # assign the category to the product input schema, one category per product as default
+        ]  # assign the category to the product input schema,
+           # one category per product as default
     return [create_product(sync_session, product) for product in DB_PRODUCT_SCHEMAS]

@@ -15,7 +15,7 @@ from src.apps.products.services.product_services import (create_product,
                                                          get_single_product,
                                                          update_single_product)
 from src.core.pagination.models import PageParams
-from src.core.pagination.schemas import PagedResponseSchema, T
+from src.core.pagination.schemas import PagedResponseSchema
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -69,7 +69,8 @@ def get_category(
     status_code=status.HTTP_200_OK,
 )
 def update_category(
-    category_id: int, category: CategoryInputSchema, db: Session = Depends(get_db)
+    category_id: int, category: CategoryInputSchema,
+    db: Session = Depends(get_db)
 ) -> CategoryOutputSchema:
     db_category = update_single_category(db, category, category_id)
     return db_category
@@ -80,7 +81,8 @@ def update_category(
     dependencies=[Depends(authenticate_user)],
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_category(category_id: int, db: Session = Depends(get_db)) -> Response:
+def delete_category(category_id: int,
+                    db: Session = Depends(get_db)) -> Response:
     delete_single_category(db, category_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -127,7 +129,8 @@ def get_products(
     response_model=ProductOutputSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_product(product_id: int, db: Session = Depends(get_db)) -> ProductOutputSchema:
+def get_product(product_id: int,
+                db: Session = Depends(get_db)) -> ProductOutputSchema:
     db_product = get_single_product(db, product_id)
     return db_product
 

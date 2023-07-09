@@ -1,10 +1,7 @@
-import datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Optional
 
-from pydantic import BaseModel, Field, validator
-
-from src.apps.products.models import Category, Product
+from pydantic import BaseModel, Field
 
 
 class CategoryBaseSchema(BaseModel):

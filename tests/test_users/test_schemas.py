@@ -1,12 +1,9 @@
-import copy
 from contextlib import nullcontext as does_not_raise
 from datetime import datetime, timedelta
-from typing import Any
 
 import pytest
 from pydantic.error_wrappers import ValidationError
 
-from src.apps.user.schemas import UserRegisterSchema
 from src.core.factories import UserRegisterSchemaFactory
 
 
@@ -36,5 +33,6 @@ def test_user_register_schema_raises_validation_error_when_birth_date_is_from_fu
 ):
     with result:
         UserRegisterSchemaFactory.build(
-            birth_date=future_date, password="password", password_repeat="password"
+            birth_date=future_date, password="password",
+            password_repeat="password"
         )

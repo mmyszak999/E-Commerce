@@ -1,12 +1,9 @@
 import pytest
 from fastapi_jwt_auth import AuthJWT
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.apps.user.models import User
 from src.apps.user.schemas import UserOutputSchema
-from src.apps.user.services import (delete_all_users, get_single_user,
-                                    register_user)
+from src.apps.user.services import register_user
 from src.core.factories import UserRegisterSchemaFactory
 
 DB_USER_SCHEMA = UserRegisterSchemaFactory.build(
