@@ -21,9 +21,10 @@ from src.core.utils import if_exists
 def create_category(session: Session, category: CategoryInputSchema) -> CategoryOutputSchema:
     category_data = category.dict()
 
-    category_name_check = session.scalar(select(Category).filter(Category.name == category_data["name"]).limit(1))
-    if category_name_check:
-        raise AlreadyExists(Category.__name__, "name", category.name)
+    if category_data:
+        category_name_check = session.scalar(select(Category).filter(Category.name == category_data["name"]).limit(1))
+        if category_name_check:
+            raise AlreadyExists(Category.__name__, "name", category.name)
 
     new_category = Category(**category_data)
     session.add(new_category)
@@ -42,7 +43,7 @@ def get_all_categories(session: Session, page_params: PageParams) -> PagedRespon
 
     return paginate(query=query, response_schema=CategoryOutputSchema, table=Category, page_params=page_params, session=session)
 
-def update_single_category(session: Session, category: CategoryInputSchema, category_id: int) -> CategoryOutputSchema:
+def update_single_category(session: Session, category_input: CategoryInputSchema, category_id: int) -> CategoryOutputSchema:
     if not (category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
     

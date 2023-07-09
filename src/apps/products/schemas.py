@@ -8,11 +8,14 @@ from src.apps.products.models import Category, Product
 
 
 class CategoryBaseSchema(BaseModel):
-    name: Optional[str] = Field(max_length=75)
+    name: str = Field(max_length=75)
 
 
 class CategoryInputSchema(CategoryBaseSchema):
     pass
+
+class CategoryUpdateSchema(BaseModel):
+    name: Optional[str] = Field(max_length=75)
 
 
 class CategoryOutputSchema(CategoryBaseSchema):
@@ -23,12 +26,12 @@ class CategoryOutputSchema(CategoryBaseSchema):
 
 
 class ProductBaseSchema(BaseModel):
-    name: Optional[str] = Field(max_length=75)
-    price: Optional[Decimal]
+    name: str = Field(max_length=75)
+    price: Decimal
 
 
 class ProductInputSchema(ProductBaseSchema):
-    categories_ids: Optional[list[int]] = []
+    category_ids: Optional[list[int]] = []
 
 
 class ProductOutputSchema(ProductBaseSchema):
