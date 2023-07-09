@@ -22,7 +22,7 @@ def test_authenticated_user_can_get_categories(
 ):
     response = sync_client.get("categories/", headers=auth_headers)
     
-    assert response.json()['total'] == len(db_categories)
+    assert response.json()["total"] == len(db_categories)
     assert response.status_code == status.HTTP_200_OK
 
 def test_authenticated_user_get_single_category(
@@ -61,7 +61,7 @@ def test_authenticated_user_can_delete_all_categories(
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     response = sync_client.get("categories/", headers=auth_headers)
-    assert response.json()['total'] == 0
+    assert response.json()["total"] == 0
 
 def test_anonymous_user_cannot_get_categories(
     sync_client: TestClient,

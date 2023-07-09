@@ -24,7 +24,7 @@ def test_authenticated_user_can_get_products(
     response = sync_client.get("products/", headers=auth_headers)
     
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()['total'] == len(db_products)
+    assert response.json()["total"] == len(db_products)
 
 def test_authenticated_user_get_single_product(
     sync_client: TestClient,
@@ -65,7 +65,7 @@ def test_authenticated_user_can_delete_all_products(
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     response = sync_client.get("products/", headers=auth_headers)
-    assert response.json()['total'] == 0
+    assert response.json()["total"] == 0
 
 def test_anonymous_user_cannot_get_products(
     sync_client: TestClient,
