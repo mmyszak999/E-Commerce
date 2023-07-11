@@ -1,5 +1,6 @@
-from pydantic import BaseSettings
 from fastapi_jwt_auth import AuthJWT
+from pydantic import BaseSettings
+
 
 class AuthJWTSettings(BaseSettings):
     authjwt_secret_key: str
