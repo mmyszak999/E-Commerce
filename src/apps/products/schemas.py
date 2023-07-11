@@ -1,10 +1,7 @@
-import datetime
-from typing import Optional
 from decimal import Decimal
+from typing import Optional
 
-from pydantic import BaseModel, Field, validator
-
-from src.apps.products.models import Category, Product
+from pydantic import BaseModel, Field
 
 
 class CategoryBaseSchema(BaseModel):
@@ -13,6 +10,7 @@ class CategoryBaseSchema(BaseModel):
 
 class CategoryInputSchema(CategoryBaseSchema):
     pass
+
 
 class CategoryUpdateSchema(BaseModel):
     name: Optional[str] = Field(max_length=75)

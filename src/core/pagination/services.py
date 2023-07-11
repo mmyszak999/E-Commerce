@@ -1,7 +1,7 @@
-from sqlalchemy import Table, func, select
+from sqlalchemy import Table
 from sqlalchemy.orm import Session
 
-from src.core.pagination.models import BaseModel, PageParams, conint
+from src.core.pagination.models import BaseModel, PageParams
 from src.core.pagination.schemas import PagedResponseSchema, T
 
 

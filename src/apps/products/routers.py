@@ -6,21 +6,16 @@ from src.apps.products.schemas import (CategoryInputSchema,
                                        CategoryOutputSchema,
                                        ProductInputSchema, ProductOutputSchema)
 from src.apps.products.services.category_services import (
-    create_category,
-    get_all_categories,
-    get_single_category,
-    update_single_category,
-    delete_single_category,
-    delete_all_categories
-)
-from src.apps.products.services.product_services import (
-    create_product,
-    get_all_products,
-    get_single_product,
-    update_single_product,
-    delete_single_product,
-    delete_all_products
-)
+    create_category, delete_all_categories, delete_single_category,
+    get_all_categories, get_single_category, update_single_category)
+from src.apps.products.services.product_services import (create_product,
+                                                         delete_all_products,
+                                                         delete_single_product,
+                                                         get_all_products,
+                                                         get_single_product,
+                                                         update_single_product)
+from src.core.pagination.models import PageParams
+from src.core.pagination.schemas import PagedResponseSchema
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -66,23 +61,39 @@ def get_category(
     db_category = get_single_category(db, category_id)
     return db_category
 
+
 @category_router.patch(
-    "/{category_id}", dependencies=[Depends(authenticate_user)], response_model=CategoryOutputSchema, status_code=status.HTTP_200_OK
+    "/{category_id}",
+    dependencies=[Depends(authenticate_user)],
+    response_model=CategoryOutputSchema,
+    status_code=status.HTTP_200_OK,
 )
 def update_category(
-    category_id: int, category: CategoryInputSchema, db: Session = Depends(get_db)
+    category_id: int, category: CategoryInputSchema,
+    db: Session = Depends(get_db)
 ) -> CategoryOutputSchema:
     db_category = update_single_category(db, category, category_id)
     return db_category
 
-@category_router.delete("/", dependencies=[Depends(authenticate_user)], status_code=status.HTTP_204_NO_CONTENT)
-def delete_categories(db: Session = Depends(get_db)) -> Response:
-    delete_all_categories(db)
+
+@category_router.delete(
+    "/{category_id}",
+    dependencies=[Depends(authenticate_user)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_category(category_id: int,
+                    db: Session = Depends(get_db)) -> Response:
+    delete_single_category(db, category_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@category_router.delete("/{category_id}", dependencies=[Depends(authenticate_user)], status_code=status.HTTP_204_NO_CONTENT)
-def delete_category(category_id: int, db: Session = Depends(get_db)) -> Response:
-    delete_single_category(db, category_id)
+
+@category_router.delete(
+    "/",
+    dependencies=[Depends(authenticate_user)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_categories(db: Session = Depends(get_db)) -> Response:
+    delete_all_categories(db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -118,12 +129,17 @@ def get_products(
     response_model=ProductOutputSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_product(product_id: int, db: Session = Depends(get_db)) -> ProductOutputSchema:
+def get_product(product_id: int,
+                db: Session = Depends(get_db)) -> ProductOutputSchema:
     db_product = get_single_product(db, product_id)
     return db_product
 
+
 @product_router.patch(
-    "/{product_id}", dependencies=[Depends(authenticate_user)], response_model=ProductOutputSchema, status_code=status.HTTP_200_OK
+    "/{product_id}",
+    dependencies=[Depends(authenticate_user)],
+    response_model=ProductOutputSchema,
+    status_code=status.HTTP_200_OK,
 )
 def update_product(
     product_id: int, product: ProductInputSchema, db: Session = Depends(get_db)
@@ -131,12 +147,22 @@ def update_product(
     db_product = update_single_product(db, product, product_id)
     return db_product
 
-@product_router.delete("/", dependencies=[Depends(authenticate_user)], status_code=status.HTTP_204_NO_CONTENT)
-def delete_products(db: Session = Depends(get_db)) -> Response:
-    delete_all_products(db)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@product_router.delete("/{product_id}", dependencies=[Depends(authenticate_user)], status_code=status.HTTP_204_NO_CONTENT)
+@product_router.delete(
+    "/{product_id}",
+    dependencies=[Depends(authenticate_user)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 def delete_product(product_id: int, db: Session = Depends(get_db)) -> Response:
     delete_single_product(db, product_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@product_router.delete(
+    "/",
+    dependencies=[Depends(authenticate_user)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_products(db: Session = Depends(get_db)) -> Response:
+    delete_all_products(db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

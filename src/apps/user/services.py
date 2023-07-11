@@ -71,7 +71,7 @@ def get_all_users(session: Session, page_params: PageParams) -> PagedResponseSch
 def update_single_user(
     session: Session, user: UserUpdateSchema, user_id: int
 ) -> UserOutputSchema:
-    if not (user_object := if_exists(User, "id", user_id, session)):
+    if not if_exists(User, "id", user_id, session):
         raise DoesNotExist(User.__name__, user_id)
 
     user_data = user.dict(exclude_unset=True)
@@ -101,7 +101,7 @@ def delete_all_users(session: Session):
 
 
 def delete_single_user(session: Session, user_id: int):
-    if not (user_object := if_exists(User, "id", user_id, session)):
+    if not if_exists(User, "id", user_id, session):
         raise DoesNotExist(User.__name__, user_id)
 
     statement = delete(User).filter(User.id == user_id)
