@@ -11,6 +11,7 @@ from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
 from src.apps.user.services import (authenticate, delete_single_user,
                                     get_all_users, get_single_user,
                                     register_user, update_single_user)
+from src.apps.orders.services import get_all_user_orders
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema, T
 from src.dependencies.get_db import get_db

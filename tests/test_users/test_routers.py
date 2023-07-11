@@ -2,8 +2,11 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.apps.user.schemas import UserOutputSchema
+from src.apps.orders.schemas import OrderOutputSchema
 from src.core.factories import UserRegisterSchemaFactory
 from tests.test_users.conftest import DB_USER_SCHEMA
+from tests.test_orders.conftest import db_orders
+from tests.test_products.conftest import db_products, db_categories
 
 
 def test_create_user(sync_client: TestClient):
@@ -47,17 +50,16 @@ def test_authenticated_user_can_get_their_account(
     response = sync_client.get("users/me", headers=auth_headers)
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["id"] == db_users[0].id
 
 def test_authenticated_user_can_get_their_orders(
     sync_client: TestClient,
-    get_token_header: dict[str, str],
-    db_users: list[UserOutputSchema],
+    auth_headers: dict[str, str],
+    db_user: list[UserOutputSchema],
     db_orders: list[OrderOutputSchema]
 ):
-    response = sync_client.get(f"users/{db_users[0].id}/orders", headers=get_token_header)
+    response = sync_client.get(f"users/{db_user.id}/orders", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()['results']) == 1
+    assert response.json()["total"] == len(db_orders)
 
 def test_authenticated_user_can_update_user(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema

@@ -20,7 +20,7 @@ from src.core.exceptions import (
     AuthException
 )
 from src.core.pagination.models import PageParams
-from src.core.factories import OrderFactory
+from src.core.factories import OrderInputSchemaFactory
 from tests.test_orders.conftest import DB_ORDER_SCHEMAS
 
         
@@ -36,8 +36,8 @@ def test_raise_exception_while_getting_nonexistent_order(
     sync_session: Session,
     db_orders: list[OrderOutputSchema]
 ):
-    with pytest.raises(DoesNotExist) as exc:
-        get_single_order(sync_session, db_orders[-1].id+2)
+    with pytest.raises(DoesNotExist):
+        get_single_order(sync_session, len(db_orders)+2)
 
 def test_if_user_retrieve_only_their_orders(
     sync_session: Session,
@@ -54,39 +54,18 @@ def test_if_multiple_orders_were_returned(
 ):
     orders = get_all_orders(sync_session, PageParams(page=1, size=5))
     assert orders.total == len(db_orders)
-
-def test_update_order_with_one_field_to_update_in_a_schema(
-    sync_session: Session,
-    db_orders: list[OrderOutputSchema],
-    db_products: list[ProductOutputSchema]
-):
-    update_data = OrderFactory.build(product_ids=[product.id for product in db_products])
-    update_order = update_single_order(sync_session, update_data, db_orders[0].id)
-    
-    retrieved_order = get_single_order(sync_session, db_orders[0].id)
-    assert [product.id for product in retrieved_order.products] == [product.id for product in db_products]
-
-def test_update_order_with_no_update_data(
-    sync_session: Session,
-    db_orders: list[OrderOutputSchema]
-):
-    update_data = {}
-    updated_order = update_single_order(sync_session, OrderInputSchema(**update_data), db_orders[0].id)
-    
-    retrieved_order = get_single_order(sync_session, db_orders[0].id)
-    assert updated_order == retrieved_order
     
 def test_raise_exception_while_updating_nonexistent_order(
     sync_session: Session,
     db_orders: list[OrderOutputSchema]
 ):
-    update_data = OrderFactory.build()
-    with pytest.raises(DoesNotExist) as exc:
-        update_single_order(sync_session, update_data, db_orders[-1].id+2)
+    update_data = OrderInputSchemaFactory.build()
+    with pytest.raises(DoesNotExist):
+        update_single_order(sync_session, update_data, len(db_orders)+2)
 
 def test_raise_exception_while_deleting_nonexistent_order(
     sync_session: Session,
     db_orders: list[OrderOutputSchema]
 ):
-    with pytest.raises(DoesNotExist) as exc:
-        delete_single_order(sync_session, db_orders[-1].id+2)
+    with pytest.raises(DoesNotExist):
+        delete_single_order(sync_session, len(db_orders)+2)

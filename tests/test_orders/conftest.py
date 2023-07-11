@@ -4,13 +4,13 @@ from sqlalchemy.orm import Session
 
 from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
 from src.apps.orders.services import create_order, delete_all_orders, get_single_order
-from tests.test_users.conftest import access_token, db_user
+from tests.test_users.conftest import auth_headers, db_user
 from tests.test_products.conftest import db_products, db_categories
 
 from src.core.pagination.models import PageParams
-from src.core.factories import OrderFactory
+from src.core.factories import OrderInputSchemaFactory
 
-DB_ORDER_SCHEMAS = [OrderFactory.build() for _ in range(3)]
+DB_ORDER_SCHEMAS = [OrderInputSchemaFactory.build() for _ in range(3)]
 
 EXISTING_ORDER_DATA = DB_ORDER_SCHEMAS[0]
 
