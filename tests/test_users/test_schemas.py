@@ -33,6 +33,5 @@ def test_user_register_schema_raises_validation_error_when_birth_date_is_from_fu
 ):
     with result:
         UserRegisterSchemaFactory.build(
-            birth_date=future_date, password="password",
-            password_repeat="password"
+            birth_date=future_date, password="password", password_repeat="password"
         )

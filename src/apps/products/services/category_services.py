@@ -17,8 +17,7 @@ def create_category(
 
     if category_data:
         category_name_check = session.scalar(
-            select(Category).filter(
-                Category.name == category_data["name"]).limit(1)
+            select(Category).filter(Category.name == category_data["name"]).limit(1)
         )
         if category_name_check:
             raise AlreadyExists(Category.__name__, "name", category.name)
@@ -30,10 +29,8 @@ def create_category(
     return CategoryOutputSchema.from_orm(new_category)
 
 
-def get_single_category(session: Session,
-                        category_id: int) -> CategoryOutputSchema:
-    if not (
-        category_object := if_exists(Category, "id", category_id, session)):
+def get_single_category(session: Session, category_id: int) -> CategoryOutputSchema:
+    if not (category_object := if_exists(Category, "id", category_id, session)):
         raise DoesNotExist(Category.__name__, category_id)
 
     return CategoryOutputSchema.from_orm(category_object)
@@ -63,8 +60,7 @@ def update_single_category(
 
     if category_data:
         category_name_check = session.scalar(
-            select(Category).filter(
-                Category.name == category_input.name).limit(1)
+            select(Category).filter(Category.name == category_input.name).limit(1)
         )
         if category_name_check:
             raise IsOccupied(Category.__name__, "name", category_input.name)

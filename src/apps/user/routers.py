@@ -6,11 +6,20 @@ from sqlalchemy.orm import Session
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.orders.schemas import OrderOutputSchema
 from src.apps.user.models import User
-from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
-                                   UserRegisterSchema, UserUpdateSchema)
-from src.apps.user.services import (authenticate, delete_single_user,
-                                    get_all_users, get_single_user,
-                                    register_user, update_single_user)
+from src.apps.user.schemas import (
+    UserLoginInputSchema,
+    UserOutputSchema,
+    UserRegisterSchema,
+    UserUpdateSchema,
+)
+from src.apps.user.services import (
+    authenticate,
+    delete_single_user,
+    get_all_users,
+    get_single_user,
+    register_user,
+    update_single_user,
+)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema, T
 from src.dependencies.get_db import get_db
