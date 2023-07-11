@@ -67,7 +67,7 @@ def update_single_category(
                 Category.name == category_input.name).limit(1)
         )
         if category_name_check:
-            raise IsOccupied(Category.__name__, "name", category.name)
+            raise IsOccupied(Category.__name__, "name", category_input.name)
 
         statement = (
             update(Category).filter(

@@ -10,12 +10,17 @@ from src.apps.orders.models import Order
 
 
 class OrderBaseSchema(BaseModel):
-    product_ids: Optional[list[int]] = []
-    user_id: Optional[int]
+    product_ids: list[int] = []
+    user_id: int
     
     
 class OrderInputSchema(OrderBaseSchema):
     pass
+
+
+class OrderUpdateSchema(BaseModel):
+    product_ids: Optional[list[int]] = []
+    user_id: Optional[int]
 
 
 class OrderOutputSchema(BaseModel):

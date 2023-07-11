@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 
 from src.apps.orders.schemas import (
     OrderInputSchema,
-    OrderOutputSchema
+    OrderOutputSchema,
+    OrderUpdateSchema
 )
 from src.apps.orders.services import (
     create_order,
@@ -47,7 +48,7 @@ def get_order(order_id: int, db: Session = Depends(get_db)) -> OrderOutputSchema
 @order_router.patch(
     "/{order_id}", dependencies=[Depends(authenticate_user)], response_model=OrderOutputSchema, status_code=status.HTTP_200_OK
 )
-def update_order(order_id: int, order: OrderInputSchema, db: Session = Depends(get_db)) -> OrderOutputSchema:
+def update_order(order_id: int, order: OrderUpdateSchema, db: Session = Depends(get_db)) -> OrderOutputSchema:
     db_order = update_single_order(db, order, order_id)
     return db_order
 

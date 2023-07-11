@@ -4,6 +4,7 @@ from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
+from src.apps.orders.schemas import OrderOutputSchema
 from src.apps.user.models import User
 from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
                                    UserRegisterSchema, UserUpdateSchema)

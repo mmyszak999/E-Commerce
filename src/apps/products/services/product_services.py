@@ -1,7 +1,7 @@
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
-from src.apps.products.models import Category, Product, association_table
+from src.apps.products.models import Category, Product, category_product_association_table
 from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema
 from src.core.exceptions import (AlreadyExists, DoesNotExist, IsOccupied,
                                  ServiceException)
@@ -63,7 +63,7 @@ def get_all_products(session: Session, page_params: PageParams) -> PagedResponse
 def update_single_product(
     session: Session, product_input: ProductInputSchema, product_id: int
 ) -> ProductOutputSchema:
-    if not if_exists(Product, "id", product_id, session):
+    if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, product_id)
 
     product_data = product_input.dict(exclude_unset=True)
@@ -84,7 +84,7 @@ def update_single_product(
 
             if to_delete := current_categories - incoming_categories:
                 session.execute(
-                    delete(association_table).where(Category.id.in_(to_delete))
+                    delete(category_product_association_table).where(Category.id.in_(to_delete))
                 )
 
             if to_insert := incoming_categories - current_categories:
@@ -92,7 +92,7 @@ def update_single_product(
                     {"product_id": product_id, "category_id": category_id}
                     for category_id in to_insert
                 ]
-                session.execute(insert(association_table).values(rows))
+                session.execute(insert(category_product_association_table).values(rows))
 
             product_data.pop("category_ids")
 

@@ -20,16 +20,17 @@ from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.models import PageParams
 
 
-def create_order(session: Session, order: OrderInputSchema) -> OrderOutputSchema:
-    order_data = order.dict()
+def create_order(session: Session, order_input: OrderInputSchema) -> OrderOutputSchema:
+    order_input_data = order_input.dict()
     
-    user_id = order_data.pop('user_id')
+    user_id = order_input_data.pop('user_id')
     user = session.scalar(select(User).filter(User.id==user_id).limit(1))
-    product_ids = order_data.pop('product_ids')
+    product_ids = order_input_data.pop('product_ids')
     products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
 
-    order_data['user'], order_data['products'] = user, products
-    new_order = Order(**order_data)
+    order_create_data = dict()
+    order_create_data['user'], order_create_data['products'] = user, products
+    new_order = Order(**order_create_data)
     session.add(new_order)
     session.commit()
 
@@ -56,22 +57,22 @@ def update_single_order(session: Session, order_input: OrderInputSchema, order_i
         raise DoesNotExist(Order.__name__, order_id)
     
     order_data = order_input.dict(exclude_none=True, exclude_unset=True)
-    if order_data.get('product_ids'):
-        incoming_products = set(order_data['product_ids'])
-        current_products = set(product.id for product in order_object.products)
-        
-        if to_delete := current_products - incoming_products:
-            session.execute(delete(order_product_association_table).where(Product.id.in_(to_delete)))
-        
-        if to_insert := incoming_products - current_products:
-            rows = [{"order_id": order_id, "product_id": product_id} for product_id in to_insert]
-            session.execute(insert(order_product_association_table).values(rows))
-
-        order_data.pop('product_ids')
-        
     if order_data:
+        if order_data.get('product_ids'):
+            incoming_products = set(order_data['product_ids'])
+            current_products = set(product.id for product in order_object.products)
+            
+            if to_delete := current_products - incoming_products:
+                session.execute(delete(order_product_association_table).where(Product.id.in_(to_delete)))
+            
+            if to_insert := incoming_products - current_products:
+                rows = [{"order_id": order_id, "product_id": product_id} for product_id in to_insert]
+                session.execute(insert(order_product_association_table).values(rows))
+
+            order_data.pop('product_ids')
+            
         statement = update(Order).filter(Order.id==order_id).values(**order_data)
-    
+        
         session.execute(statement)
         session.commit()
         session.refresh(order_object)
@@ -86,7 +87,7 @@ def delete_all_orders(session: Session):
     return result
 
 def delete_single_order(session: Session, order_id: int):
-    if not (order_object := if_exists(Order, "id", order_id, session)):
+    if not if_exists(Order, "id", order_id, session):
         raise DoesNotExist(Order.__name__, order_id)
 
     statement = delete(Order).filter(Order.id == order_id)
