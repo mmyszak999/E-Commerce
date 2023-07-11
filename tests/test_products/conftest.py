@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 
 from src.apps.products.services.category_services import create_category
 from src.apps.products.services.product_services import create_product
-from src.core.factories import CategoryInputSchemaFactory, ProductInputSchemaFactory
+from src.core.factories import (CategoryInputSchemaFactory,
+                                ProductInputSchemaFactory)
 from tests.test_users.conftest import auth_headers, db_user
 
 DB_CATEGORY_SCHEMAS = [CategoryInputSchemaFactory.build() for _ in range(3)]

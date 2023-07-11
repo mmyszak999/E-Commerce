@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, Date
+from sqlalchemy import Boolean, Column, Date, Integer, String
 from sqlalchemy.orm import relationship
 
 from src.database.db_connection import Base
@@ -16,5 +16,3 @@ class User(Base):
     birth_date = Column(Date, nullable=False)
     is_active = Column(Boolean, nullable=False, server_default="true")
     orders = relationship("Order", back_populates="user")
-
-

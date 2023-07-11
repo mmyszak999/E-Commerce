@@ -2,9 +2,11 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
-from src.apps.user.schemas import UserOutputSchema, UserRegisterSchema, UserUpdateSchema
+from src.apps.user.schemas import (UserOutputSchema, UserRegisterSchema,
+                                   UserUpdateSchema)
 from src.apps.user.utils import passwd_context
-from src.core.exceptions import AlreadyExists, AuthException, DoesNotExist, IsOccupied
+from src.core.exceptions import (AlreadyExists, AuthException, DoesNotExist,
+                                 IsOccupied)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -80,13 +82,13 @@ def update_single_user(
 
         if username_check:
             raise IsOccupied(User.__name__, "username", user.username)
-        
+
     if user_data:
         statement = update(User).filter(User.id == user_id).values(**user_data)
 
         session.execute(statement)
         session.commit()
-    
+
     return get_single_user(session, user_id=user_id)
 
 

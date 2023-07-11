@@ -3,12 +3,8 @@ from sqlalchemy.orm import Session
 
 from src.apps.products.schemas import CategoryOutputSchema
 from src.apps.products.services.category_services import (
-    create_category,
-    delete_single_category,
-    get_all_categories,
-    get_single_category,
-    update_single_category,
-)
+    create_category, delete_single_category, get_all_categories,
+    get_single_category, update_single_category)
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
 from src.core.factories import CategoryInputSchemaFactory
 from src.core.pagination.models import PageParams

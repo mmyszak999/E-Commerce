@@ -2,13 +2,11 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.apps.products.schemas import ProductOutputSchema
-from src.apps.products.services.product_services import (
-    create_product,
-    delete_single_product,
-    get_all_products,
-    get_single_product,
-    update_single_product,
-)
+from src.apps.products.services.product_services import (create_product,
+                                                         delete_single_product,
+                                                         get_all_products,
+                                                         get_single_product,
+                                                         update_single_product)
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
 from src.core.factories import ProductInputSchemaFactory
 from src.core.pagination.models import PageParams

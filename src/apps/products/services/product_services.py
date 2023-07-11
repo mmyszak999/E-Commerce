@@ -1,14 +1,11 @@
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
-from src.apps.products.models import Category, Product, category_product_association_table
+from src.apps.products.models import (Category, Product,
+                                      category_product_association_table)
 from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema
-from src.core.exceptions import (
-    AlreadyExists,
-    DoesNotExist,
-    IsOccupied,
-    ServiceException,
-)
+from src.core.exceptions import (AlreadyExists, DoesNotExist, IsOccupied,
+                                 ServiceException)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -88,7 +85,9 @@ def update_single_product(
 
             if to_delete := current_categories - incoming_categories:
                 session.execute(
-                    delete(category_product_association_table).where(Category.id.in_(to_delete))
+                    delete(category_product_association_table).where(
+                        Category.id.in_(to_delete)
+                    )
                 )
 
             if to_insert := incoming_categories - current_categories:

@@ -2,28 +2,18 @@ from fastapi import Depends, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import (
-    CategoryInputSchema,
-    CategoryOutputSchema,
-    ProductInputSchema,
-    ProductOutputSchema,
-)
+from src.apps.products.schemas import (CategoryInputSchema,
+                                       CategoryOutputSchema,
+                                       ProductInputSchema, ProductOutputSchema)
 from src.apps.products.services.category_services import (
-    create_category,
-    delete_all_categories,
-    delete_single_category,
-    get_all_categories,
-    get_single_category,
-    update_single_category,
-)
-from src.apps.products.services.product_services import (
-    create_product,
-    delete_all_products,
-    delete_single_product,
-    get_all_products,
-    get_single_product,
-    update_single_product,
-)
+    create_category, delete_all_categories, delete_single_category,
+    get_all_categories, get_single_category, update_single_category)
+from src.apps.products.services.product_services import (create_product,
+                                                         delete_all_products,
+                                                         delete_single_product,
+                                                         get_all_products,
+                                                         get_single_product,
+                                                         update_single_product)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.dependencies.get_db import get_db

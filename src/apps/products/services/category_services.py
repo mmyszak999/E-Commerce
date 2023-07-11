@@ -66,14 +66,14 @@ def update_single_category(
             raise IsOccupied(Category.__name__, "name", category_input.name)
 
         statement = (
-            update(Category).filter(
-                Category.id == category_id).values(**category_data)
+            update(Category).filter(Category.id == category_id).values(**category_data)
         )
 
         session.execute(statement)
         session.commit()
-    
+
     return get_single_category(session, category_id=category_id)
+
 
 def delete_all_categories(session: Session):
     statement = delete(Category)
@@ -81,6 +81,7 @@ def delete_all_categories(session: Session):
     session.commit()
 
     return result
+
 
 def delete_single_category(session: Session, category_id: int):
     if not if_exists(Category, "id", category_id, session):
