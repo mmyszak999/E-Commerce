@@ -3,8 +3,12 @@ from sqlalchemy.orm import Session
 
 from src.apps.products.models import Category, Product, association_table
 from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema
-from src.core.exceptions import (AlreadyExists, DoesNotExist, IsOccupied,
-                                 ServiceException)
+from src.core.exceptions import (
+    AlreadyExists,
+    DoesNotExist,
+    IsOccupied,
+    ServiceException,
+)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate

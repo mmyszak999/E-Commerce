@@ -2,11 +2,9 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
-from src.apps.user.schemas import (UserOutputSchema, UserRegisterSchema,
-                                   UserUpdateSchema)
+from src.apps.user.schemas import UserOutputSchema, UserRegisterSchema, UserUpdateSchema
 from src.apps.user.utils import passwd_context
-from src.core.exceptions import (AlreadyExists, AuthException, DoesNotExist,
-                                 IsOccupied)
+from src.core.exceptions import AlreadyExists, AuthException, DoesNotExist, IsOccupied
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
