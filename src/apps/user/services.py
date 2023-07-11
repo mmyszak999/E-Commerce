@@ -73,9 +73,9 @@ def update_single_user(
 ) -> UserOutputSchema:
     if not if_exists(User, "id", user_id, session):
         raise DoesNotExist(User.__name__, user_id)
-    
+
     user_data = user.dict(exclude_unset=True)
-    
+
     if user_data:
         if user_data.get("username"):
             username_check = session.scalar(

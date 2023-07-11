@@ -5,8 +5,7 @@ from src.apps.orders.models import Order, order_product_association_table
 from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
 from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.core.exceptions import (AlreadyExists, DoesNotExist, IsOccupied,
-                                 ServiceException)
+from src.core.exceptions import DoesNotExist
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
