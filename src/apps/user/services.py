@@ -1,8 +1,11 @@
+from fastapi_jwt_auth import AuthJWT
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
+from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
-from src.apps.user.schemas import UserOutputSchema, UserRegisterSchema, UserUpdateSchema
+from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema, UserRegisterSchema,
+                                   UserUpdateSchema)
 from src.apps.user.utils import passwd_context
 from src.core.exceptions import AlreadyExists, AuthException, DoesNotExist, IsOccupied
 from src.core.pagination.models import PageParams
@@ -46,6 +49,16 @@ def authenticate(username: str, password: str, session: Session) -> User:
         raise AuthException("Invalid Credentials")
     return user
 
+
+def get_access_token_schema(user_login_schema: UserLoginInputSchema, session: Session, auth_jwt: AuthJWT) -> str:
+    user = authenticate(**user_login_schema.dict(), session=session)
+    user_output_schema = UserOutputSchema.from_orm(user)
+    access_token = auth_jwt.create_access_token(
+        subject=user_output_schema.json(), algorithm="HS256"
+    )
+    
+    return AccessTokenOutputSchema(access_token=access_token)
+    
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
