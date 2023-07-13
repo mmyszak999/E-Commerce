@@ -45,7 +45,6 @@ def login_user(
 def get_logged_user(
     request_user: User = Depends(authenticate_user),
 ) -> UserOutputSchema:
-    print(request_user)
     return UserOutputSchema.from_orm(request_user)
 
 

@@ -44,7 +44,7 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
 
 def authenticate(username: str, password: str, session: Session) -> User:
-    user = session.scalar(select(User).filter(username == User.username).limit(1))
+    user = session.scalar(select(User).filter(User.username == username).limit(1))
     if not (user or passwd_context.verify(password, user.password)):
         raise AuthException("Invalid Credentials")
     return user
@@ -52,9 +52,9 @@ def authenticate(username: str, password: str, session: Session) -> User:
 
 def get_access_token_schema(user_login_schema: UserLoginInputSchema, session: Session, auth_jwt: AuthJWT) -> str:
     user = authenticate(**user_login_schema.dict(), session=session)
-    user_output_schema = UserOutputSchema.from_orm(user)
+    username = user.username
     access_token = auth_jwt.create_access_token(
-        subject=user_output_schema.json(), algorithm="HS256"
+        subject=username, algorithm="HS256"
     )
     
     return AccessTokenOutputSchema(access_token=access_token)
