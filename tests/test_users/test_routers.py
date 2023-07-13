@@ -29,8 +29,8 @@ def test_authenticated_user_can_get_users(
 ):
     response = sync_client.get("users/", headers=auth_headers)
 
-    assert response.json()["total"] == 1
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()["total"] == 1
 
 
 def test_authenticated_user_can_get_single_user(

@@ -1,3 +1,4 @@
+from fastapi import Depends
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session

@@ -14,7 +14,7 @@ from src.apps.user.services import (authenticate, delete_single_user,
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema, T
 from src.dependencies.get_db import get_db
-from src.dependencies.user import authenticate_user
+from src.dependencies.user import authenticate_user, check_object_permission, check_permission
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -41,7 +41,12 @@ def login_user(
     return access_token_schema
 
 
-@router.get("/me", status_code=status.HTTP_200_OK, response_model=UserOutputSchema)
+@router.get(
+    "/me",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(authenticate_user)],
+    response_model=UserOutputSchema
+)
 def get_logged_user(
     request_user: User = Depends(authenticate_user),
 ) -> UserOutputSchema:
@@ -50,46 +55,59 @@ def get_logged_user(
 
 @router.get(
     "/",
-    response_model=PagedResponseSchema[T],
-    dependencies=[Depends(authenticate_user)],
-    status_code=status.HTTP_200_OK,
+    response_model=PagedResponseSchema[UserOutputSchema],
+    status_code=status.HTTP_200_OK
 )
 def get_users(
-    db: Session = Depends(get_db), page_params: PageParams = Depends()
-) -> PagedResponseSchema[T]:
+    db: Session = Depends(get_db), page_params: PageParams = Depends(), request_user: User = Depends(authenticate_user)
+) -> PagedResponseSchema[UserOutputSchema]:
+    check_permission(request_user)
     db_users = get_all_users(db, page_params)
     return db_users
 
 
 @router.get(
     "/{user_id}",
-    dependencies=[Depends(authenticate_user)],
     response_model=UserOutputSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
+def get_user(user_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> UserOutputSchema:
+    check_object_permission(user_id, request_user)
     db_user = get_single_user(db, user_id)
     return db_user
 
 
+@router.get(
+    "/{user_id}/orders",
+    response_model=PagedResponseSchema[OrderOutputSchema],
+    status_code=status.HTTP_200_OK,
+)
+def get_user_orders(
+    user_id: int, db: Session = Depends(get_db), page_params: PageParams = Depends(), request_user: User = Depends(authenticate_user)
+) -> PagedResponseSchema[OrderOutputSchema]:
+    check_object_permission(user_id, request_user)
+    db_orders = get_all_user_orders(db, user_id, page_params)
+    return db_orders
+
+
 @router.patch(
     "/{user_id}",
-    dependencies=[Depends(authenticate_user)],
     response_model=UserOutputSchema,
     status_code=status.HTTP_200_OK,
 )
 def update_user(
-    user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db)
+    user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
 ) -> UserOutputSchema:
+    check_object_permission(user_id, request_user)
     db_user = update_single_user(db, user, user_id)
     return db_user
 
 
 @router.delete(
     "/{user_id}",
-    dependencies=[Depends(authenticate_user)],
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_user(user_id: int, db: Session = Depends(get_db)) -> Response:
+def delete_user(user_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> Response:
+    check_object_permission(user_id, request_user)
     delete_single_user(db, user_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

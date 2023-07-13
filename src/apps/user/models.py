@@ -14,3 +14,8 @@ class User(Base):
     password = Column(String, nullable=False)
     birth_date = Column(Date, nullable=False)
     is_active = Column(Boolean, nullable=False, server_default="true")
+<<<<<<< HEAD
+=======
+    orders = relationship("Order", back_populates="user")
+    is_superuser = Column(Boolean, nullable=False, server_default="false")
+>>>>>>> 0982c8f (add permissions to users resources)
