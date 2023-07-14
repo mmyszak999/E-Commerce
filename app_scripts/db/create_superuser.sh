@@ -27,16 +27,17 @@ try:
     """
     cursor.execute(postgres_insert_query)
     connection.commit()
+    print("successfully created superuser")
 
 
 except (psycopg2.OperationalError, psycopg2.errors.UniqueViolation):
+    print("Couldn't create a superuser. Check if the superuser account is already created.")
     sys.exit(-1)
 sys.exit(0)
 
 END
 }
-create_superuser;
-done
->&2 echo 'Superuser created'
+
+create_superuser
 
 exec "$@"
