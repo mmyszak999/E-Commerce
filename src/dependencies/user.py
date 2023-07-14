@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
 from src.apps.user.schemas import UserOutputSchema
-from src.core.exceptions import DoesNotExist
+from src.core.exceptions import AuthenticationException
 from src.dependencies.get_db import get_db
 from src.settings.jwt_settings import AuthJWTSettings
 
@@ -20,7 +20,7 @@ def authenticate_user(
     user = session.scalar(select(User).filter(User.username == jwt_subject).limit(1))
 
     if not user:
-        raise DoesNotExist("Cannot find user")
+        raise AuthenticationException("Cannot find user")
 
     return user
 

@@ -61,7 +61,7 @@ def test_if_multiple_users_were_returned(
     sync_session: Session, db_user: UserOutputSchema
 ):
     users = get_all_users(sync_session, PageParams(page=1, size=5))
-    assert users.total == 1
+    assert users.total == 2
 
 
 def test_raise_exception_while_updating_nonexistent_user(

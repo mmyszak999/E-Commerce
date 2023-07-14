@@ -24,10 +24,10 @@ def test_login_user(sync_client: TestClient, db_user: UserOutputSchema):
     assert "access_token" in response.json()
 
 
-def test_authenticated_user_can_get_users(
-    sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
+def test_superuser_user_can_get_users(
+    sync_client: TestClient, superuser_auth_headers: dict[str, str]
 ):
-    response = sync_client.get("users/", headers=auth_headers)
+    response = sync_client.get("users/", headers=superuser_auth_headers)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["total"] == 1
@@ -61,9 +61,9 @@ def test_authenticated_user_can_update_user(
 
 
 def test_authenticated_user_can_delete_user(
-    sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
+    sync_client: TestClient, superuser_auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
-    response = sync_client.delete(f"users/{db_user.id}", headers=auth_headers)
+    response = sync_client.delete(f"users/{db_user.id}", headers=superuser_auth_headers)
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
 

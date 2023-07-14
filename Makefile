@@ -21,7 +21,7 @@ test:
 		docker-compose exec web bash -c "pytest $(location)"
 
 backend-bash:
-		docker-compose exec -it web bash
+		docker exec -it fastapi_backend bash
 
 db-bash: 
 		docker-compose exec db bash
@@ -30,4 +30,4 @@ db-shell:
 		docker-compose exec db psql -U ${db-user}
 
 create-superuser:
-		docker-compose exec web bash -c "bash ./app_scripts/create_superuser.sh"
+		docker-compose exec web bash -c "bash ./app_scripts/create_superuser.sh main_db"
