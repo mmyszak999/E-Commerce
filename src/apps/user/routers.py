@@ -69,11 +69,11 @@ def get_users(
 
 @router.get(
     "/{user_id}",
+    dependencies=[Depends(authenticate_user)],
     response_model=UserOutputSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_user(user_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> UserOutputSchema:
-    check_object_permission(user_id, request_user)
+def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
     db_user = get_single_user(db, user_id)
     return db_user
 
@@ -109,6 +109,6 @@ def update_user(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_user(user_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> Response:
-    check_object_permission(user_id, request_user)
+    check_permission(request_user)
     delete_single_user(db, user_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

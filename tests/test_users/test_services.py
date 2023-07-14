@@ -54,7 +54,7 @@ def test_raise_exception_while_getting_nonexistent_user(
     sync_session: Session, db_user: UserOutputSchema
 ):
     with pytest.raises(DoesNotExist):
-        get_single_user(sync_session, len([db_user]) + 2)
+        get_single_user(sync_session, db_user.id + 22)
 
 
 def test_if_multiple_users_were_returned(
@@ -91,4 +91,4 @@ def test_raise_exception_while_deleting_nonexistent_user(
     sync_session: Session, db_user: UserOutputSchema
 ):
     with pytest.raises(DoesNotExist):
-        delete_single_user(sync_session, len([db_user]) + 2)
+        delete_single_user(sync_session, db_user.id + 22)

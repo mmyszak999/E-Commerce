@@ -10,7 +10,6 @@ DB_USER_SCHEMA = UserRegisterSchemaFactory.build(
     password="vgo39845n", password_repeat="vgo39845n"
 )
 
-
 @pytest.fixture
 def db_user(sync_session: Session) -> UserOutputSchema:
     return register_user(sync_session, DB_USER_SCHEMA)
