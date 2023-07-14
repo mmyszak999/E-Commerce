@@ -16,4 +16,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT ["sh", "./db_scripts/start.sh"]
+ENTRYPOINT ["sh", "./app_scripts/db/start.sh"]
