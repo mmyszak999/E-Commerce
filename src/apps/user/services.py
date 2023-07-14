@@ -8,7 +8,8 @@ from src.apps.user.models import User
 from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema, UserRegisterSchema,
                                    UserUpdateSchema)
 from src.apps.user.utils import passwd_context
-from src.core.exceptions import AlreadyExists, AuthException, DoesNotExist, IsOccupied
+from src.core.exceptions import (AlreadyExists, AuthenticationException, DoesNotExist,
+                                 IsOccupied)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -47,7 +48,7 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 def authenticate(username: str, password: str, session: Session) -> User:
     user = session.scalar(select(User).filter(User.username == username).limit(1))
     if not (user or passwd_context.verify(password, user.password)):
-        raise AuthException("Invalid Credentials")
+        raise AuthenticationException("Invalid Credentials")
     return user
 
 

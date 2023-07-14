@@ -12,9 +12,10 @@ from src.apps.user.services import (authenticate, delete_single_user,
                                     get_single_user, register_user,
                                     update_single_user)
 from src.core.pagination.models import PageParams
-from src.core.pagination.schemas import PagedResponseSchema, T
+from src.core.pagination.schemas import PagedResponseSchema
+from src.core.permissions import check_permission, check_object_permission
 from src.dependencies.get_db import get_db
-from src.dependencies.user import authenticate_user, check_object_permission, check_permission
+from src.dependencies.user import authenticate_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 

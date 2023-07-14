@@ -8,7 +8,8 @@ from src.apps.products.routers import category_router, product_router
 from src.core.exceptions import (
     DoesNotExist,
     AlreadyExists,
-    AuthException,
+    AuthenticationException,
+    AuthorizationException,
     IsOccupied,
     ServiceException,
 )
@@ -62,4 +63,22 @@ def handle_service_exception(
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+
+@app.exception_handler(AuthenticationException)
+def handle_authentication_exception(
+    request: Request, exception: AuthenticationException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+
+@app.exception_handler(AuthorizationException)
+def handle_authorization_exception(
+    request: Request, exception: AuthorizationException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exception)}
     )

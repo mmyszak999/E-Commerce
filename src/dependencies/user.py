@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
 from src.apps.user.schemas import UserOutputSchema
-from src.core.exceptions import AuthException
+from src.core.exceptions import DoesNotExist
 from src.dependencies.get_db import get_db
 from src.settings.jwt_settings import AuthJWTSettings
 
@@ -20,19 +20,10 @@ def authenticate_user(
     user = session.scalar(select(User).filter(User.username == jwt_subject).limit(1))
 
     if not user:
-        raise AuthException("Cannot find user")
+        raise DoesNotExist("Cannot find user")
 
     return user
 
-def check_permission(request_user: User) -> None:
-    if not request_user.is_superuser:
-        raise AuthException("You don't have superuser permission to access the group of resources")
-
-
-def check_object_permission(user_id: int, request_user: User) -> None:
-    if not(request_user.is_superuser or request_user.id == user_id):
-        raise AuthException("You don't have permission to access the resource")
-    
 
 @AuthJWT.load_config
 def get_config():

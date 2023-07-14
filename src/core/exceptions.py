@@ -20,6 +20,13 @@ class IsOccupied(ServiceException):
         super().__init__(f"{field}={value} value of {class_name} is occupied")
 
 
-class AuthException(ServiceException):
+class AuthenticationException(ServiceException):
     def __init__(self, message: str) -> None:
         super().__init__(f"{message}")
+
+
+class AuthorizationException(ServiceException):
+    def __init__(self, message: str) -> None:
+        super().__init__(f"{message}")
+
+
