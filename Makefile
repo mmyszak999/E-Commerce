@@ -21,7 +21,7 @@ test:
 		docker-compose exec web bash -c "pytest $(location)"
 
 backend-bash:
-		docker exec -it fastapi_backend bash
+		docker-compose exec web bash
 
 db-bash: 
 		docker-compose exec db bash
