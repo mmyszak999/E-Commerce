@@ -112,7 +112,6 @@ def test_authenticated_user_cannot_update_category(
 def test_authenticated_user_cannot_delete_category(
     sync_client: TestClient, auth_headers: dict[str, str]
 ):
-    update_data = CategoryInputSchemaFactory.build()
     response = sync_client.delete("categories/1", headers=auth_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -126,7 +125,6 @@ def test_anonymous_user_cannot_delete_category(sync_client: TestClient):
 def test_authenticated_user_cannot_delete_all_categories(
     sync_client: TestClient, auth_headers: dict[str, str]
 ):
-    update_data = CategoryInputSchemaFactory.build()
     response = sync_client.delete("categories/", headers=auth_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     
