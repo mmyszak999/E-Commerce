@@ -26,6 +26,6 @@ class Order(Base):
         "Product", secondary=order_product_association_table, back_populates="orders"
     )
     user_id = Column(
-        Integer, ForeignKey("user.id", ondelete="cascade", onupdate="cascade")
+        Integer, ForeignKey("user.id", ondelete="cascade", onupdate="cascade"), nullable=False
     )
     user = relationship("User", back_populates="orders")
