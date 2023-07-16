@@ -15,16 +15,22 @@ from src.core.utils import if_exists
 def create_order(session: Session, order_input: OrderInputSchema) -> OrderOutputSchema:
     order_input_data = order_input.dict()
 
-    user_id = order_input_data.pop("user_id")
-    user = session.scalar(select(User).filter(User.id == user_id).limit(1))
-    product_ids = order_input_data.pop("product_ids")
-    products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
+    if order_input_data:
+        user_id = order_input_data.pop("user_id")
+        user = session.scalar(select(User).filter(User.id == user_id).limit(1))
+        
+        if order_input_data.get("product_ids"):
+            product_ids = order_input_data.pop("product_ids")
+            products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
+            
+            if not len(set(product_ids)) == len(products):
+                raise ServiceException("Wrong products!")
 
-    order_create_data = dict()
-    order_create_data["user"], order_create_data["products"] = user, products
-    new_order = Order(**order_create_data)
-    session.add(new_order)
-    session.commit()
+        order_create_data = dict()
+        order_create_data["user"], order_create_data["products"] = user, products
+        new_order = Order(**order_create_data)
+        session.add(new_order)
+        session.commit()
 
     return OrderOutputSchema.from_orm(new_order)
 
