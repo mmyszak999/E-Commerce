@@ -107,6 +107,14 @@ def update_single_order(
     return get_single_order(session, order_id=order_id)
 
 
+def delete_all_orders(session: Session):
+    statement = delete(Order)
+    result = session.execute(statement)
+    session.commit()
+
+    return result
+
+
 def delete_single_order(session: Session, order_id: int):
     if not if_exists(Order, "id", order_id, session):
         raise DoesNotExist(Order.__name__, order_id)

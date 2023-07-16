@@ -5,7 +5,7 @@ from src.apps.products.schemas import CategoryOutputSchema
 from src.core.factories import CategoryInputSchemaFactory
 
 
-def test_authenticated_user_can_create_category(
+def test_superuser_can_create_category(
     sync_client: TestClient,
     superuser_auth_headers: dict[str, str],
 ):
@@ -16,7 +16,7 @@ def test_authenticated_user_can_create_category(
     assert response.status_code == status.HTTP_201_CREATED
 
 
-def test_authenticated_user_can_get_categories(
+def test_superuser_can_get_categories(
     sync_client: TestClient,
     superuser_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
@@ -39,7 +39,7 @@ def test_authenticated_user_get_single_category(
     assert response.json()["id"] == db_categories[1].id
 
 
-def test_authenticated_user_can_update_category(
+def test_superuser_can_update_category(
     sync_client: TestClient,
     superuser_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
@@ -55,7 +55,7 @@ def test_authenticated_user_can_update_category(
     assert response.json()["name"] == update_data.name
 
 
-def test_authenticated_user_can_delete_category(
+def test_superuser_can_delete_category(
     sync_client: TestClient,
     superuser_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
@@ -66,7 +66,7 @@ def test_authenticated_user_can_delete_category(
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
-def test_authenticated_user_can_delete_all_categories(
+def test_superuser_can_delete_all_categories(
     sync_client: TestClient,
     superuser_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
@@ -78,11 +78,18 @@ def test_authenticated_user_can_delete_all_categories(
     assert response.json()["total"] == 0
 
 
+def test_authenticated_user_cannot_get_categories(
+    sync_client: TestClient, auth_headers: dict[str, str]
+):
+    response = sync_client.get("categories/", headers=auth_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    
+    
 def test_anonymous_user_cannot_get_categories(
     sync_client: TestClient,
 ):
     response = sync_client.get("categories/")
-    assert len(response.json()) == 1
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 
 
@@ -94,14 +101,37 @@ def test_anonymous_user_cannot_get_single_category(
     assert response.json()["detail"] == "Missing Authorization Header"
 
 
-def test_anonymous_user_cannot_update_category(sync_client: TestClient):
+def test_authenticated_user_cannot_update_category(
+    sync_client: TestClient, auth_headers: dict[str, str]
+):
     update_data = CategoryInputSchemaFactory.build()
-    response = sync_client.patch("categories/1", data=update_data.json())
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json()["detail"] == "Missing Authorization Header"
+    response = sync_client.patch("categories/1", data=update_data.json(), headers=auth_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_authenticated_user_cannot_delete_category(
+    sync_client: TestClient, auth_headers: dict[str, str]
+):
+    update_data = CategoryInputSchemaFactory.build()
+    response = sync_client.delete("categories/1", headers=auth_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_anonymous_user_cannot_delete_category(sync_client: TestClient):
     response = sync_client.delete("categories/1")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Missing Authorization Header"
+    
+
+def test_authenticated_user_cannot_delete_all_categories(
+    sync_client: TestClient, auth_headers: dict[str, str]
+):
+    update_data = CategoryInputSchemaFactory.build()
+    response = sync_client.delete("categories/", headers=auth_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    
+    
+def test_anonymous_user_cannot_delete_all_categories(sync_client: TestClient):
+    response = sync_client.delete("categories/")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
