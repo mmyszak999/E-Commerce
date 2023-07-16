@@ -75,6 +75,7 @@ def test_superuser_can_delete_all_categories(
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     response = sync_client.get("categories/", headers=superuser_auth_headers)
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()["total"] == 0
 
 
@@ -107,6 +108,13 @@ def test_authenticated_user_cannot_update_category(
     update_data = CategoryInputSchemaFactory.build()
     response = sync_client.patch("categories/1", data=update_data.json(), headers=auth_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_anonymous_user_cannot_update_category(sync_client: TestClient):
+    update_data = CategoryInputSchemaFactory.build()
+    response = sync_client.patch("categories/1", data=update_data.json())
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Missing Authorization Header"
 
 
 def test_authenticated_user_cannot_delete_category(
