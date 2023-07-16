@@ -12,7 +12,7 @@ DB_USER_SCHEMA = UserRegisterSchemaFactory.build(
     password="vgo39845n", password_repeat="vgo39845n"
 )
 
-@pytest.fixture(autouse=True, scope='session')
+@pytest.fixture(autouse=True, scope='module')
 def create_superuser():
     subprocess.run(["./app_scripts/create_superuser.sh", "test_db"])
 
@@ -29,7 +29,6 @@ def auth_headers(sync_session: Session, db_user: UserOutputSchema) -> dict[str, 
 
 
 @pytest.fixture
-def superuser_auth_headers(
-    sync_session: Session) -> dict[str, str]:
+def superuser_auth_headers(sync_session: Session) -> dict[str, str]:
     access_token = AuthJWT().create_access_token("SuperUser")
     return {"Authorization": f"Bearer {access_token}"}
