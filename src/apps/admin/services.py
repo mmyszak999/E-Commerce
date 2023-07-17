@@ -1,3 +1,4 @@
+from fastapi import Response
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
@@ -6,6 +7,7 @@ from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
+from src.core.utils import if_exists
 
 
 def modify_superuser_permission(session: Session, user_id: int, set_as_superuser: bool) -> dict[str, str]:
@@ -21,11 +23,11 @@ def modify_superuser_permission(session: Session, user_id: int, set_as_superuser
 
 
 def grant_superuser_permission(session: Session, user_id: int) -> dict[str, str]:
-    modify_superuser_permission(session, user_id, set_as_superuser=True)
+    return modify_superuser_permission(session, user_id, set_as_superuser=True)
 
 
 def revoke_superuser_permission(session: Session, user_id: int) -> dict[str, str]:
-    modify_superuser_permission(session, user_id, set_as_superuser=False)
+    return modify_superuser_permission(session, user_id, set_as_superuser=False)
 
 
 def get_all_superusers(session: Session, page_params: PageParams) -> PagedResponseSchema:
