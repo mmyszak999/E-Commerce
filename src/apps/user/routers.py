@@ -17,10 +17,10 @@ from src.core.permissions import check_permission, check_object_permission
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
-router = APIRouter(prefix="/users", tags=["users"])
+user_router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.post(
+@user_router.post(
     "/register", response_model=UserOutputSchema, status_code=status.HTTP_201_CREATED
 )
 def create_user(
@@ -30,7 +30,7 @@ def create_user(
     return db_user
 
 
-@router.post(
+@user_router.post(
     "/login", status_code=status.HTTP_200_OK, response_model=AccessTokenOutputSchema
 )
 def login_user(
@@ -42,7 +42,7 @@ def login_user(
     return access_token_schema
 
 
-@router.get(
+@user_router.get(
     "/me",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(authenticate_user)],
@@ -54,7 +54,7 @@ def get_logged_user(
     return UserOutputSchema.from_orm(request_user)
 
 
-@router.get(
+@user_router.get(
     "/",
     response_model=PagedResponseSchema[UserOutputSchema],
     status_code=status.HTTP_200_OK
@@ -67,7 +67,7 @@ def get_users(
     return db_users
 
 
-@router.get(
+@user_router.get(
     "/{user_id}",
     dependencies=[Depends(authenticate_user)],
     response_model=UserOutputSchema,
@@ -78,7 +78,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
     return db_user
 
 
-@router.get(
+@user_router.get(
     "/{user_id}/orders",
     response_model=PagedResponseSchema[OrderOutputSchema],
     status_code=status.HTTP_200_OK,
@@ -91,7 +91,7 @@ def get_user_orders(
     return db_orders
 
 
-@router.patch(
+@user_router.patch(
     "/{user_id}",
     response_model=UserOutputSchema,
     status_code=status.HTTP_200_OK,
@@ -104,7 +104,7 @@ def update_user(
     return db_user
 
 
-@router.delete(
+@user_router.delete(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
