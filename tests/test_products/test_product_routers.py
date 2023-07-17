@@ -74,6 +74,7 @@ def test_superuser_can_delete_all_products(
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     response = sync_client.get("products/", headers=superuser_auth_headers)
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()["total"] == 0
 
 
