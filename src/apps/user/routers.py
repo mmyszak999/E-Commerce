@@ -7,7 +7,7 @@ from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
 from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
                                    UserRegisterSchema, UserUpdateSchema)
-from src.apps.user.services import (authenticate, delete_single_user,
+from src.apps.user.services import (delete_single_user,
                                     get_access_token_schema, get_all_users,
                                     get_single_user, register_user,
                                     update_single_user)

@@ -1,11 +1,9 @@
-import yaml
 from fastapi import Depends
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
-from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import AuthenticationException
 from src.dependencies.get_db import get_db
 from src.settings.jwt_settings import AuthJWTSettings

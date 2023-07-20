@@ -1,6 +1,5 @@
 from fastapi import Depends, status
 from fastapi.routing import APIRouter
-from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
 from src.apps.admin.services import (get_all_superusers,
@@ -10,7 +9,7 @@ from src.apps.user.models import User
 from src.apps.user.schemas import UserOutputSchema
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.permissions import check_object_permission, check_permission
+from src.core.permissions import check_permission
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 

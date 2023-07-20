@@ -1,9 +1,9 @@
-from fastapi import Response
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
 from src.apps.user.schemas import UserOutputSchema
+from src.core.exceptions import DoesNotExist
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
