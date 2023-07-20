@@ -10,7 +10,7 @@ from src.apps.orders.services import (create_order, delete_all_orders,
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.permissions import check_permission, check_object_permission
+from src.core.permissions import check_object_permission, check_permission
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -36,7 +36,9 @@ def post_order(
     status_code=status.HTTP_200_OK,
 )
 def get_orders(
-    db: Session = Depends(get_db), page_params: PageParams = Depends(), request_user: User = Depends(authenticate_user)
+    db: Session = Depends(get_db),
+    page_params: PageParams = Depends(),
+    request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
     check_permission(request_user)
     db_orders = get_all_orders(db, page_params)
@@ -48,7 +50,11 @@ def get_orders(
     response_model=OrderOutputSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_order(order_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> OrderOutputSchema:
+def get_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> OrderOutputSchema:
     db_order = get_single_order(db, order_id)
     check_object_permission(user_id=db_order.user.id, request_user=request_user)
     return db_order
@@ -60,7 +66,10 @@ def get_order(order_id: int, db: Session = Depends(get_db), request_user: User =
     status_code=status.HTTP_200_OK,
 )
 def update_order(
-    order_id: int, order: OrderUpdateSchema, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+    order_id: int,
+    order: OrderUpdateSchema,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     order_check = get_single_order(db, order_id)
     check_object_permission(user_id=order_check.user.id, request_user=request_user)
@@ -72,7 +81,9 @@ def update_order(
     "/",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_orders(db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> Response:
+def delete_orders(
+    db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+) -> Response:
     check_permission(request_user)
     delete_all_orders(db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -82,7 +93,11 @@ def delete_orders(db: Session = Depends(get_db), request_user: User = Depends(au
     "/{order_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_order(order_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> Response:
+def delete_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> Response:
     check_permission(request_user)
     delete_single_order(db, order_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

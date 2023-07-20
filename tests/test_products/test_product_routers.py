@@ -48,7 +48,9 @@ def test_superuser_can_update_product(
         name="test_name", price=14.88, category_ids=[db_categories[0].id]
     )
     response = sync_client.patch(
-        f"products/{db_products[0].id}", data=update_data.json(), headers=superuser_auth_headers
+        f"products/{db_products[0].id}",
+        data=update_data.json(),
+        headers=superuser_auth_headers,
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -61,7 +63,9 @@ def test_superuser_can_delete_product(
     superuser_auth_headers: dict[str, str],
     db_products: list[CategoryOutputSchema],
 ):
-    response = sync_client.delete(f"products/{db_products[0].id}", headers=superuser_auth_headers)
+    response = sync_client.delete(
+        f"products/{db_products[0].id}", headers=superuser_auth_headers
+    )
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
@@ -106,7 +110,9 @@ def test_authenticated_user_cannot_update_product(
     sync_client: TestClient, auth_headers: dict[str, str]
 ):
     update_data = ProductInputSchemaFactory.build()
-    response = sync_client.patch("products/1", headers=auth_headers, data=update_data.json())
+    response = sync_client.patch(
+        "products/1", headers=auth_headers, data=update_data.json()
+    )
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 

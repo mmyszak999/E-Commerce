@@ -1,1 +1,2 @@
-from tests.test_users.conftest import auth_headers, superuser_auth_headers, db_user, create_superuser
+from tests.test_users.conftest import (auth_headers, create_superuser, db_user,
+                                       superuser_auth_headers)

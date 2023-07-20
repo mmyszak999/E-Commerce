@@ -13,7 +13,7 @@ from src.apps.user.services import (authenticate, delete_single_user,
                                     update_single_user)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.permissions import check_permission, check_object_permission
+from src.core.permissions import check_object_permission, check_permission
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -46,7 +46,7 @@ def login_user(
     "/me",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(authenticate_user)],
-    response_model=UserOutputSchema
+    response_model=UserOutputSchema,
 )
 def get_logged_user(
     request_user: User = Depends(authenticate_user),
@@ -57,10 +57,12 @@ def get_logged_user(
 @user_router.get(
     "/",
     response_model=PagedResponseSchema[UserOutputSchema],
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 def get_users(
-    db: Session = Depends(get_db), page_params: PageParams = Depends(), request_user: User = Depends(authenticate_user)
+    db: Session = Depends(get_db),
+    page_params: PageParams = Depends(),
+    request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[UserOutputSchema]:
     check_permission(request_user)
     db_users = get_all_users(db, page_params)
@@ -84,7 +86,10 @@ def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
     status_code=status.HTTP_200_OK,
 )
 def get_user_orders(
-    user_id: int, db: Session = Depends(get_db), page_params: PageParams = Depends(), request_user: User = Depends(authenticate_user)
+    user_id: int,
+    db: Session = Depends(get_db),
+    page_params: PageParams = Depends(),
+    request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
     check_object_permission(user_id, request_user)
     db_orders = get_all_user_orders(db, user_id, page_params)
@@ -97,7 +102,10 @@ def get_user_orders(
     status_code=status.HTTP_200_OK,
 )
 def update_user(
-    user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+    user_id: int,
+    user: UserUpdateSchema,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> UserOutputSchema:
     check_object_permission(user_id, request_user)
     db_user = update_single_user(db, user, user_id)
@@ -108,7 +116,11 @@ def update_user(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_user(user_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> Response:
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> Response:
     check_permission(request_user)
     delete_single_user(db, user_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

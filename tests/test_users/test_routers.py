@@ -14,7 +14,9 @@ def test_if_user_was_created_successfully(sync_client: TestClient):
     assert response.status_code == status.HTTP_201_CREATED
 
 
-def test_if_user_was_logged_correctly(sync_client: TestClient, db_user: UserOutputSchema):
+def test_if_user_was_logged_correctly(
+    sync_client: TestClient, db_user: UserOutputSchema
+):
     login_data = {
         "username": DB_USER_SCHEMA.username,
         "password": DB_USER_SCHEMA.password,
@@ -72,7 +74,9 @@ def test_authenticated_user_can_update_their_account(
 
 
 def test_superuser_can_delete_user(
-    sync_client: TestClient, superuser_auth_headers: dict[str, str], db_user: UserOutputSchema
+    sync_client: TestClient,
+    superuser_auth_headers: dict[str, str],
+    db_user: UserOutputSchema,
 ):
     response = sync_client.delete(f"users/{db_user.id}", headers=superuser_auth_headers)
     assert response.status_code == status.HTTP_204_NO_CONTENT

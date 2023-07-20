@@ -1,5 +1,4 @@
 import yaml
-
 from fastapi import Depends
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy import select

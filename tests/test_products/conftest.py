@@ -5,8 +5,8 @@ from src.apps.products.services.category_services import create_category
 from src.apps.products.services.product_services import create_product
 from src.core.factories import (CategoryInputSchemaFactory,
                                 ProductInputSchemaFactory)
-from tests.test_users.conftest import auth_headers, superuser_auth_headers, db_user, create_superuser
-
+from tests.test_users.conftest import (auth_headers, create_superuser, db_user,
+                                       superuser_auth_headers)
 
 DB_CATEGORY_SCHEMAS = [CategoryInputSchemaFactory.build() for _ in range(3)]
 

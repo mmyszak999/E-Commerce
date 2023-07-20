@@ -5,11 +5,11 @@ from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
-from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema, UserRegisterSchema,
-                                   UserUpdateSchema)
+from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
+                                   UserRegisterSchema, UserUpdateSchema)
 from src.apps.user.utils import passwd_context
-from src.core.exceptions import (AlreadyExists, AuthenticationException, DoesNotExist,
-                                 IsOccupied)
+from src.core.exceptions import (AlreadyExists, AuthenticationException,
+                                 DoesNotExist, IsOccupied)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -52,15 +52,15 @@ def authenticate(username: str, password: str, session: Session) -> User:
     return user
 
 
-def get_access_token_schema(user_login_schema: UserLoginInputSchema, session: Session, auth_jwt: AuthJWT) -> str:
+def get_access_token_schema(
+    user_login_schema: UserLoginInputSchema, session: Session, auth_jwt: AuthJWT
+) -> str:
     user = authenticate(**user_login_schema.dict(), session=session)
     username = user.username
-    access_token = auth_jwt.create_access_token(
-        subject=username, algorithm="HS256"
-    )
-    
+    access_token = auth_jwt.create_access_token(subject=username, algorithm="HS256")
+
     return AccessTokenOutputSchema(access_token=access_token)
-    
+
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):

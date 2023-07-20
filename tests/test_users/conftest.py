@@ -12,7 +12,8 @@ DB_USER_SCHEMA = UserRegisterSchemaFactory.build(
     password="vgo39845n", password_repeat="vgo39845n"
 )
 
-@pytest.fixture(autouse=True, scope='module')
+
+@pytest.fixture(autouse=True, scope="module")
 def create_superuser():
     subprocess.run(["./app_scripts/create_superuser.sh", "test_db"])
 

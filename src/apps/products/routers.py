@@ -24,7 +24,6 @@ from src.core.permissions import check_permission
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
-
 category_router = APIRouter(prefix="/categories", tags=["category"])
 product_router = APIRouter(prefix="/products", tags=["product"])
 
@@ -35,7 +34,9 @@ product_router = APIRouter(prefix="/products", tags=["product"])
     status_code=status.HTTP_201_CREATED,
 )
 def post_category(
-    category: CategoryInputSchema, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+    category: CategoryInputSchema,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> CategoryOutputSchema:
     check_permission(request_user)
     db_category = create_category(db, category)
@@ -48,7 +49,9 @@ def post_category(
     status_code=status.HTTP_200_OK,
 )
 def get_categories(
-    db: Session = Depends(get_db), page_params: PageParams = Depends(), request_user: User = Depends(authenticate_user)
+    db: Session = Depends(get_db),
+    page_params: PageParams = Depends(),
+    request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[CategoryOutputSchema]:
     check_permission(request_user)
     db_categories = get_all_categories(db, page_params)
@@ -74,7 +77,10 @@ def get_category(
     status_code=status.HTTP_200_OK,
 )
 def update_category(
-    category_id: int, category: CategoryInputSchema, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+    category_id: int,
+    category: CategoryInputSchema,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> CategoryOutputSchema:
     check_permission(request_user)
     db_category = update_single_category(db, category, category_id)
@@ -85,7 +91,11 @@ def update_category(
     "/{category_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_category(category_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> Response:
+def delete_category(
+    category_id: int,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> Response:
     check_permission(request_user)
     delete_single_category(db, category_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -95,7 +105,9 @@ def delete_category(category_id: int, db: Session = Depends(get_db), request_use
     "/",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_categories(db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> Response:
+def delete_categories(
+    db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+) -> Response:
     check_permission(request_user)
     delete_all_categories(db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -107,7 +119,9 @@ def delete_categories(db: Session = Depends(get_db), request_user: User = Depend
     status_code=status.HTTP_201_CREATED,
 )
 def post_product(
-    product: ProductInputSchema, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+    product: ProductInputSchema,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> ProductOutputSchema:
     check_permission(request_user)
     db_product = create_product(db, product)
@@ -120,7 +134,9 @@ def post_product(
     status_code=status.HTTP_200_OK,
 )
 def get_products(
-    db: Session = Depends(get_db), page_params: PageParams = Depends(), request_user: User = Depends(authenticate_user)
+    db: Session = Depends(get_db),
+    page_params: PageParams = Depends(),
+    request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[ProductOutputSchema]:
     check_permission(request_user)
     db_products = get_all_products(db, page_params)
@@ -144,7 +160,10 @@ def get_product(product_id: int, db: Session = Depends(get_db)) -> ProductOutput
     status_code=status.HTTP_200_OK,
 )
 def update_product(
-    product_id: int, product: ProductInputSchema, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+    product_id: int,
+    product: ProductInputSchema,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> ProductOutputSchema:
     check_permission(request_user)
     db_product = update_single_product(db, product, product_id)
@@ -155,7 +174,11 @@ def update_product(
     "/{product_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_product(product_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> Response:
+def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> Response:
     check_permission(request_user)
     delete_single_product(db, product_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -165,7 +188,9 @@ def delete_product(product_id: int, db: Session = Depends(get_db), request_user:
     "/",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_products(db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)) -> Response:
+def delete_products(
+    db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+) -> Response:
     check_permission(request_user)
     delete_all_products(db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

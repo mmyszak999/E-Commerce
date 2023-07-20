@@ -18,11 +18,13 @@ def create_order(session: Session, order_input: OrderInputSchema) -> OrderOutput
     if order_input_data:
         user_id = order_input_data.pop("user_id")
         user = session.scalar(select(User).filter(User.id == user_id).limit(1))
-        
+
         if order_input_data.get("product_ids"):
             product_ids = order_input_data.pop("product_ids")
-            products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
-            
+            products = session.scalars(
+                select(Product).where(Product.id.in_(product_ids))
+            ).all()
+
             if not len(set(product_ids)) == len(products):
                 raise ServiceException("Wrong products!")
 

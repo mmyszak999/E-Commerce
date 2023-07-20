@@ -1,6 +1,6 @@
-import pytest
 import subprocess
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
@@ -19,7 +19,7 @@ def sync_engine():
 
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    
+
     yield engine
     Base.metadata.drop_all(bind=engine)
 
