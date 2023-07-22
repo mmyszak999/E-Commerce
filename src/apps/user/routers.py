@@ -1,8 +1,11 @@
-from fastapi import Depends, Response, status
+from fastapi import Depends, Response, status, BackgroundTasks
+from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
+from src.apps.emails.schemas import EmailUpdateSchema
+from src.apps.emails.services import send_confirmation_mail_change_email
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
 from src.apps.user.schemas import (
@@ -46,9 +49,9 @@ def login_user(
     db: Session = Depends(get_db),
 ) -> AccessTokenOutputSchema:
     user = authenticate(**user_login_schema.dict(), session=db)
-    user_schema = UserOutputSchema.from_orm(user)
+    email = user.email
     access_token = auth_jwt.create_access_token(
-        subject=user_schema.json(), algorithm="HS256"
+        subject=email, algorithm="HS256"
     )
 
     return AccessTokenOutputSchema(access_token=access_token)
@@ -96,6 +99,30 @@ def update_user(
 ) -> UserOutputSchema:
     db_user = update_single_user(db, user, user_id)
     return db_user
+
+
+@router.post(
+    "/change-email", status_code=status.HTTP_200_OK
+)
+def change_email(
+    email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, user = Depends(authenticate_user),
+    db: Session = Depends(get_db), auth_jwt: AuthJWT = Depends()
+) -> JSONResponse:
+    user_email = user.email
+    token = auth_jwt.create_access_token(
+        subject=user_email, algorithm="HS256"
+    )
+    send_confirmation_mail_change_email(
+        email_update_schema,
+        db,
+        token,
+        background_tasks
+    )
+    
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Email change confirmation mail has been sent to the new email address!"}
+    )
 
 
 @router.delete(
