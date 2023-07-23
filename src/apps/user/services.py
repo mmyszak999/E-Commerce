@@ -1,10 +1,14 @@
+import json
+
+from fastapi_jwt_auth import AuthJWT
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
 from src.apps.user.schemas import UserOutputSchema, UserRegisterSchema, UserUpdateSchema
 from src.apps.user.utils import passwd_context
-from src.core.exceptions import AlreadyExists, AuthException, DoesNotExist, IsOccupied
+from src.core.exceptions import (AlreadyExists, AuthException, DoesNotExist,
+                                 IsOccupied, ServiceException)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -42,6 +46,7 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
 def authenticate(email: str, password: str, session: Session) -> User:
     user = session.scalar(select(User).filter(email == User.email).limit(1))
+    print(user)
     if not (user or passwd_context.verify(password, user.password)):
         raise AuthException("Invalid Credentials")
     return user
@@ -49,7 +54,7 @@ def authenticate(email: str, password: str, session: Session) -> User:
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
-        raise DoesNotExist(User.__name__, user_id)
+        raise DoesNotExist(User.__name__, "id" ,user_id)
 
     return UserOutputSchema.from_orm(user_object)
 
@@ -70,7 +75,7 @@ def update_single_user(
     session: Session, user: UserUpdateSchema, user_id: int
 ) -> UserOutputSchema:
     if not if_exists(User, "id", user_id, session):
-        raise DoesNotExist(User.__name__, user_id)
+        raise DoesNotExist(User.__name__, "id", user_id)
 
     user_data = user.dict(exclude_unset=True)
     if user_data.get("username"):
@@ -89,6 +94,24 @@ def update_single_user(
     return get_single_user(session, user_id=user_id)
 
 
+def update_email(
+    session: Session, token: str, new_email: str, auth_jwt: AuthJWT
+) -> UserOutputSchema:
+    try:
+        email = auth_jwt.get_raw_jwt(token)["sub"]
+    except Exception:
+        raise ServiceException("Invalid Token")
+    
+    user = if_exists(User, "email", email, session)
+    
+    if user is None:
+        raise DoesNotExist(User.__name__, "email", email)
+
+    statement = update(User).filter(User.email == email).values(email=new_email)
+    session.execute(statement)
+    session.commit()
+        
+
 def delete_all_users(session: Session):
     statement = delete(User)
     result = session.execute(statement)
@@ -99,7 +122,7 @@ def delete_all_users(session: Session):
 
 def delete_single_user(session: Session, user_id: int):
     if not if_exists(User, "id", user_id, session):
-        raise DoesNotExist(User.__name__, user_id)
+        raise DoesNotExist(User.__name__, "id", user_id)
 
     statement = delete(User).filter(User.id == user_id)
     result = session.execute(statement)

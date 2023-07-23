@@ -108,9 +108,8 @@ def change_email(
     email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, user = Depends(authenticate_user),
     db: Session = Depends(get_db), auth_jwt: AuthJWT = Depends()
 ) -> JSONResponse:
-    user_email = user.email
     token = auth_jwt.create_access_token(
-        subject=user_email, algorithm="HS256"
+        subject=email_update_schema.email, algorithm="HS256"
     )
     send_confirmation_mail_change_email(
         email_update_schema,

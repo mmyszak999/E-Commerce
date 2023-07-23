@@ -16,7 +16,7 @@ def test_create_user(sync_client: TestClient):
 
 def test_login_user(sync_client: TestClient, db_user: UserOutputSchema):
     login_data = {
-        "username": DB_USER_SCHEMA.username,
+        "email": DB_USER_SCHEMA.email,
         "password": DB_USER_SCHEMA.password,
     }
     response = sync_client.post("users/login", json=login_data)

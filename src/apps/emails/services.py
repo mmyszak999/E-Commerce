@@ -19,6 +19,8 @@ def validate_email_update_data(schema: EmailUpdateSchema, session: Session) -> N
     user = authenticate(
         email=schema.email, password=schema.password,
         session=session)
+    if schema.email == schema.new_email:
+        raise ServiceException("The current email is the same as the desired one!")
     
 
 def send_email(schema: EmailSchema, body_schema: BaseModel, background_tasks: BackgroundTasks) -> None:
