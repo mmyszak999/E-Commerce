@@ -31,7 +31,7 @@ def create_category(
 
 def get_single_category(session: Session, category_id: int) -> CategoryOutputSchema:
     if not (category_object := if_exists(Category, "id", category_id, session)):
-        raise DoesNotExist(Category.__name__, category_id)
+        raise DoesNotExist(Category.__name__, "id", category_id)
 
     return CategoryOutputSchema.from_orm(category_object)
 
@@ -54,7 +54,7 @@ def update_single_category(
     session: Session, category_input: CategoryInputSchema, category_id: int
 ) -> CategoryOutputSchema:
     if not if_exists(Category, "id", category_id, session):
-        raise DoesNotExist(Category.__name__, category_id)
+        raise DoesNotExist(Category.__name__, "id", category_id)
 
     category_data = category_input.dict(exclude_unset=True)
 
@@ -85,7 +85,7 @@ def delete_all_categories(session: Session):
 
 def delete_single_category(session: Session, category_id: int):
     if not if_exists(Category, "id", category_id, session):
-        raise DoesNotExist(Category.__name__, category_id)
+        raise DoesNotExist(Category.__name__, "id", category_id)
 
     statement = delete(Category).filter(Category.id == category_id)
     result = session.execute(statement)

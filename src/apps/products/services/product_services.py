@@ -47,7 +47,7 @@ def create_product(
 
 def get_single_product(session: Session, product_id: int) -> ProductOutputSchema:
     if not (product_object := if_exists(Product, "id", product_id, session)):
-        raise DoesNotExist(Product.__name__, product_id)
+        raise DoesNotExist(Product.__name__, "id", product_id)
 
     return ProductOutputSchema.from_orm(product_object)
 
@@ -68,7 +68,7 @@ def update_single_product(
     session: Session, product_input: ProductInputSchema, product_id: int
 ) -> ProductOutputSchema:
     if not (product_object := if_exists(Product, "id", product_id, session)):
-        raise DoesNotExist(Product.__name__, product_id)
+        raise DoesNotExist(Product.__name__, "id", product_id)
 
     product_data = product_input.dict(exclude_unset=True)
 
@@ -121,7 +121,7 @@ def delete_all_products(session: Session):
 
 def delete_single_product(session: Session, product_id: int):
     if not if_exists(Product, "id", product_id, session):
-        raise DoesNotExist(Product.__name__, product_id)
+        raise DoesNotExist(Product.__name__, "id", product_id)
 
     statement = delete(Product).filter(Product.id == product_id)
     result = session.execute(statement)
