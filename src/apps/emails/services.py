@@ -6,6 +6,7 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from src.apps.emails.schemas import EmailUpdateSchema, EmailSchema, EmailChangeConfirmationSchema
+from src.apps.user.models import User
 from src.apps.user.services import authenticate
 from src.core.exceptions import ServiceException, IsOccupied
 from src.settings.email_settings import EmailSettings
@@ -20,7 +21,7 @@ def validate_email_update_data(schema: EmailUpdateSchema, session: Session) -> N
     if schema.email == schema.new_email:
         raise ServiceException("The current email is the same as the desired one!")
     
-    if if_exists(User.__name__, "email", schema.new_email, session):
+    if if_exists(User, "email", schema.new_email, session):
         raise IsOccupied(User.__name__, "email", schema.new_email)
     
 

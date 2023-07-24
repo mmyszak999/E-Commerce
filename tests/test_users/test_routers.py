@@ -115,7 +115,7 @@ def test_anonymous_user_cannot_update_user(
     assert response.json()["detail"] == "Missing Authorization Header"
 
 
-def test_anonymous_user_cannot_send_email_change_confirmation_mail(
+def test_anonymous_user_cannot_send_email_change_confirmation_email(
     sync_client: TestClient
 ):
     update_data = EmailUpdateSchemaFactory.build(new_email="mail@mail.com")

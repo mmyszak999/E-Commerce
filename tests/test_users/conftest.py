@@ -7,7 +7,7 @@ from src.apps.user.services import register_user
 from src.core.factories import UserRegisterSchemaFactory
 
 DB_USER_SCHEMA = UserRegisterSchemaFactory.build(
-    password="vgo39845n", password_repeat="vgo39845n"
+    email="dbuser1@mail.com", password="vgo39845n", password_repeat="vgo39845n"
 )
 
 

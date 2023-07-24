@@ -9,7 +9,6 @@ class EmailSchema(BaseModel):
 
 class EmailUpdateSchema(BaseModel):
     email: str
-    password: str
     new_email: str
 
 
