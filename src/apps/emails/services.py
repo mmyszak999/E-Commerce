@@ -7,8 +7,9 @@ from sqlalchemy.orm import Session
 
 from src.apps.emails.schemas import EmailUpdateSchema, EmailSchema, EmailChangeConfirmationSchema
 from src.apps.user.services import authenticate
-from src.core.exceptions import ServiceException
+from src.core.exceptions import ServiceException, IsOccupied
 from src.settings.email_settings import EmailSettings
+from src.core.utils import if_exists
 
 
 def email_config(settings: BaseSettings = EmailSettings):
@@ -16,11 +17,11 @@ def email_config(settings: BaseSettings = EmailSettings):
 
 
 def validate_email_update_data(schema: EmailUpdateSchema, session: Session) -> None:
-    user = authenticate(
-        email=schema.email, password=schema.password,
-        session=session)
     if schema.email == schema.new_email:
         raise ServiceException("The current email is the same as the desired one!")
+    
+    if if_exists(User.__name__, "email", schema.new_email, session):
+        raise IsOccupied(User.__name__, "email", schema.new_email)
     
 
 def send_email(schema: EmailSchema, body_schema: BaseModel, background_tasks: BackgroundTasks) -> None:

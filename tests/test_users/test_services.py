@@ -1,14 +1,11 @@
+from fastapi_jwt_auth import AuthJWT
 import pytest
 from sqlalchemy.orm import Session
 
 from src.apps.user.schemas import UserOutputSchema, UserUpdateSchema
-from src.apps.user.services import (
-    delete_single_user,
-    get_all_users,
-    get_single_user,
-    register_user,
-    update_single_user,
-)
+from src.apps.user.services import (delete_single_user, get_all_users,
+                                    get_single_user, register_user,
+                                    update_single_user, update_email)
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
 from src.core.factories import UserRegisterSchemaFactory
 from src.core.pagination.models import PageParams
@@ -85,6 +82,15 @@ def test_if_user_can_update_their_username_to_occupied_one(
 
     with pytest.raises(IsOccupied):
         update_single_user(sync_session, UserUpdateSchema(**update_data), user.id)
+
+
+def test_raise_exception_while_updating_email_of_nonexistent_user(
+    sync_session: Session, db_user: UserOutputSchema
+):
+    access_token = AuthJWT().create_access_token("invalidmail@mail.com")
+
+    with pytest.raises(DoesNotExist):
+        update_email(sync_session, access_token, new_email="mail@mail.com", auth_jwt=AuthJWT())
 
 
 def test_raise_exception_while_deleting_nonexistent_user(

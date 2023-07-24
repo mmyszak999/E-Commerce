@@ -102,7 +102,9 @@ def update_user(
 
 
 @router.post(
-    "/change-email", status_code=status.HTTP_200_OK
+    "/change-email",
+    dependencies=[Depends(authenticate_user)],
+    status_code=status.HTTP_200_OK
 )
 def change_email(
     email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, user = Depends(authenticate_user),
