@@ -17,7 +17,12 @@ def email_config(settings: BaseSettings = EmailSettings):
     return ConnectionConfig(**settings().dict())
 
 
-def validate_email_update_data(schema: EmailUpdateSchema, session: Session) -> None:
+def validate_email_update_data(schema: EmailUpdateSchema, session: Session, request_user: User) -> None:
+    if request_user.email != schema.email:
+        print(request_user.email, schema.email)
+        raise ServiceException('Entered email differs from the email assigned to your account! '
+                               'Please enter your current email address')
+    
     if schema.email == schema.new_email:
         raise ServiceException("The current email is the same as the desired one!")
     
@@ -42,8 +47,9 @@ def send_email(schema: EmailSchema, body_schema: BaseModel, background_tasks: Ba
 
 def send_confirmation_mail_change_email(
     update_schema: EmailUpdateSchema, session: Session,
-    token: str, background_tasks: BackgroundTasks) -> None:
-    validate_email_update_data(update_schema, session)
+    token: str, background_tasks: BackgroundTasks,
+    request_user: User) -> None:
+    validate_email_update_data(update_schema, session, request_user)
     
     schema = EmailSchema(
         email_subject="Confirm your email update",

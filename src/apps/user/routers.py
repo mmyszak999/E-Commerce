@@ -103,11 +103,10 @@ def update_user(
 
 @router.post(
     "/change-email",
-    dependencies=[Depends(authenticate_user)],
     status_code=status.HTTP_200_OK
 )
 def change_email(
-    email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, user = Depends(authenticate_user),
+    email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, request_user = Depends(authenticate_user),
     db: Session = Depends(get_db), auth_jwt: AuthJWT = Depends()
 ) -> JSONResponse:
     token = auth_jwt.create_access_token(
@@ -117,7 +116,8 @@ def change_email(
         email_update_schema,
         db,
         token,
-        background_tasks
+        background_tasks,
+        request_user
     )
     
     return JSONResponse(

@@ -95,12 +95,15 @@ def update_single_user(
 
 
 def update_email(
-    session: Session, token: str, new_email: str, auth_jwt: AuthJWT
+    session: Session, token: str, new_email: str, auth_jwt: AuthJWT, request_user: User
 ) -> UserOutputSchema:
     try:
         email = auth_jwt.get_raw_jwt(token)["sub"]
     except Exception:
         raise ServiceException("Invalid Token")
+    
+    if request_user.email != email:
+        raise ServiceException("You only can change email address assigned to your account!")
     
     user = if_exists(User, "email", email, session)
     
