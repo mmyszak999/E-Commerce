@@ -16,9 +16,9 @@ from src.apps.orders.services import (
     update_single_order,
 )
 from src.apps.user.models import User
-from src.core.utils import check_if_request_user
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema, T
+from src.core.utils import check_if_request_user
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -31,18 +31,22 @@ order_router = APIRouter(prefix="/orders", tags=["order"])
     status_code=status.HTTP_201_CREATED,
 )
 def post_order(
-    order: OrderInputSchema, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+    order: OrderInputSchema,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     return create_order(db, order, user_id=request_user.id)
 
 
-@router.get(
+@order_router.get(
     "/",
     response_model=PagedResponseSchema[OrderOutputSchema],
     status_code=status.HTTP_200_OK,
 )
-def get_user_orders(db: Session = Depends(get_db),
-    page_params: PageParams = Depends(), request_user: User = Depends(authenticate_user)
+def get_user_orders(
+    db: Session = Depends(get_db),
+    page_params: PageParams = Depends(),
+    request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
     return get_all_user_orders(db, request_user.id, page_params)
 
@@ -52,23 +56,26 @@ def get_user_orders(db: Session = Depends(get_db),
     response_model=OrderOutputSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_order(order_id: int, db: Session = Depends(get_db),
-              request_user: User = Depends(authenticate_user)) -> OrderOutputSchema:
-    db_order = get_single_order(db, order_id, user_id=request_user.id)
-    return db_order
+def get_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> OrderOutputSchema:
+    return get_single_order(db, order_id, user_id=request_user.id)
 
 
 @order_router.patch(
     "/{order_id}",
-    dependencies=[Depends(authenticate_user)],
     response_model=OrderOutputSchema,
     status_code=status.HTTP_200_OK,
 )
 def update_order(
-    order_id: int, order: OrderUpdateSchema, db: Session = Depends(get_db)
+    order_id: int,
+    order: OrderUpdateSchema,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
-    db_order = update_single_order(db, order, order_id)
-    return db_order
+    return update_single_order(db, order, order_id, request_user.id)
 
 
 @order_router.delete(

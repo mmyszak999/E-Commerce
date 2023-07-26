@@ -47,9 +47,8 @@ def login_user(
     db: Session = Depends(get_db),
 ) -> AccessTokenOutputSchema:
     user = authenticate(**user_login_schema.dict(), session=db)
-    user_schema = UserOutputSchema.from_orm(user)
     access_token = auth_jwt.create_access_token(
-        subject=user_schema.json(), algorithm="HS256"
+        subject=user.username, algorithm="HS256"
     )
 
     return AccessTokenOutputSchema(access_token=access_token)

@@ -18,8 +18,7 @@ class OrderInputSchema(OrderBaseSchema):
 
 
 class OrderUpdateSchema(BaseModel):
-    product_ids: Optional[list[int]] = []
-    user_id: Optional[int]
+    product_ids: Optional[list[int]]
 
 
 class OrderOutputSchema(BaseModel):
