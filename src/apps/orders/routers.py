@@ -2,11 +2,21 @@ from fastapi import Depends, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.orders.schemas import (OrderInputSchema, OrderOutputSchema,
-                                     OrderUpdateSchema)
-from src.apps.orders.services import (create_order, delete_all_orders,
-                                      delete_single_order, get_all_orders,
-                                      get_single_order, update_single_order)
+from src.apps.orders.schemas import (
+    OrderInputSchema,
+    OrderOutputSchema,
+    OrderUpdateSchema,
+)
+from src.apps.orders.services import (
+    create_order,
+    delete_single_order,
+    get_all_orders,
+    get_all_user_orders,
+    get_single_order,
+    update_single_order,
+)
+from src.apps.user.models import User
+from src.core.utils import check_if_request_user
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema, T
 from src.dependencies.get_db import get_db
@@ -17,38 +27,34 @@ order_router = APIRouter(prefix="/orders", tags=["order"])
 
 @order_router.post(
     "/",
-    dependencies=[Depends(authenticate_user)],
     response_model=OrderOutputSchema,
     status_code=status.HTTP_201_CREATED,
 )
 def post_order(
-    order: OrderInputSchema, db: Session = Depends(get_db)
+    order: OrderInputSchema, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
 ) -> OrderOutputSchema:
-    db_order = create_order(db, order)
-    return db_order
+    return create_order(db, order, user_id=request_user.id)
 
 
-@order_router.get(
+@router.get(
     "/",
     response_model=PagedResponseSchema[OrderOutputSchema],
-    dependencies=[Depends(authenticate_user)],
     status_code=status.HTTP_200_OK,
 )
-def get_orders(
-    db: Session = Depends(get_db), page_params: PageParams = Depends()
+def get_user_orders(db: Session = Depends(get_db),
+    page_params: PageParams = Depends(), request_user: User = Depends(authenticate_user)
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    db_orders = get_all_orders(db, page_params)
-    return db_orders
+    return get_all_user_orders(db, request_user.id, page_params)
 
 
 @order_router.get(
     "/{order_id}",
-    dependencies=[Depends(authenticate_user)],
     response_model=OrderOutputSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_order(order_id: int, db: Session = Depends(get_db)) -> OrderOutputSchema:
-    db_order = get_single_order(db, order_id)
+def get_order(order_id: int, db: Session = Depends(get_db),
+              request_user: User = Depends(authenticate_user)) -> OrderOutputSchema:
+    db_order = get_single_order(db, order_id, user_id=request_user.id)
     return db_order
 
 
@@ -63,16 +69,6 @@ def update_order(
 ) -> OrderOutputSchema:
     db_order = update_single_order(db, order, order_id)
     return db_order
-
-
-@order_router.delete(
-    "/",
-    dependencies=[Depends(authenticate_user)],
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def delete_orders(db: Session = Depends(get_db)) -> Response:
-    delete_all_orders(db)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @order_router.delete(

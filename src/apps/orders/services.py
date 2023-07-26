@@ -5,27 +5,31 @@ from src.apps.orders.models import Order, order_product_association_table
 from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
 from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.core.exceptions import (AlreadyExists, DoesNotExist, IsOccupied,
-                                 ServiceException)
+from src.core.exceptions import (
+    AlreadyExists,
+    DoesNotExist,
+    IsOccupied,
+    ServiceException,
+)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
+from src.core.utils import check_if_request_user
 from src.core.utils import if_exists
 
 
-def create_order(session: Session, order_input: OrderInputSchema) -> OrderOutputSchema:
+def create_order(session: Session, order_input: OrderInputSchema, user_id: int) -> OrderOutputSchema:
     order_input_data = order_input.dict()
 
-    if order_input_data:
-        user_id = order_input_data.pop("user_id")
-        user = session.scalar(select(User).filter(User.id == user_id).limit(1))
-        
-        if order_input_data.get("product_ids"):
-            product_ids = order_input_data.pop("product_ids")
-            products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
-            
-            if not len(set(product_ids)) == len(products):
-                raise ServiceException("Wrong products!")
+    user = session.scalar(select(User).filter(User.id == user_id).limit(1))
+
+    product_ids = order_input_data.pop("product_ids")
+    products = session.scalars(
+        select(Product).where(Product.id.in_(product_ids))
+    ).all()
+
+    if not len(set(product_ids)) == len(products):
+        raise ServiceException("Wrong products!")
 
         order_create_data = dict()
         order_create_data["user"], order_create_data["products"] = user, products
@@ -36,10 +40,12 @@ def create_order(session: Session, order_input: OrderInputSchema) -> OrderOutput
     return OrderOutputSchema.from_orm(new_order)
 
 
-def get_single_order(session: Session, order_id: int) -> OrderOutputSchema:
+def get_single_order(session: Session, order_id: int, user_id: int) -> OrderOutputSchema:
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, order_id)
-
+    
+    check_if_request_user(user_id, order_object.user_id, "You are not the owner of the order!")
+        
     return OrderOutputSchema.from_orm(order_object)
 
 
@@ -106,14 +112,6 @@ def update_single_order(
         session.refresh(order_object)
 
     return get_single_order(session, order_id=order_id)
-
-
-def delete_all_orders(session: Session):
-    statement = delete(Order)
-    result = session.execute(statement)
-    session.commit()
-
-    return result
 
 
 def delete_single_order(session: Session, order_id: int):

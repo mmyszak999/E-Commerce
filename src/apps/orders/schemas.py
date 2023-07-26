@@ -10,8 +10,7 @@ from src.apps.user.schemas import UserOutputSchema
 
 
 class OrderBaseSchema(BaseModel):
-    product_ids: list[int] = []
-    user_id: int
+    product_ids: list[int]
 
 
 class OrderInputSchema(OrderBaseSchema):

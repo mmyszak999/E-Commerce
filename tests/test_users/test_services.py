@@ -2,9 +2,13 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.apps.user.schemas import UserOutputSchema, UserUpdateSchema
-from src.apps.user.services import (delete_single_user, get_all_users,
-                                    get_single_user, register_user,
-                                    update_single_user)
+from src.apps.user.services import (
+    delete_single_user,
+    get_all_users,
+    get_single_user,
+    register_user,
+    update_single_user,
+)
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
 from src.core.factories import UserRegisterSchemaFactory
 from src.core.pagination.models import PageParams
