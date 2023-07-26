@@ -8,20 +8,12 @@ from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.emails.services import send_confirmation_mail_change_email
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
-from src.apps.user.schemas import (
-    UserLoginInputSchema,
-    UserOutputSchema,
-    UserRegisterSchema,
-    UserUpdateSchema,
-)
-from src.apps.user.services import (
-    authenticate,
-    delete_single_user,
-    get_all_users,
-    get_single_user,
-    register_user,
-    update_single_user,
-)
+from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
+                                   UserRegisterSchema, UserUpdateSchema)
+from src.apps.user.services import (authenticate, delete_single_user,
+                                    get_all_users, get_single_user,
+                                    register_user, update_single_user)
+from src.core.utils import check_if_request_user
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema, T
 from src.dependencies.get_db import get_db
@@ -106,9 +98,14 @@ def update_user(
     status_code=status.HTTP_200_OK
 )
 def change_email(
-    email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, request_user = Depends(authenticate_user),
+    email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, request_user: User = Depends(authenticate_user),
     db: Session = Depends(get_db), auth_jwt: AuthJWT = Depends()
 ) -> JSONResponse:
+    check_if_request_user(
+        request_user.email, email_update_schema.email,
+        "Entered email differs from the email assigned to your account! "
+        "Please enter your current email address")
+    
     token = auth_jwt.create_access_token(
         subject=email_update_schema.email, algorithm="HS256"
     )
@@ -117,7 +114,6 @@ def change_email(
         db,
         token,
         background_tasks,
-        request_user
     )
     
     return JSONResponse(

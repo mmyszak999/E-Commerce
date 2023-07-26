@@ -75,6 +75,25 @@ def test_authenticated_user_can_send_email_change_confirmation_mail(
     assert response.json()["message"] == "Email change confirmation mail has been sent to the new email address!"
 
 
+def test_request_user_cannot_send_email_change_confirmation_mail_to_change_not_their_email(
+    sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
+):
+    register_data = UserRegisterSchemaFactory.build(
+        email="email@mail.com", password="mtdqwc241", password_repeat="mtdqwc241"
+    )
+    response = sync_client.post("users/register", data=register_data.json())
+    assert response.status_code == status.HTTP_201_CREATED
+    
+    update_data = EmailUpdateSchemaFactory.build(
+        email=register_data.email, new_email="new_email@mail.com")
+    response = sync_client.post(
+        f"users/change-email", data=update_data.json(), headers=auth_headers
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()["detail"] == ("Entered email differs from the email assigned to your account! "
+                                        "Please enter your current email address")
+
+
 def test_authenticated_user_can_delete_user(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):

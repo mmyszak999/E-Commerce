@@ -46,7 +46,6 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
 def authenticate(email: str, password: str, session: Session) -> User:
     user = session.scalar(select(User).filter(email == User.email).limit(1))
-    print(user)
     if not (user or passwd_context.verify(password, user.password)):
         raise AuthException("Invalid Credentials")
     return user
@@ -95,22 +94,14 @@ def update_single_user(
 
 
 def update_email(
-    session: Session, token: str, new_email: str, auth_jwt: AuthJWT, request_user: User
+    session: Session, new_email: str, current_email: str
 ) -> UserOutputSchema:
-    try:
-        email = auth_jwt.get_raw_jwt(token)["sub"]
-    except Exception:
-        raise ServiceException("Invalid Token")
-    
-    if request_user.email != email:
-        raise ServiceException("You only can change email address assigned to your account!")
-    
-    user = if_exists(User, "email", email, session)
+    user = if_exists(User, "email", current_email, session)
     
     if user is None:
-        raise DoesNotExist(User.__name__, "email", email)
+        raise DoesNotExist(User.__name__, "email", current_email)
 
-    statement = update(User).filter(User.email == email).values(email=new_email)
+    statement = update(User).filter(User.email == current_email).values(email=new_email)
     session.execute(statement)
     session.commit()
         

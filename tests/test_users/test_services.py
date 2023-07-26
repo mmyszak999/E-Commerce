@@ -87,10 +87,8 @@ def test_if_user_can_update_their_username_to_occupied_one(
 def test_raise_exception_while_updating_email_of_nonexistent_user(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    access_token = AuthJWT().create_access_token("invalidmail@mail.com")
-
     with pytest.raises(DoesNotExist):
-        update_email(sync_session, access_token, new_email="mail@mail.com", auth_jwt=AuthJWT())
+        update_email(sync_session, new_email="mail@mail.com", current_email="invalidmail@mail.com")
 
 
 def test_raise_exception_while_deleting_nonexistent_user(
