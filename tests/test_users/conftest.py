@@ -18,5 +18,5 @@ def db_user(sync_session: Session) -> UserOutputSchema:
 
 @pytest.fixture
 def auth_headers(sync_session: Session, db_user: UserOutputSchema) -> dict[str, str]:
-    access_token = AuthJWT().create_access_token(db_user.id)
+    access_token = AuthJWT().create_access_token(db_user.username)
     return {"Authorization": f"Bearer {access_token}"}

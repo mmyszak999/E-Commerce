@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field, validator
 
 from src.apps.orders.models import Order
 from src.apps.products.schemas import ProductOutputSchema
-from src.apps.user.schemas import UserOutputSchema
 
 
 class OrderBaseSchema(BaseModel):
@@ -24,7 +23,6 @@ class OrderUpdateSchema(BaseModel):
 class OrderOutputSchema(BaseModel):
     id: int
     products: list[ProductOutputSchema]
-    user: UserOutputSchema
 
     class Config:
         orm_mode = True

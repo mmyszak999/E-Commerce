@@ -22,19 +22,18 @@ def create_order(
 ) -> OrderOutputSchema:
     order_input_data = order_input.dict()
 
-    user = session.scalar(select(User).filter(User.id == user_id).limit(1))
-
     product_ids = order_input_data.pop("product_ids")
     products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
 
     if not len(set(product_ids)) == len(products):
-        raise ServiceException("Wrong products!")
+        raise ServiceException("Amount of products in the order is not consistent. "
+                               "Check if all products exist!")
 
-        order_create_data = dict()
-        order_create_data["user"], order_create_data["products"] = user, products
-        new_order = Order(**order_create_data)
-        session.add(new_order)
-        session.commit()
+    order_create_data = dict()
+    order_create_data["user_id"], order_create_data["products"] = user_id, products
+    new_order = Order(user_id=user_id, products=products)
+    session.add(new_order)
+    session.commit()
 
     return OrderOutputSchema.from_orm(new_order)
 
@@ -89,7 +88,7 @@ def update_single_order(
     check_if_request_user(
         user_id,
         order_object.user_id,
-        "You can't update the order. " "You are not the owner of the order!",
+        "You can't update the order. You are not the owner of the order!",
     )
 
     order_data = order_input.dict(exclude_none=True, exclude_unset=True)
@@ -116,7 +115,6 @@ def update_single_order(
 
         session.execute(statement)
         session.commit()
-        session.refresh(order_object)
 
     return get_single_order(session, order_id=order_id, user_id=user_id)
 
