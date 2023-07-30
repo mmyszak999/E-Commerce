@@ -1,4 +1,4 @@
-from fastapi import Depends, Response, status
+from fastapi import Depends, Response, status, Request
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
@@ -44,11 +44,12 @@ def post_order(
     status_code=status.HTTP_200_OK,
 )
 def get_user_orders(
+    request: Request,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    return get_all_user_orders(db, request_user.id, page_params)
+    return get_all_user_orders(db, request_user.id, page_params, request.query_params.multi_items())
 
 
 @order_router.get(

@@ -1,4 +1,4 @@
-from fastapi import Depends, Response, status
+from fastapi import Depends, Response, status, Request
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
@@ -125,9 +125,9 @@ def post_product(
     status_code=status.HTTP_200_OK,
 )
 def get_products(
-    db: Session = Depends(get_db), page_params: PageParams = Depends()
+    request: Request, db: Session = Depends(get_db), page_params: PageParams = Depends()
 ) -> PagedResponseSchema[ProductOutputSchema]:
-    db_products = get_all_products(db, page_params)
+    db_products = get_all_products(db, page_params, request.query_params.multi_items())
     return db_products
 
 

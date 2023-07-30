@@ -14,7 +14,7 @@ from src.core.exceptions import (
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils import check_if_request_user, if_exists
+from src.core.utils import check_if_request_user, if_exists, helper_function
 
 
 def create_order(
@@ -52,12 +52,14 @@ def get_single_order(
 
 
 def get_all_orders(
-    session: Session, page_params: PageParams
-) -> PagedResponseSchema[OrderOutputSchema]:
-    query = select(Order)
+    session: Session, page_params: PageParams, query_params: list[tuple]) -> PagedResponseSchema:
+    orders = Lookup(Order, select(Order))
+    params = helper_function(query_params)
+    for param in params:
+        orders = orders.perform_lookup(*param)
 
     return paginate(
-        query=query,
+        query=orders,
         response_schema=OrderOutputSchema,
         table=Order,
         page_params=page_params,
@@ -66,12 +68,17 @@ def get_all_orders(
 
 
 def get_all_user_orders(
-    session: Session, user_id: int, page_params: PageParams
+    session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema[OrderOutputSchema]:
     query = select(Order).filter(Order.user_id == user_id)
+    
+    orders = Lookup(Order, query)
+    params = helper_function(query_params)
+    for param in params:
+        orders = orders.perform_lookup(*param)
 
     return paginate(
-        query=query,
+        query=orders,
         response_schema=OrderOutputSchema,
         table=Order,
         page_params=page_params,
