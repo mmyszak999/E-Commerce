@@ -1,5 +1,6 @@
-from sqlalchemy import delete, insert, select, update
+from sqlalchemy import delete, insert, select, update, desc, asc
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
 
 from src.apps.orders.models import Order, order_product_association_table
 from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
@@ -15,10 +16,12 @@ from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
+from src.core.sort import get_sort_statement
 from src.core.utils import (
     check_if_request_user,
     if_exists,
-    query_param_values_extractor,
+    filter_query_param_values_extractor,
+    sort_query_param_values_extractor
 )
 
 
@@ -62,7 +65,7 @@ def get_all_orders(
     session: Session, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema:
     orders = Lookup(Order, select(Order))
-    params = query_param_values_extractor(query_params)
+    params = filter_query_param_values_extractor(query_params)
     for param in params:
         orders = orders.perform_lookup(*param)
 
@@ -78,13 +81,19 @@ def get_all_orders(
 def get_all_user_orders(
     session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    query = select(Order).filter(Order.user_id == user_id)
+    query = select(Order).filter(User.id == user_id)
 
     orders = Lookup(Order, query)
-    params = query_param_values_extractor(query_params)
-    for param in params:
+    filter_params = filter_query_param_values_extractor(query_params)
+    for param in filter_params:
         orders = orders.perform_lookup(*param)
-
+    
+    sort_params = sort_query_param_values_extractor(query_params, Order)
+    for field, sort_order in sort_params.items():
+        print(field, sort_order)
+        statement = field.asc() if sort_order == 'asc' else field.desc()
+        orders.inst = orders.inst.order_by(statement)
+    
     return paginate(
         query=orders.inst,
         response_schema=OrderOutputSchema,
