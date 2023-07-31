@@ -19,12 +19,12 @@ def check_if_request_user(
         raise ServiceException(message)
 
 
-def helper_function(query_list):
+def query_param_values_extractor(query_list):
     for q in query_list:
         key, value = q
         try:
-            field, oper = key.split('__')
+            field, oper = key.split("__")
         except:
             field = key
-            oper = 'eq'
+            oper = "eq"
         yield field, oper, value

@@ -1,5 +1,6 @@
-from sqlalchemy.sql.expression import Select
 import operator
+
+from sqlalchemy.sql.expression import Select
 
 
 class Lookup(Select):
@@ -7,7 +8,7 @@ class Lookup(Select):
         self.model = model
         self.inst = inst
         self.field = None
-        
+
     def __lt__(self, other):
         return self.inst.filter(getattr(self.model, self.field) < other)
 

@@ -11,10 +11,15 @@ from src.core.exceptions import (
     IsOccupied,
     ServiceException,
 )
+from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils import check_if_request_user, if_exists, helper_function
+from src.core.utils import (
+    check_if_request_user,
+    if_exists,
+    query_param_values_extractor,
+)
 
 
 def create_order(
@@ -26,8 +31,10 @@ def create_order(
     products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
 
     if not len(set(product_ids)) == len(products):
-        raise ServiceException("Amount of products in the order is not consistent. "
-                               "Check if all products exist!")
+        raise ServiceException(
+            "Amount of products in the order is not consistent. "
+            "Check if all products exist!"
+        )
 
     order_create_data = dict()
     order_create_data["user_id"], order_create_data["products"] = user_id, products
@@ -52,14 +59,15 @@ def get_single_order(
 
 
 def get_all_orders(
-    session: Session, page_params: PageParams, query_params: list[tuple]) -> PagedResponseSchema:
+    session: Session, page_params: PageParams, query_params: list[tuple]
+) -> PagedResponseSchema:
     orders = Lookup(Order, select(Order))
-    params = helper_function(query_params)
+    params = query_param_values_extractor(query_params)
     for param in params:
         orders = orders.perform_lookup(*param)
 
     return paginate(
-        query=orders,
+        query=orders.inst,
         response_schema=OrderOutputSchema,
         table=Order,
         page_params=page_params,
@@ -71,14 +79,14 @@ def get_all_user_orders(
     session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema[OrderOutputSchema]:
     query = select(Order).filter(Order.user_id == user_id)
-    
+
     orders = Lookup(Order, query)
-    params = helper_function(query_params)
+    params = query_param_values_extractor(query_params)
     for param in params:
         orders = orders.perform_lookup(*param)
 
     return paginate(
-        query=orders,
+        query=orders.inst,
         response_schema=OrderOutputSchema,
         table=Order,
         page_params=page_params,
