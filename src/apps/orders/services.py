@@ -1,5 +1,5 @@
 from sqlalchemy import asc, delete, desc, insert, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.sql import text
 
 from src.apps.orders.models import Order, order_product_association_table
@@ -63,10 +63,17 @@ def get_single_order(
 def get_all_orders(
     session: Session, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema:
-    orders = Lookup(Order, select(Order))
-    params = filter_query_param_values_extractor(query_params)
-    for param in params:
-        orders = orders.perform_lookup(*param)
+    orders = select(Order).options(selectinload(Order.products))
+
+    orders = Lookup(Order, orders)
+    filter_params = filter_query_param_values_extractor(query_params)
+    if filter_params:
+        for param in filter_params:
+            orders = orders.perform_lookup(*param)
+
+    orders = Sort(Order, orders.inst)
+    orders.set_sort_params(query_params)
+    orders.get_sorted_instances()
 
     return paginate(
         query=orders.inst,
@@ -80,7 +87,7 @@ def get_all_orders(
 def get_all_user_orders(
     session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    orders = select(Order).filter(User.id == user_id)
+    orders = select(Order).filter(User.id == user_id).options(selectinload(Order.products))
 
     orders = Lookup(Order, orders)
     filter_params = filter_query_param_values_extractor(query_params)
@@ -122,6 +129,7 @@ def update_single_order(
         if to_delete := current_products - incoming_products:
             session.execute(
                 delete(order_product_association_table).where(Product.id.in_(to_delete))
+                .options(selectinload(Order.products))
             )
 
         if to_insert := incoming_products - current_products:
@@ -129,7 +137,8 @@ def update_single_order(
                 {"order_id": order_id, "product_id": product_id}
                 for product_id in to_insert
             ]
-            session.execute(insert(order_product_association_table).values(rows))
+            session.execute(insert(order_product_association_table).values(rows)
+                            .options(selectinload(Order.products)))
 
         order_data.pop("product_ids")
 
