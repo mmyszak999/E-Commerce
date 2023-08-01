@@ -1,4 +1,4 @@
-from sqlalchemy import delete, insert, select, update, desc, asc
+from sqlalchemy import asc, delete, desc, insert, select, update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
@@ -19,8 +19,8 @@ from src.core.pagination.services import paginate
 from src.core.sort import Sort
 from src.core.utils import (
     check_if_request_user,
+    filter_query_param_values_extractor,
     if_exists,
-    filter_query_param_values_extractor
 )
 
 
@@ -87,11 +87,11 @@ def get_all_user_orders(
     if filter_params:
         for param in filter_params:
             orders = orders.perform_lookup(*param)
-    
+
     orders = Sort(Order, orders.inst)
     orders.set_sort_params(query_params)
     orders.get_sorted_instances()
-    
+
     return paginate(
         query=orders.inst,
         response_schema=OrderOutputSchema,
