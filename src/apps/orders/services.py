@@ -87,7 +87,9 @@ def get_all_orders(
 def get_all_user_orders(
     session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    orders = select(Order).filter(User.id == user_id).options(selectinload(Order.products))
+    orders = (
+        select(Order).filter(User.id == user_id).options(selectinload(Order.products))
+    )
 
     orders = Lookup(Order, orders)
     filter_params = filter_query_param_values_extractor(query_params)
@@ -128,7 +130,8 @@ def update_single_order(
 
         if to_delete := current_products - incoming_products:
             session.execute(
-                delete(order_product_association_table).where(Product.id.in_(to_delete))
+                delete(order_product_association_table)
+                .where(Product.id.in_(to_delete))
                 .options(selectinload(Order.products))
             )
 
@@ -137,8 +140,11 @@ def update_single_order(
                 {"order_id": order_id, "product_id": product_id}
                 for product_id in to_insert
             ]
-            session.execute(insert(order_product_association_table).values(rows)
-                            .options(selectinload(Order.products)))
+            session.execute(
+                insert(order_product_association_table)
+                .values(rows)
+                .options(selectinload(Order.products))
+            )
 
         order_data.pop("product_ids")
 
