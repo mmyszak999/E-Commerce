@@ -8,6 +8,7 @@ class Lookup(Select):
         self.model = model
         self.inst = inst
         self.field = None
+        self.filter_params = None
 
     def __lt__(self, other):
         return self.inst.filter(getattr(self.model, self.field) < other)

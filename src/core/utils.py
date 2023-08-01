@@ -31,14 +31,15 @@ def filter_query_param_values_extractor(params_list):
         yield field, oper, value
         
 
-def sort_query_param_values_extractor(params_list: list[tuple], model_class: Table):
+def sort_query_param_values_extractor(params_list: list[tuple], model_class: Table) -> dict[Any, str]:
     params = [param for param in params_list if param[0] == 'sort']
     criteria = dict()
-    for criterion in params[0][1].split(','):
-        field, sorting_order = criterion.split('__')
-        field = getattr(model_class, field)
-        criteria[field] = sorting_order
-    return criteria
+    if params:
+        for criterion in params[0][1].split(','):
+            field, sorting_order = criterion.split('__')
+            field = getattr(model_class, field)
+            criteria[field] = sorting_order
+        return criteria
         
 
 
