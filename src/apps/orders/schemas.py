@@ -1,10 +1,7 @@
-import datetime
-from decimal import Decimal
-from typing import Any, Optional
+from typing import Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel
 
-from src.apps.orders.models import Order
 from src.apps.products.schemas import ProductOutputSchema
 
 

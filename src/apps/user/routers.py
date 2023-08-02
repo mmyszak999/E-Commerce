@@ -4,7 +4,6 @@ from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
-from src.apps.orders.schemas import OrderOutputSchema
 from src.apps.user.models import User
 from src.apps.user.schemas import (
     UserLoginInputSchema,
@@ -21,7 +20,7 @@ from src.apps.user.services import (
     update_single_user,
 )
 from src.core.pagination.models import PageParams
-from src.core.pagination.schemas import PagedResponseSchema, T
+from src.core.pagination.schemas import PagedResponseSchema
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 

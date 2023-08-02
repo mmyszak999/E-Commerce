@@ -10,15 +10,13 @@ from src.apps.orders.schemas import (
 from src.apps.orders.services import (
     create_order,
     delete_single_order,
-    get_all_orders,
     get_all_user_orders,
     get_single_order,
     update_single_order,
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
-from src.core.pagination.schemas import PagedResponseSchema, T
-from src.core.utils import check_if_request_user
+from src.core.pagination.schemas import PagedResponseSchema
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 

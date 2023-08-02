@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import Table, asc, desc, select
+from sqlalchemy import Table, select
 from sqlalchemy.orm import Session
 
 from src.core.exceptions import ServiceException

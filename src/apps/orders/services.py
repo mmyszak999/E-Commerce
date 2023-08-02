@@ -1,17 +1,11 @@
-from sqlalchemy import asc, delete, desc, insert, select, update
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy.sql import text
 
 from src.apps.orders.models import Order, order_product_association_table
 from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
 from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.core.exceptions import (
-    AlreadyExists,
-    DoesNotExist,
-    IsOccupied,
-    ServiceException,
-)
+from src.core.exceptions import DoesNotExist, ServiceException
 from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
