@@ -5,13 +5,22 @@ from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
-from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
-                                   UserRegisterSchema, UserUpdateSchema)
-from src.apps.user.services import (authenticate, delete_single_user,
-                                    get_all_users, get_single_user,
-                                    register_user, update_single_user)
+from src.apps.user.schemas import (
+    UserLoginInputSchema,
+    UserOutputSchema,
+    UserRegisterSchema,
+    UserUpdateSchema,
+)
+from src.apps.user.services import (
+    authenticate,
+    delete_single_user,
+    get_all_users,
+    get_single_user,
+    register_user,
+    update_single_user,
+)
 from src.core.pagination.models import PageParams
-from src.core.pagination.schemas import PagedResponseSchema, T
+from src.core.pagination.schemas import PagedResponseSchema
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -37,9 +46,8 @@ def login_user(
     db: Session = Depends(get_db),
 ) -> AccessTokenOutputSchema:
     user = authenticate(**user_login_schema.dict(), session=db)
-    user_schema = UserOutputSchema.from_orm(user)
     access_token = auth_jwt.create_access_token(
-        subject=user_schema.json(), algorithm="HS256"
+        subject=user.username, algorithm="HS256"
     )
 
     return AccessTokenOutputSchema(access_token=access_token)
@@ -54,13 +62,13 @@ def get_logged_user(
 
 @router.get(
     "/",
-    response_model=PagedResponseSchema[T],
+    response_model=PagedResponseSchema[UserOutputSchema],
     dependencies=[Depends(authenticate_user)],
     status_code=status.HTTP_200_OK,
 )
 def get_users(
     db: Session = Depends(get_db), page_params: PageParams = Depends()
-) -> PagedResponseSchema[T]:
+) -> PagedResponseSchema[UserOutputSchema]:
     db_users = get_all_users(db, page_params)
     return db_users
 
