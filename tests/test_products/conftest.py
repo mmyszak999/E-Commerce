@@ -12,7 +12,7 @@ DB_CATEGORY_SCHEMAS = [CategoryInputSchemaFactory.build() for _ in range(3)]
 
 EXISTING_CATEGORY_DATA = DB_CATEGORY_SCHEMAS[0]
 
-DB_PRODUCT_SCHEMAS = [ProductInputSchemaFactory.build() for category in range(3)]
+DB_PRODUCT_SCHEMAS = [ProductInputSchemaFactory.build() for _ in range(3)]
 
 EXISTING_PRODUCT_DATA = DB_PRODUCT_SCHEMAS[0]
 

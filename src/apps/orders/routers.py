@@ -1,16 +1,22 @@
-from fastapi import Depends, Response, status
+from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.orders.schemas import (OrderInputSchema, OrderOutputSchema,
-                                     OrderUpdateSchema)
-from src.apps.orders.services import (create_order, delete_all_orders,
-                                      delete_single_order, get_all_orders,
-                                      get_single_order, update_single_order)
+from src.apps.orders.schemas import (
+    OrderInputSchema,
+    OrderOutputSchema,
+    OrderUpdateSchema,
+)
+from src.apps.orders.services import (
+    create_order,
+    delete_single_order,
+    get_all_user_orders,
+    get_single_order,
+    update_single_order,
+)
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.permissions import check_object_permission, check_permission
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -24,10 +30,11 @@ order_router = APIRouter(prefix="/orders", tags=["order"])
     status_code=status.HTTP_201_CREATED,
 )
 def post_order(
-    order: OrderInputSchema, db: Session = Depends(get_db)
+    order: OrderInputSchema,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
-    db_order = create_order(db, order)
-    return db_order
+    return create_order(db, order, user_id=request_user.id)
 
 
 @order_router.get(

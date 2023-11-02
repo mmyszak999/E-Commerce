@@ -7,11 +7,12 @@ from src.apps.user.models import User
 from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
                                    UserRegisterSchema, UserUpdateSchema)
 from src.apps.user.utils import passwd_context
-from src.core.exceptions import (AlreadyExists, AuthenticationException,
-                                 DoesNotExist, IsOccupied)
+from src.core.exceptions import AlreadyExists, AuthException, DoesNotExist, IsOccupied
+from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
+from src.core.sort import Sort
 from src.core.utils import if_exists
 
 
@@ -68,11 +69,23 @@ def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
     return UserOutputSchema.from_orm(user_object)
 
 
-def get_all_users(session: Session, page_params: PageParams) -> PagedResponseSchema:
+def get_all_users(
+    session: Session, page_params: PageParams, query_params: list[tuple]
+) -> PagedResponseSchema:
     query = select(User)
 
+    users = Lookup(User, users)
+    filter_params = filter_query_param_values_extractor(query_params)
+    if filter_params:
+        for param in filter_params:
+            users = orders.perform_lookup(*param)
+
+    users = Sort(User, users.inst)
+    users.set_sort_params(query_params)
+    users.get_sorted_instances()
+
     return paginate(
-        query=query,
+        query=users.inst,
         response_schema=UserOutputSchema,
         table=User,
         page_params=page_params,
@@ -95,10 +108,11 @@ def update_single_user(
         if username_check:
             raise IsOccupied(User.__name__, "username", user.username)
 
-    statement = update(User).filter(User.id == user_id).values(**user_data)
+    if user_data:
+        statement = update(User).filter(User.id == user_id).values(**user_data)
 
-    session.execute(statement)
-    session.commit()
+        session.execute(statement)
+        session.commit()
 
     return get_single_user(session, user_id=user_id)
 

@@ -1,10 +1,11 @@
 from sqlalchemy import Column, ForeignKey, Integer, Numeric, String, Table
 from sqlalchemy.orm import relationship
 
+from src.apps.orders.models import order_product_association_table
 from src.database.db_connection import Base
 
-association_table = Table(
-    "association_table",
+category_product_association_table = Table(
+    "category_product_association_table",
     Base.metadata,
     Column(
         "category_id",
@@ -24,7 +25,9 @@ class Category(Base):
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     name = Column(String(length=75), nullable=False, unique=True)
     products = relationship(
-        "Product", secondary=association_table, back_populates="categories"
+        "Product",
+        secondary=category_product_association_table,
+        back_populates="categories",
     )
 
 
@@ -34,5 +37,10 @@ class Product(Base):
     name = Column(String(length=75), nullable=False, unique=True)
     price = Column(Numeric, nullable=False)
     categories = relationship(
-        "Category", secondary=association_table, back_populates="products"
+        "Category",
+        secondary=category_product_association_table,
+        back_populates="products",
+    )
+    orders = relationship(
+        "Order", secondary=order_product_association_table, back_populates="products"
     )
