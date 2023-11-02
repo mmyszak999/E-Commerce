@@ -13,9 +13,11 @@ from src.core.exceptions import (
     IsOccupied,
     ServiceException,
 )
+from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
+from src.core.sort import Sort
 from src.core.utils import if_exists
 
 
@@ -56,11 +58,23 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
     return ProductOutputSchema.from_orm(product_object)
 
 
-def get_all_products(session: Session, page_params: PageParams) -> PagedResponseSchema:
+def get_all_products(
+    session: Session, page_params: PageParams, query_params: list[tuple]
+) -> PagedResponseSchema:
     query = select(Product)
 
+    products = Lookup(Product, products)
+    filter_params = filter_query_param_values_extractor(query_params)
+    if filter_params:
+        for param in filter_params:
+            products = orders.perform_lookup(*param)
+
+    products = Sort(Product, products.inst)
+    products.set_sort_params(query_params)
+    products.get_sorted_instances()
+
     return paginate(
-        query=query,
+        query=products.inst,
         response_schema=ProductOutputSchema,
         table=Product,
         page_params=page_params,
