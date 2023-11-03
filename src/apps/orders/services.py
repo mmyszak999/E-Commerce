@@ -1,9 +1,5 @@
 from sqlalchemy import delete, insert, select, update
-<<<<<<< HEAD
-from sqlalchemy.orm import Session
-=======
 from sqlalchemy.orm import Session, selectinload
->>>>>>> 4f21fb24125508229e5f103eb70f507d84e039ec
 
 from src.apps.orders.models import Order, order_product_association_table
 from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
