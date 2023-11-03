@@ -66,19 +66,6 @@ def test_superuser_can_delete_category(
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
-def test_superuser_can_delete_all_categories(
-    sync_client: TestClient,
-    superuser_auth_headers: dict[str, str],
-    db_categories: list[CategoryOutputSchema],
-):
-    response = sync_client.delete("categories/", headers=superuser_auth_headers)
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-
-    response = sync_client.get("categories/", headers=superuser_auth_headers)
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["total"] == 0
-
-
 def test_authenticated_user_cannot_get_categories(
     sync_client: TestClient, auth_headers: dict[str, str]
 ):
@@ -131,15 +118,3 @@ def test_anonymous_user_cannot_delete_category(sync_client: TestClient):
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 
-
-def test_authenticated_user_cannot_delete_all_categories(
-    sync_client: TestClient, auth_headers: dict[str, str]
-):
-    response = sync_client.delete("categories/", headers=auth_headers)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-
-
-def test_anonymous_user_cannot_delete_all_categories(sync_client: TestClient):
-    response = sync_client.delete("categories/")
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json()["detail"] == "Missing Authorization Header"

@@ -81,5 +81,5 @@ def handle_authorization_exception(
     request: Request, exception: AuthorizationException
 ) -> JSONResponse:
     return JSONResponse(
-        status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exception)}
+        status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exception)}
     )

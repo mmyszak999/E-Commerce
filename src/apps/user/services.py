@@ -13,7 +13,7 @@ from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import if_exists
+from src.core.utils import if_exists, filter_query_param_values_extractor
 
 
 def hash_user_password(password: str) -> str:

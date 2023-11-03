@@ -183,14 +183,3 @@ def delete_product(
     delete_single_product(db, product_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-
-@product_router.delete(
-    "/",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def delete_products(
-    db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
-) -> Response:
-    check_permission(request_user)
-    delete_all_products(db)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)

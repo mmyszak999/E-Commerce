@@ -85,18 +85,6 @@ def update_order(
 
 
 @order_router.delete(
-    "/",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def delete_orders(
-    db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
-) -> Response:
-    check_permission(request_user)
-    delete_all_orders(db)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@order_router.delete(
     "/{order_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
