@@ -20,8 +20,8 @@ try:
 
     cursor = connection.cursor()
     postgres_insert_query = """INSERT INTO "user"
-    (FIRST_NAME, LAST_NAME, EMAIL, USERNAME, PASSWORD, BIRTH_DATE, IS_SUPERUSER)
-    VALUES ('MOKEBE', 'SUPERUSER', 'superuser@mail.com', 'SuperUser', 'password123', '1999-04-20', TRUE)
+    (FIRST_NAME, LAST_NAME, EMAIL, USERNAME, PASSWORD, BIRTH_DATE, IS_SUPERUSER, IS_STAFF)
+    VALUES ('MOKEBE', 'SUPERUSER', 'superuser@mail.com', 'SuperUser', 'password123', '1999-04-20', TRUE, TRUE)
     """
     cursor.execute(postgres_insert_query)
     connection.commit()

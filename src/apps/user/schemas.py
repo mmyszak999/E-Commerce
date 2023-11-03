@@ -51,6 +51,7 @@ class UserOutputSchema(UserBaseSchema):
     id: int
     is_active: bool = True
     is_superuser: bool = False
+    is_staff: bool = False
 
     class Config:
         orm_mode = True

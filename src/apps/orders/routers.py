@@ -19,6 +19,7 @@ from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
+from src.core.permissions import check_if_staff, check_if_staff_or_owner
 
 order_router = APIRouter(prefix="/orders", tags=["order"])
 
@@ -47,10 +48,8 @@ def get_orders(
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    check_permission(request_user)
-    db_orders = get_all_orders(db, page_params)
-    return db_orders
-
+    check_if_staff(request_user)
+    return get_all_orders(db, page_params)
 
 @order_router.get(
     "/{order_id}",
@@ -63,7 +62,7 @@ def get_order(
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     db_order = get_single_order(db, order_id)
-    check_object_permission(user_id=db_order.user.id, request_user=request_user)
+    check_if_staff_or_owner(user_id=db_order.user.id, request_user=request_user)
     return db_order
 
 
@@ -79,9 +78,8 @@ def update_order(
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     order_check = get_single_order(db, order_id)
-    check_object_permission(user_id=order_check.user.id, request_user=request_user)
-    db_order = update_single_order(db, order, order_id)
-    return db_order
+    check_if_staff_or_owner(user_id=order_check.user.id, request_user=request_user)
+    return update_single_order(db, order, order_id)
 
 
 @order_router.delete(
@@ -93,6 +91,6 @@ def delete_order(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> Response:
-    check_permission(request_user)
+    check_if_staff(request_user)
     delete_single_order(db, order_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

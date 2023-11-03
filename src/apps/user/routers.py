@@ -6,14 +6,14 @@ from sqlalchemy.orm import Session
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
 from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
-                                   UserRegisterSchema, UserUpdateSchema)
+                                   UserRegisterSchema, UserUpdateSchema, UserBaseSchema)
 from src.apps.user.services import (delete_single_user,
                                     get_access_token_schema, get_all_users,
                                     get_single_user, register_user,
                                     update_single_user)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.permissions import check_object_permission, check_permission
+from src.core.permissions import check_if_staff, check_if_staff_or_owner
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -26,8 +26,7 @@ user_router = APIRouter(prefix="/users", tags=["users"])
 def create_user(
     user: UserRegisterSchema, db: Session = Depends(get_db)
 ) -> UserOutputSchema:
-    db_user = register_user(db, user)
-    return db_user
+    return register_user(db, user)
 
 
 @user_router.post(
@@ -38,8 +37,7 @@ def login_user(
     auth_jwt: AuthJWT = Depends(),
     db: Session = Depends(get_db),
 ) -> AccessTokenOutputSchema:
-    access_token_schema = get_access_token_schema(user_login_schema, db, auth_jwt)
-    return access_token_schema
+    return get_access_token_schema(user_login_schema, db, auth_jwt)
 
 
 @user_router.get(
@@ -50,8 +48,8 @@ def login_user(
 )
 def get_logged_user(
     request_user: User = Depends(authenticate_user),
-) -> UserOutputSchema:
-    return UserOutputSchema.from_orm(request_user)
+) -> UserBaseSchema:
+    return UserBaseSchema.from_orm(request_user)
 
 
 @user_router.get(
@@ -64,9 +62,8 @@ def get_users(
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[UserOutputSchema]:
-    check_permission(request_user)
-    db_users = get_all_users(db, page_params)
-    return db_users
+    check_if_staff(request_user)
+    return get_all_users(db, page_params)
 
 
 @user_router.get(
@@ -76,8 +73,8 @@ def get_users(
     status_code=status.HTTP_200_OK,
 )
 def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
-    db_user = get_single_user(db, user_id)
-    return db_user
+    check_if_staff_or_owner(request_user, user_id)
+    return get_single_user(db, user_id)
 
 
 @user_router.get(
@@ -91,9 +88,8 @@ def get_user_orders(
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    check_object_permission(user_id, request_user)
-    db_orders = get_all_user_orders(db, user_id, page_params)
-    return db_orders
+    check_if_staff_or_owner(request_user, user_id)
+    return get_all_user_orders(db, user_id, page_params)
 
 
 @user_router.patch(
@@ -107,9 +103,8 @@ def update_user(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> UserOutputSchema:
-    check_object_permission(user_id, request_user)
-    db_user = update_single_user(db, user, user_id)
-    return db_user
+    check_if_staff_or_owner(request_user, user_id)
+    return update_single_user(db, user, user_id)
 
 
 @user_router.delete(
@@ -121,6 +116,6 @@ def delete_user(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> Response:
-    check_permission(request_user)
+    check_if_staff(request_user)
     delete_single_user(db, user_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

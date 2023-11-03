@@ -20,7 +20,7 @@ from src.apps.products.services.product_services import (create_product,
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.permissions import check_permission
+from src.core.permissions import check_if_staff_or_owner, check_if_staff
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -38,9 +38,8 @@ def post_category(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> CategoryOutputSchema:
-    check_permission(request_user)
-    db_category = create_category(db, category)
-    return db_category
+    check_if_staff(request_user)
+    return create_category(db, category)
 
 
 @category_router.get(
@@ -53,9 +52,7 @@ def get_categories(
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[CategoryOutputSchema]:
-    check_permission(request_user)
-    db_categories = get_all_categories(db, page_params)
-    return db_categories
+    return get_all_categories(db, page_params)
 
 
 @category_router.get(
@@ -67,8 +64,8 @@ def get_categories(
 def get_category(
     category_id: int, db: Session = Depends(get_db)
 ) -> CategoryOutputSchema:
-    db_category = get_single_category(db, category_id)
-    return db_category
+    check_if_staff(request_user)
+    return get_single_category(db, category_id)
 
 
 @category_router.patch(
@@ -82,9 +79,8 @@ def update_category(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> CategoryOutputSchema:
-    check_permission(request_user)
-    db_category = update_single_category(db, category, category_id)
-    return db_category
+    check_if_staff(request_user)
+    return update_single_category(db, category, category_id)
 
 
 @category_router.delete(
@@ -96,20 +92,8 @@ def delete_category(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> Response:
-    check_permission(request_user)
+    check_if_staff(request_user)
     delete_single_category(db, category_id)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@category_router.delete(
-    "/",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def delete_categories(
-    db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
-) -> Response:
-    check_permission(request_user)
-    delete_all_categories(db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -123,9 +107,8 @@ def post_product(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> ProductOutputSchema:
-    check_permission(request_user)
-    db_product = create_product(db, product)
-    return db_product
+    check_if_staff(request_user)
+    return create_product(db, product)
 
 
 @product_router.get(
@@ -135,23 +118,18 @@ def post_product(
 )
 def get_products(
     db: Session = Depends(get_db),
-    page_params: PageParams = Depends(),
-    request_user: User = Depends(authenticate_user),
+    page_params: PageParams = Depends()
 ) -> PagedResponseSchema[ProductOutputSchema]:
-    check_permission(request_user)
-    db_products = get_all_products(db, page_params)
-    return db_products
+    return get_all_products(db, page_params)
 
 
 @product_router.get(
     "/{product_id}",
-    dependencies=[Depends(authenticate_user)],
     response_model=ProductOutputSchema,
     status_code=status.HTTP_200_OK,
 )
 def get_product(product_id: int, db: Session = Depends(get_db)) -> ProductOutputSchema:
-    db_product = get_single_product(db, product_id)
-    return db_product
+    return get_single_product(db, product_id)
 
 
 @product_router.patch(
@@ -165,9 +143,8 @@ def update_product(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> ProductOutputSchema:
-    check_permission(request_user)
-    db_product = update_single_product(db, product, product_id)
-    return db_product
+    check_if_staff(request_user)
+    return update_single_product(db, product, product_id)
 
 
 @product_router.delete(
@@ -179,7 +156,7 @@ def delete_product(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> Response:
-    check_permission(request_user)
+    check_if_staff(request_user)
     delete_single_product(db, product_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
