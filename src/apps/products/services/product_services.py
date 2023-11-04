@@ -18,7 +18,7 @@ from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import if_exists
+from src.core.utils import if_exists, filter_query_param_values_extractor
 
 
 def create_product(
@@ -63,7 +63,7 @@ def get_all_products(
 ) -> PagedResponseSchema:
     query = select(Product)
 
-    products = Lookup(Product, products)
+    products = Lookup(Product, query)
     filter_params = filter_query_param_values_extractor(query_params)
     if filter_params:
         for param in filter_params:

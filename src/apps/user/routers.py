@@ -1,9 +1,10 @@
-from fastapi import Depends, Response, status
+from fastapi import Depends, Response, status, Request
 from fastapi.routing import APIRouter
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
+from src.apps.orders.schemas import OrderOutputSchema
 from src.apps.user.models import User
 from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
                                    UserRegisterSchema, UserUpdateSchema, UserBaseSchema)
@@ -11,6 +12,7 @@ from src.apps.user.services import (delete_single_user,
                                     get_access_token_schema, get_all_users,
                                     get_single_user, register_user,
                                     update_single_user)
+from src.apps.orders.services import get_all_user_orders
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.permissions import check_if_staff, check_if_staff_or_owner
@@ -58,12 +60,13 @@ def get_logged_user(
     status_code=status.HTTP_200_OK,
 )
 def get_users(
+    request: Request,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[UserOutputSchema]:
     check_if_staff(request_user)
-    return get_all_users(db, page_params)
+    return get_all_users(db, page_params, request.query_params.multi_items())
 
 
 @user_router.get(
@@ -83,13 +86,14 @@ def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
     status_code=status.HTTP_200_OK,
 )
 def get_user_orders(
+    request: Request,
     user_id: int,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    check_if_staff_or_owner(request_user, user_id)
-    return get_all_user_orders(db, user_id, page_params)
+    check_if_staff(request_user)
+    return get_all_user_orders(db, user_id, page_params, request.query_params.multi_items())
 
 
 @user_router.patch(

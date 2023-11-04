@@ -9,10 +9,9 @@ from src.apps.products.schemas import (
     ProductOutputSchema,
 )
 from src.apps.products.services.category_services import (
-    create_category, delete_all_categories, delete_single_category,
+    create_category, delete_single_category,
     get_all_categories, get_single_category, update_single_category)
 from src.apps.products.services.product_services import (create_product,
-                                                         delete_all_products,
                                                          delete_single_product,
                                                          get_all_products,
                                                          get_single_product,
@@ -48,11 +47,12 @@ def post_category(
     status_code=status.HTTP_200_OK,
 )
 def get_categories(
+    request: Request,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[CategoryOutputSchema]:
-    return get_all_categories(db, page_params)
+    return get_all_categories(db, page_params, request.query_params.multi_items())
 
 
 @category_router.get(
@@ -117,10 +117,11 @@ def post_product(
     status_code=status.HTTP_200_OK,
 )
 def get_products(
+    request: Request,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends()
 ) -> PagedResponseSchema[ProductOutputSchema]:
-    return get_all_products(db, page_params)
+    return get_all_products(db, page_params, request.query_params.multi_items())
 
 
 @product_router.get(

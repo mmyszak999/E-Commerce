@@ -1,10 +1,10 @@
-from fastapi import Depends, status
+from fastapi import Depends, status, Request
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
 from src.apps.admin.services import (get_all_superusers,
-                                     grant_staff_permission,
-                                     revoke_staff_permission,
+                                     grant_staff_permissions,
+                                     revoke_staff_permissions,
                                      get_all_staff_users)
 from src.apps.user.models import User
 from src.apps.user.schemas import UserOutputSchema
@@ -23,12 +23,13 @@ admin_router = APIRouter(prefix="/admin", tags=["admin"])
     status_code=status.HTTP_200_OK,
 )
 def get_superusers(
+    request: Request,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[UserOutputSchema]:
     check_if_superuser(request_user)
-    return get_all_superusers(db, page_params)
+    return get_all_superusers(db, page_params, request.query_params.multi_items())
 
 
 @admin_router.get(
@@ -37,12 +38,13 @@ def get_superusers(
     status_code=status.HTTP_200_OK,
 )
 def get_staff_users(
+    request: Request,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[UserOutputSchema]:
     check_if_staff(request_user)
-    return get_all_staff_users(db, page_params)
+    return get_all_staff_users(db, page_params, request.query_params.multi_items())
 
 
 
@@ -55,7 +57,7 @@ def grant_staff_status(
     request_user: User = Depends(authenticate_user),
 ):
     check_if_superuser(request_user)
-    return grant_staff_permission(db, user_id)
+    return grant_staff_permissions(db, user_id)
 
 
 @admin_router.patch(
@@ -67,4 +69,4 @@ def revoke_staff_status(
     request_user: User = Depends(authenticate_user),
 ):
     check_if_superuser(request_user)
-    return revoke_staff_permission(db, user_id)
+    return revoke_staff_permissions(db, user_id)

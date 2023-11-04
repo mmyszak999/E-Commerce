@@ -7,7 +7,7 @@ from src.core.exceptions import DoesNotExist
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils import if_exists
+from src.core.utils import if_exists, filter_query_param_values_extractor
 
 
 def modify_staff_permissions(
@@ -39,8 +39,18 @@ def get_all_superusers(
 ) -> PagedResponseSchema:
     query = select(User).filter(User.is_superuser == True)
 
+    users = Lookup(User, query)
+    filter_params = filter_query_param_values_extractor(query_params)
+    if filter_params:
+        for param in filter_params:
+            users = orders.perform_lookup(*param)
+
+    users = Sort(User, users.inst)
+    users.set_sort_params(query_params)
+    users.get_sorted_instances()
+
     return paginate(
-        query=query,
+        query=users.inst,
         response_schema=UserOutputSchema,
         table=User,
         page_params=page_params,
@@ -53,8 +63,18 @@ def get_all_staff_users(
 ) -> PagedResponseSchema:
     query = select(User).filter(User.is_staff == True)
 
+    users = Lookup(User, query)
+    filter_params = filter_query_param_values_extractor(query_params)
+    if filter_params:
+        for param in filter_params:
+            users = orders.perform_lookup(*param)
+
+    users = Sort(User, users.inst)
+    users.set_sort_params(query_params)
+    users.get_sorted_instances()
+
     return paginate(
-        query=query,
+        query=users.inst,
         response_schema=UserOutputSchema,
         table=User,
         page_params=page_params,

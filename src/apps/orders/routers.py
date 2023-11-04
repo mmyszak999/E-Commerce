@@ -12,6 +12,7 @@ from src.apps.orders.services import (
     delete_single_order,
     get_all_user_orders,
     get_single_order,
+    get_all_orders,
     update_single_order,
 )
 from src.apps.user.models import User
@@ -44,12 +45,28 @@ def post_order(
     status_code=status.HTTP_200_OK,
 )
 def get_orders(
+    request: Request,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
     check_if_staff(request_user)
-    return get_all_orders(db, page_params)
+    return get_all_orders(db, page_params, request.query_params.multi_items())
+
+
+@order_router.get(
+    "/my-orders",
+    response_model=PagedResponseSchema[OrderOutputSchema],
+    status_code=status.HTTP_200_OK,
+)
+def get_logged_user_orders(
+    request: Request,
+    db: Session = Depends(get_db),
+    page_params: PageParams = Depends(),
+    request_user: User = Depends(authenticate_user),
+) -> PagedResponseSchema[OrderOutputSchema]:
+    return get_all_user_orders(db, request_user.id, page_params, request.query_params.multi_items())
+
 
 @order_router.get(
     "/{order_id}",
