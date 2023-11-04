@@ -57,12 +57,11 @@ def get_categories(
 
 @category_router.get(
     "/{category_id}",
-    dependencies=[Depends(authenticate_user)],
     response_model=CategoryOutputSchema,
     status_code=status.HTTP_200_OK,
 )
 def get_category(
-    category_id: int, db: Session = Depends(get_db)
+    category_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
 ) -> CategoryOutputSchema:
     check_if_staff(request_user)
     return get_single_category(db, category_id)

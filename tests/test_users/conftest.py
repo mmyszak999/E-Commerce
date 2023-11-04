@@ -6,10 +6,15 @@ from sqlalchemy.orm import Session
 
 from src.apps.user.schemas import UserOutputSchema
 from src.apps.user.services import register_user
+from src.apps.admin.services import grant_staff_permissions
 from src.core.factories import UserRegisterSchemaFactory
 
 DB_USER_SCHEMA = UserRegisterSchemaFactory.build(
     password="vgo39845n", password_repeat="vgo39845n"
+)
+
+DB_STAFF_USER_SCHEMA = UserRegisterSchemaFactory.build(
+    password="v9845go3n", password_repeat="v9845go3n"
 )
 
 
@@ -24,8 +29,21 @@ def db_user(sync_session: Session) -> UserOutputSchema:
 
 
 @pytest.fixture
+def db_staff_user(sync_session: Session) -> UserOutputSchema:
+    staff_user = register_user(sync_session, DB_STAFF_USER_SCHEMA)
+    grant_staff_permissions(sync_session, staff_user.id)
+    return staff_user
+
+
+@pytest.fixture
 def auth_headers(sync_session: Session, db_user: UserOutputSchema) -> dict[str, str]:
     access_token = AuthJWT().create_access_token(db_user.username)
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def staff_auth_headers(sync_session: Session, db_staff_user: UserOutputSchema) -> dict[str, str]:
+    access_token = AuthJWT().create_access_token(db_staff_user.username)
     return {"Authorization": f"Bearer {access_token}"}
 
 

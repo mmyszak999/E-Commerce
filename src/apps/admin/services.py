@@ -8,6 +8,8 @@ from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.utils import if_exists, filter_query_param_values_extractor
+from src.core.filters import Lookup
+from src.core.sort import Sort
 
 
 def modify_staff_permissions(
@@ -22,7 +24,7 @@ def modify_staff_permissions(
     session.commit()
 
     return {
-        "message": f"Staff status has been {'granted' if set_as_superuser else 'revoked'} successfully"
+        "message": f"Staff status has been {'granted' if set_as_staff else 'revoked'} successfully"
     }
 
 
@@ -35,7 +37,7 @@ def revoke_staff_permissions(session: Session, user_id: int) -> dict[str, str]:
 
 
 def get_all_superusers(
-    session: Session, page_params: PageParams
+    session: Session, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema:
     query = select(User).filter(User.is_superuser == True)
 
@@ -59,7 +61,7 @@ def get_all_superusers(
 
 
 def get_all_staff_users(
-    session: Session, page_params: PageParams
+    session: Session, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema:
     query = select(User).filter(User.is_staff == True)
 

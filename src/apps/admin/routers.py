@@ -47,7 +47,6 @@ def get_staff_users(
     return get_all_staff_users(db, page_params, request.query_params.multi_items())
 
 
-
 @admin_router.patch(
     "/grant-staff-permissions/{user_id}", status_code=status.HTTP_200_OK
 )
