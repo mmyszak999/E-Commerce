@@ -7,7 +7,7 @@ from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.orders.schemas import OrderOutputSchema
 from src.apps.user.models import User
 from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
-                                   UserRegisterSchema, UserUpdateSchema, UserBaseSchema)
+                                   UserRegisterSchema, UserUpdateSchema, UserInfoOutputSchema)
 from src.apps.user.services import (delete_single_user,
                                     get_access_token_schema, get_all_users,
                                     get_single_user, register_user,
@@ -46,12 +46,12 @@ def login_user(
     "/me",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(authenticate_user)],
-    response_model=UserOutputSchema,
+    response_model=UserInfoOutputSchema,
 )
 def get_logged_user(
     request_user: User = Depends(authenticate_user),
-) -> UserBaseSchema:
-    return UserBaseSchema.from_orm(request_user)
+) -> UserInfoOutputSchema:
+    return UserInfoOutputSchema.from_orm(request_user)
 
 
 @user_router.get(
@@ -71,12 +71,14 @@ def get_users(
 
 @user_router.get(
     "/{user_id}",
-    dependencies=[Depends(authenticate_user)],
     response_model=UserOutputSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_user(user_id: int, db: Session = Depends(get_db)) -> UserOutputSchema:
-    check_if_staff_or_owner(request_user, user_id)
+def get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user)) -> UserOutputSchema:
+    check_if_staff(request_user)
     return get_single_user(db, user_id)
 
 

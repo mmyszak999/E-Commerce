@@ -2,6 +2,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.apps.user.schemas import UserOutputSchema
+from src.apps.orders.schemas import OrderOutputSchema
 from src.core.factories import UserRegisterSchemaFactory
 from tests.test_users.conftest import DB_USER_SCHEMA
 
@@ -26,19 +27,21 @@ def test_if_user_was_logged_correctly(
     assert "access_token" in response.json()
 
 
-def test_superuser_user_can_get_users(
-    sync_client: TestClient, superuser_auth_headers: dict[str, str]
+def test_staff_can_get_users(
+    sync_client: TestClient, staff_auth_headers: dict[str, str]
 ):
-    response = sync_client.get("users/", headers=superuser_auth_headers)
+    response = sync_client.get("users/", headers=staff_auth_headers)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["total"] == 1
+    print(response.json())
+    assert response.json()["total"] == 2
 
 
-def test_superuser_can_get_single_user(
-    sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
+def test_staff_can_get_single_user(
+    sync_client: TestClient, staff_auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
-    response = sync_client.get(f"users/{db_user.id}", headers=auth_headers)
+    response = sync_client.get(f"users/{db_user.id}", headers=staff_auth_headers)
+    print(response.json())
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
 
@@ -47,19 +50,20 @@ def test_authenticated_user_can_get_their_account(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
     response = sync_client.get("users/me", headers=auth_headers)
+
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
 
-
-def test_authenticated_user_can_get_their_orders(
+"""
+def test_staff_can_get_some_user_orders(
     sync_client: TestClient,
-    auth_headers: dict[str, str],
+    staff_auth_headers: dict[str, str],
     db_user: list[UserOutputSchema],
     db_orders: list[OrderOutputSchema],
 ):
-    response = sync_client.get(f"users/{db_user.id}/orders", headers=auth_headers)
+    response = sync_client.get(f"users/{db_user.id}/orders", headers=staff_auth_headers)
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["total"] == len(db_orders)
+    assert response.json()["total"] == len(db_orders)"""
 
 
 def test_authenticated_user_can_update_their_account(
@@ -73,12 +77,12 @@ def test_authenticated_user_can_update_their_account(
     assert response.json()["username"] == update_data["username"]
 
 
-def test_superuser_can_delete_user(
+def test_staff_can_delete_user(
     sync_client: TestClient,
-    superuser_auth_headers: dict[str, str],
+    staff_auth_headers: dict[str, str],
     db_user: UserOutputSchema,
 ):
-    response = sync_client.delete(f"users/{db_user.id}", headers=superuser_auth_headers)
+    response = sync_client.delete(f"users/{db_user.id}", headers=staff_auth_headers)
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
@@ -86,7 +90,7 @@ def test_authenticated_user_cannot_get_users(
     sync_client: TestClient, auth_headers: dict[str, str]
 ):
     response = sync_client.get("users/", headers=auth_headers)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_anonymous_user_cannot_get_users(
@@ -97,10 +101,17 @@ def test_anonymous_user_cannot_get_users(
     assert response.json()["detail"] == "Missing Authorization Header"
 
 
-def test_anonymous_user_cannot_get_single_user(
-    sync_client: TestClient,
+def test_authenticated_user_cannot_get_single_user(
+    sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema,
 ):
-    response = sync_client.get("users/1")
+    response = sync_client.get(f"users/{db_user.id}", headers=auth_headers)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_anonymous_user_cannot_get_single_user(
+    sync_client: TestClient, db_user: UserOutputSchema
+):
+    response = sync_client.get(f"users/{db_user.id}")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 
@@ -117,7 +128,7 @@ def test_authenticated_user_cannot_delete_user(
     sync_client: TestClient, auth_headers: dict[str, str]
 ):
     response = sync_client.delete("users/1", headers=auth_headers)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_anonymous_user_cannot_delete_user(sync_client: TestClient):

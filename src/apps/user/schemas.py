@@ -47,6 +47,13 @@ class UserUpdateSchema(BaseModel):
         orm_mode = True
 
 
+class UserInfoOutputSchema(UserBaseSchema):
+    id: int
+    
+    class Config:
+        orm_mode = True
+
+
 class UserOutputSchema(UserBaseSchema):
     id: int
     is_active: bool = True

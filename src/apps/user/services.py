@@ -70,22 +70,24 @@ def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
 
 
 def get_all_users(
-    session: Session, page_params: PageParams, query_params: list[tuple]
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
     query = select(User)
 
-    users = Lookup(User, query)
-    filter_params = filter_query_param_values_extractor(query_params)
-    if filter_params:
-        for param in filter_params:
-            users = orders.perform_lookup(*param)
+    if query_params:
+        users = Lookup(User, query)
+        filter_params = filter_query_param_values_extractor(query_params)
+        if filter_params:
+            for param in filter_params:
+                users = orders.perform_lookup(*param)
 
-    users = Sort(User, users.inst)
-    users.set_sort_params(query_params)
-    users.get_sorted_instances()
+        users = Sort(User, users.inst)
+        users.set_sort_params(query_params)
+        users.get_sorted_instances()
+        query = users.inst
 
     return paginate(
-        query=users.inst,
+        query=query,
         response_schema=UserOutputSchema,
         table=User,
         page_params=page_params,

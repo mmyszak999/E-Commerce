@@ -40,7 +40,7 @@ def post_order(
 
 
 @order_router.get(
-    "/",
+    "/all-orders",
     response_model=PagedResponseSchema[OrderOutputSchema],
     status_code=status.HTTP_200_OK,
 )
@@ -55,7 +55,7 @@ def get_orders(
 
 
 @order_router.get(
-    "/my-orders",
+    "/",
     response_model=PagedResponseSchema[OrderOutputSchema],
     status_code=status.HTTP_200_OK,
 )
