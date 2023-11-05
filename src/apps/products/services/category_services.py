@@ -4,10 +4,12 @@ from sqlalchemy.orm import Session
 from src.apps.products.models import Category
 from src.apps.products.schemas import CategoryInputSchema, CategoryOutputSchema
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
+from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils import if_exists
+from src.core.sort import Sort
+from src.core.utils import if_exists, filter_query_param_values_extractor
 
 
 def create_category(
@@ -37,9 +39,22 @@ def get_single_category(session: Session, category_id: int) -> CategoryOutputSch
 
 
 def get_all_categories(
-    session: Session, page_params: PageParams
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema[CategoryOutputSchema]:
     query = select(Category)
+
+    print(query_params)
+    if query_params:
+        categories = Lookup(Category, query)
+        filter_params = filter_query_param_values_extractor(query_params)
+        if filter_params:
+            for param in filter_params:
+                categories = orders.perform_lookup(*param)
+
+        categories = Sort(Category, categories.inst)
+        categories.set_sort_params(query_params)
+        categories.get_sorted_instances()
+        query = categories.inst
 
     return paginate(
         query=query,
@@ -65,22 +80,15 @@ def update_single_category(
         if category_name_check:
             raise IsOccupied(Category.__name__, "name", category_input.name)
 
-    statement = (
-        update(Category).filter(Category.id == category_id).values(**category_data)
-    )
+        statement = (
+            update(Category).filter(Category.id == category_id).values(**category_data)
+        )
 
-    session.execute(statement)
-    session.commit()
+        session.execute(statement)
+        session.commit()
 
     return get_single_category(session, category_id=category_id)
 
-
-def delete_all_categories(session: Session):
-    statement = delete(Category)
-    result = session.execute(statement)
-    session.commit()
-
-    return result
 
 
 def delete_single_category(session: Session, category_id: int):

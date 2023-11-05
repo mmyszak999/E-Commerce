@@ -1,7 +1,11 @@
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
-from src.apps.products.models import Category, Product, association_table
+from src.apps.products.models import (
+    Category,
+    Product,
+    category_product_association_table,
+)
 from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema
 from src.core.exceptions import (
     AlreadyExists,
@@ -9,10 +13,12 @@ from src.core.exceptions import (
     IsOccupied,
     ServiceException,
 )
+from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils import if_exists
+from src.core.sort import Sort
+from src.core.utils import if_exists, filter_query_param_values_extractor
 
 
 def create_product(
@@ -38,9 +44,9 @@ def create_product(
 
             product_data["categories"] = categories
 
-    new_product = Product(**product_data)
-    session.add(new_product)
-    session.commit()
+        new_product = Product(**product_data)
+        session.add(new_product)
+        session.commit()
 
     return ProductOutputSchema.from_orm(new_product)
 
@@ -52,8 +58,22 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
     return ProductOutputSchema.from_orm(product_object)
 
 
-def get_all_products(session: Session, page_params: PageParams) -> PagedResponseSchema:
+def get_all_products(
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
+) -> PagedResponseSchema:
     query = select(Product)
+
+    if query_params:
+        products = Lookup(Product, query)
+        filter_params = filter_query_param_values_extractor(query_params)
+        if filter_params:
+            for param in filter_params:
+                products = orders.perform_lookup(*param)
+
+        products = Sort(Product, products.inst)
+        products.set_sort_params(query_params)
+        products.get_sorted_instances()
+        query = products.inst
 
     return paginate(
         query=query,
@@ -88,7 +108,9 @@ def update_single_product(
 
             if to_delete := current_categories - incoming_categories:
                 session.execute(
-                    delete(association_table).where(Category.id.in_(to_delete))
+                    delete(category_product_association_table).where(
+                        Category.id.in_(to_delete)
+                    )
                 )
 
             if to_insert := incoming_categories - current_categories:
@@ -96,7 +118,7 @@ def update_single_product(
                     {"product_id": product_id, "category_id": category_id}
                     for category_id in to_insert
                 ]
-                session.execute(insert(association_table).values(rows))
+                session.execute(insert(category_product_association_table).values(rows))
 
             product_data.pop("category_ids")
 
@@ -109,14 +131,6 @@ def update_single_product(
         session.refresh(product_object)
 
     return get_single_product(session, product_id=product_id)
-
-
-def delete_all_products(session: Session):
-    statement = delete(Product)
-    result = session.execute(statement)
-    session.commit()
-
-    return result
 
 
 def delete_single_product(session: Session, product_id: int):
