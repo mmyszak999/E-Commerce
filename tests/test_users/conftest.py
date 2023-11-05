@@ -18,7 +18,7 @@ DB_STAFF_USER_SCHEMA = UserRegisterSchemaFactory.build(
 )
 
 
-@pytest.fixture(autouse=True, scope="module")
+@pytest.fixture(autouse=True, scope="session")
 def create_superuser():
     subprocess.run(["./app_scripts/create_superuser.sh", "test_db"])
 
