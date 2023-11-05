@@ -18,7 +18,7 @@ from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import if_exists
+from src.core.utils import if_exists, filter_query_param_values_extractor
 
 
 def create_product(
@@ -59,22 +59,24 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
 
 
 def get_all_products(
-    session: Session, page_params: PageParams, query_params: list[tuple]
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
     query = select(Product)
 
-    products = Lookup(Product, products)
-    filter_params = filter_query_param_values_extractor(query_params)
-    if filter_params:
-        for param in filter_params:
-            products = orders.perform_lookup(*param)
+    if query_params:
+        products = Lookup(Product, query)
+        filter_params = filter_query_param_values_extractor(query_params)
+        if filter_params:
+            for param in filter_params:
+                products = orders.perform_lookup(*param)
 
-    products = Sort(Product, products.inst)
-    products.set_sort_params(query_params)
-    products.get_sorted_instances()
+        products = Sort(Product, products.inst)
+        products.set_sort_params(query_params)
+        products.get_sorted_instances()
+        query = products.inst
 
     return paginate(
-        query=products.inst,
+        query=query,
         response_schema=ProductOutputSchema,
         table=Product,
         page_params=page_params,
@@ -129,14 +131,6 @@ def update_single_product(
         session.refresh(product_object)
 
     return get_single_product(session, product_id=product_id)
-
-
-def delete_all_products(session: Session):
-    statement = delete(Product)
-    result = session.execute(statement)
-    session.commit()
-
-    return result
 
 
 def delete_single_product(session: Session, product_id: int):

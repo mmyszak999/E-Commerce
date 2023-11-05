@@ -9,7 +9,7 @@ from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import if_exists
+from src.core.utils import if_exists, filter_query_param_values_extractor
 
 
 def create_category(
@@ -39,22 +39,25 @@ def get_single_category(session: Session, category_id: int) -> CategoryOutputSch
 
 
 def get_all_categories(
-    session: Session, page_params: PageParams, query_params: list[tuple]
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema[CategoryOutputSchema]:
     query = select(Category)
 
-    categories = Lookup(Category, categories)
-    filter_params = filter_query_param_values_extractor(query_params)
-    if filter_params:
-        for param in filter_params:
-            categories = orders.perform_lookup(*param)
+    print(query_params)
+    if query_params:
+        categories = Lookup(Category, query)
+        filter_params = filter_query_param_values_extractor(query_params)
+        if filter_params:
+            for param in filter_params:
+                categories = orders.perform_lookup(*param)
 
-    categories = Sort(Category, categories.inst)
-    categories.set_sort_params(query_params)
-    categories.get_sorted_instances()
+        categories = Sort(Category, categories.inst)
+        categories.set_sort_params(query_params)
+        categories.get_sorted_instances()
+        query = categories.inst
 
     return paginate(
-        query=categories.inst,
+        query=query,
         response_schema=CategoryOutputSchema,
         table=Category,
         page_params=page_params,
@@ -86,13 +89,6 @@ def update_single_category(
 
     return get_single_category(session, category_id=category_id)
 
-
-def delete_all_categories(session: Session):
-    statement = delete(Category)
-    result = session.execute(statement)
-    session.commit()
-
-    return result
 
 
 def delete_single_category(session: Session, category_id: int):

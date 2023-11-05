@@ -57,9 +57,9 @@ def get_single_order(
 def get_all_orders(
     session: Session, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema:
-    orders = select(Order).options(selectinload(Order.products))
+    query = select(Order).options(selectinload(Order.products))
 
-    orders = Lookup(Order, orders)
+    orders = Lookup(Order, query)
     filter_params = filter_query_param_values_extractor(query_params)
     if filter_params:
         for param in filter_params:
@@ -81,11 +81,11 @@ def get_all_orders(
 def get_all_user_orders(
     session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    orders = (
+    query = (
         select(Order).filter(User.id == user_id).options(selectinload(Order.products))
     )
 
-    orders = Lookup(Order, orders)
+    orders = Lookup(Order, query)
     filter_params = filter_query_param_values_extractor(query_params)
     if filter_params:
         for param in filter_params:
