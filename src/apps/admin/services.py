@@ -37,22 +37,24 @@ def revoke_staff_permissions(session: Session, user_id: int) -> dict[str, str]:
 
 
 def get_all_superusers(
-    session: Session, page_params: PageParams, query_params: list[tuple]
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
     query = select(User).filter(User.is_superuser == True)
 
-    users = Lookup(User, query)
-    filter_params = filter_query_param_values_extractor(query_params)
-    if filter_params:
-        for param in filter_params:
-            users = orders.perform_lookup(*param)
+    if query_params:
+        users = Lookup(User, query)
+        filter_params = filter_query_param_values_extractor(query_params)
+        if filter_params:
+            for param in filter_params:
+                users = orders.perform_lookup(*param)
 
-    users = Sort(User, users.inst)
-    users.set_sort_params(query_params)
-    users.get_sorted_instances()
+        users = Sort(User, users.inst)
+        users.set_sort_params(query_params)
+        users.get_sorted_instances()
+        query = users.inst
 
     return paginate(
-        query=users.inst,
+        query=query,
         response_schema=UserOutputSchema,
         table=User,
         page_params=page_params,
@@ -61,22 +63,25 @@ def get_all_superusers(
 
 
 def get_all_staff_users(
-    session: Session, page_params: PageParams, query_params: list[tuple]
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
     query = select(User).filter(User.is_staff == True)
 
-    users = Lookup(User, query)
-    filter_params = filter_query_param_values_extractor(query_params)
-    if filter_params:
-        for param in filter_params:
-            users = orders.perform_lookup(*param)
+    if query_params:
+        users = Lookup(User, query)
+        filter_params = filter_query_param_values_extractor(query_params)
+        if filter_params:
+            for param in filter_params:
+                users = orders.perform_lookup(*param)
 
-    users = Sort(User, users.inst)
-    users.set_sort_params(query_params)
-    users.get_sorted_instances()
+        users = Sort(User, users.inst)
+        users.set_sort_params(query_params)
+        users.get_sorted_instances()
+        query = users.inst
+        
 
     return paginate(
-        query=users.inst,
+        query=query,
         response_schema=UserOutputSchema,
         table=User,
         page_params=page_params,

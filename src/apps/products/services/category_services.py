@@ -43,6 +43,7 @@ def get_all_categories(
 ) -> PagedResponseSchema[CategoryOutputSchema]:
     query = select(Category)
 
+    print(query_params)
     if query_params:
         categories = Lookup(Category, query)
         filter_params = filter_query_param_values_extractor(query_params)
