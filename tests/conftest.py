@@ -11,7 +11,7 @@ from src.dependencies.get_db import get_db
 from src.settings.db_settings import settings
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def sync_engine():
     engine = create_engine(url=settings.test_postgres_url, echo=False)
 

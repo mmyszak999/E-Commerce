@@ -12,7 +12,7 @@ def if_exists(model_class: Table, field: str, value: Any, session: Session) -> b
     )
 
 
-def check_if_request_user(
+def check_field_values(
     request_user_attr: Any, resource_owner_attrib: Any, message: str
 ) -> None:
     if request_user_attr != resource_owner_attrib:

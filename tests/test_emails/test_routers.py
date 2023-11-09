@@ -4,7 +4,6 @@ from fastapi_jwt_auth import AuthJWT
 
 from src.apps.user.schemas import UserOutputSchema
 from src.core.factories import UserRegisterSchemaFactory
-from tests.test_orders.conftest import db_orders
 from tests.test_users.conftest import auth_headers, db_user
 
 
@@ -39,6 +38,5 @@ def test_request_user_cannot_confirm_change_of_not_their_email(
     response = sync_client.post(
         f"email/confirm-email-change/?token={token}&new_email={new_email}", headers=auth_headers
     )
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()["detail"] == "You only can change email address assigned to your account!"
+    assert response.status_code == status.HTTP_404_NOT_FOUND
     

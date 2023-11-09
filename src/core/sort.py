@@ -1,7 +1,5 @@
 from typing import Any
 
-from sqlalchemy import asc, desc
-
 from src.core.utils import sort_query_param_values_extractor
 
 

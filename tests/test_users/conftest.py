@@ -37,17 +37,17 @@ def db_staff_user(sync_session: Session) -> UserOutputSchema:
 
 @pytest.fixture
 def auth_headers(sync_session: Session, db_user: UserOutputSchema) -> dict[str, str]:
-    access_token = AuthJWT().create_access_token(db_user.username)
+    access_token = AuthJWT().create_access_token(db_user.email)
     return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture
 def staff_auth_headers(sync_session: Session, db_staff_user: UserOutputSchema) -> dict[str, str]:
-    access_token = AuthJWT().create_access_token(db_staff_user.username)
+    access_token = AuthJWT().create_access_token(db_staff_user.email)
     return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture
 def superuser_auth_headers(sync_session: Session) -> dict[str, str]:
-    access_token = AuthJWT().create_access_token("SuperUser")
+    access_token = AuthJWT().create_access_token('superuser@mail.com')
     return {"Authorization": f"Bearer {access_token}"}

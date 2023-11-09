@@ -1,6 +1,5 @@
 from fastapi import BackgroundTasks
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
-from jinja2 import Template
 from pydantic import BaseModel, BaseSettings
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session

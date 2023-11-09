@@ -7,7 +7,8 @@ from src.apps.emails.services import send_confirmation_mail_change_email
 from src.apps.emails.schemas import EmailChangeConfirmationSchema
 from src.apps.user.models import User
 from src.apps.user.services import update_email
-from src.core.utils import check_if_request_user
+from src.core.permissions import check_if_staff_or_owner
+from src.core.utils import check_field_values
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -24,9 +25,7 @@ def confirm_email_change(
    auth_jwt: AuthJWT = Depends(), request_user: User = Depends(authenticate_user)
 ):
     email = auth_jwt.get_raw_jwt(token)["sub"]
-    check_if_request_user(
-        request_user.email, email,
-        "You only can change email address assigned to your account!")
+    check_if_staff_or_owner(request_user, "email", email)
     
     update_email(db, new_email, email)
     return {"message": "Email updated successfully!"}

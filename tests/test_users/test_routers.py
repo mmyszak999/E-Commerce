@@ -3,9 +3,7 @@ from fastapi.testclient import TestClient
 
 from src.apps.user.schemas import UserOutputSchema
 from src.core.factories import UserRegisterSchemaFactory, EmailUpdateSchemaFactory
-from tests.test_orders.conftest import db_orders
 from tests.test_products.conftest import db_categories, db_products
-from src.apps.orders.schemas import OrderOutputSchema
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
@@ -106,9 +104,7 @@ def test_request_user_cannot_send_email_change_confirmation_mail_to_change_not_t
     response = sync_client.post(
         f"users/change-email", data=update_data.json(), headers=auth_headers
     )
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()["detail"] == ("Entered email differs from the email assigned to your account! "
-                                        "Please enter your current email address")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_staff_can_delete_user(

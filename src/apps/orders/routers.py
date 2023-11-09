@@ -79,7 +79,7 @@ def get_order(
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     db_order = get_single_order(db, order_id)
-    check_if_staff_or_owner(user_id=db_order.user.id, request_user=request_user)
+    check_if_staff_or_owner(request_user, "id", db_order.user.id)
     return db_order
 
 
@@ -95,7 +95,7 @@ def update_order(
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     order_check = get_single_order(db, order_id)
-    check_if_staff_or_owner(user_id=order_check.user.id, request_user=request_user)
+    check_if_staff_or_owner(request_user, "id", db_order.user.id)
     return update_single_order(db, order, order_id)
 
 

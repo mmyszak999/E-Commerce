@@ -14,11 +14,12 @@ from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
 from src.apps.user.services import (delete_single_user,
                                     get_access_token_schema, get_all_users,
                                     get_single_user, register_user,
-                                    update_single_user)
+                                    update_single_user, get_access_token_schema)
 from src.apps.orders.services import get_all_user_orders
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.permissions import check_if_staff, check_if_staff_or_owner
+from src.core.utils import check_field_values
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -42,13 +43,7 @@ def login_user(
     auth_jwt: AuthJWT = Depends(),
     db: Session = Depends(get_db),
 ) -> AccessTokenOutputSchema:
-    user = authenticate(**user_login_schema.dict(), session=db)
-    email = user.email
-    access_token = auth_jwt.create_access_token(
-        subject=email, algorithm="HS256"
-    )
-
-
+    
     return get_access_token_schema(user_login_schema, db, auth_jwt)
 
 
@@ -119,11 +114,11 @@ def update_user(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> UserOutputSchema:
-    check_if_staff_or_owner(request_user, user_id)
+    check_if_staff_or_owner(request_user, "id", user_id)
     return update_single_user(db, user, user_id)
 
 
-@router.post(
+@user_router.post(
     "/change-email",
     status_code=status.HTTP_200_OK
 )
@@ -131,11 +126,7 @@ def change_email(
     email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, request_user: User = Depends(authenticate_user),
     db: Session = Depends(get_db), auth_jwt: AuthJWT = Depends()
 ) -> JSONResponse:
-    check_if_request_user(
-        request_user.email, email_update_schema.email,
-        "Entered email differs from the email assigned to your account! "
-        "Please enter your current email address")
-    
+    check_if_staff_or_owner(request_user, "email", email_update_schema.email)
     token = auth_jwt.create_access_token(
         subject=email_update_schema.email, algorithm="HS256"
     )
@@ -152,7 +143,7 @@ def change_email(
     )
 
 
-@router.delete(
+@user_router.delete(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
