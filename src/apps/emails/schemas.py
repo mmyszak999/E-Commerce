@@ -14,7 +14,3 @@ class EmailUpdateSchema(BaseModel):
 
 class EmailConfirmationSchema(BaseModel):
     token: str
-
-
-class EmailChangeConfirmationSchema(EmailConfirmationSchema):
-    new_email: str

@@ -4,7 +4,6 @@ from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
 from src.apps.emails.services import send_confirmation_mail_change_email
-from src.apps.emails.schemas import EmailChangeConfirmationSchema
 from src.apps.user.models import User
 from src.apps.user.services import update_email
 from src.core.permissions import check_if_staff_or_owner
@@ -21,11 +20,10 @@ email_router = APIRouter(prefix="/email", tags=["emails"])
     status_code=status.HTTP_200_OK,
 )
 def confirm_email_change(
-   token: str, new_email: str, db: Session = Depends(get_db),
+   token: str, db: Session = Depends(get_db),
    auth_jwt: AuthJWT = Depends(), request_user: User = Depends(authenticate_user)
 ):
-    email = auth_jwt.get_raw_jwt(token)["sub"]
-    check_if_staff_or_owner(request_user, "email", email)
+    new_email = auth_jwt.get_raw_jwt(token)["sub"]
     
-    update_email(db, new_email, email)
+    update_email(db, new_email, request_user.email)
     return {"message": "Email updated successfully!"}

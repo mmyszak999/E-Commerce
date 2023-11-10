@@ -4,7 +4,7 @@ from pydantic import BaseModel, BaseSettings
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
-from src.apps.emails.schemas import EmailUpdateSchema, EmailSchema, EmailChangeConfirmationSchema
+from src.apps.emails.schemas import EmailUpdateSchema, EmailSchema, EmailConfirmationSchema
 from src.apps.user.models import User
 from src.apps.user.services import authenticate
 from src.core.exceptions import ServiceException, IsOccupied
@@ -44,10 +44,10 @@ def send_confirmation_mail_change_email(
     token: str, background_tasks: BackgroundTasks) -> None:
     validate_email_update_data(update_schema, session)
     
-    schema = EmailSchema(
+    email_schema = EmailSchema(
         email_subject="Confirm your email update",
         receivers=(update_schema.new_email,),
         template_name="email_update.html"
     )
-    body_schema = EmailChangeConfirmationSchema(token=token, new_email=update_schema.new_email)
-    send_email(schema, body_schema, background_tasks)
+    body_schema = EmailConfirmationSchema(token=token)
+    send_email(email_schema, body_schema, background_tasks)

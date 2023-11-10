@@ -104,7 +104,7 @@ def test_request_user_cannot_send_email_change_confirmation_mail_to_change_not_t
     response = sync_client.post(
         f"users/change-email", data=update_data.json(), headers=auth_headers
     )
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def test_staff_can_delete_user(

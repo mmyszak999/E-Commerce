@@ -7,7 +7,7 @@ from src.apps.user.models import User
 from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
                                    UserRegisterSchema, UserUpdateSchema)
 from src.apps.user.utils import passwd_context
-from src.core.exceptions import AlreadyExists, AuthenticationException, DoesNotExist, IsOccupied
+from src.core.exceptions import AlreadyExists, AuthenticationException, DoesNotExist, IsOccupied, ServiceException
 from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -126,6 +126,9 @@ def update_email(
 
     if user is None:
         raise DoesNotExist(User.__name__, "email", current_email)
+    
+    if user.email == new_email:
+        raise ServiceException("Email cant't be updated! Desired email is the same as the current email")
 
     statement = update(User).filter(User.email == current_email).values(email=new_email)
     session.execute(statement)

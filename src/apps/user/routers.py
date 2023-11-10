@@ -126,9 +126,11 @@ def change_email(
     email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, request_user: User = Depends(authenticate_user),
     db: Session = Depends(get_db), auth_jwt: AuthJWT = Depends()
 ) -> JSONResponse:
-    check_if_staff_or_owner(request_user, "email", email_update_schema.email)
+    check_field_values(
+        request_user.email, email_update_schema.email, "Please type your current mail address in the 'email' field!"
+    )
     token = auth_jwt.create_access_token(
-        subject=email_update_schema.email, algorithm="HS256"
+        subject=email_update_schema.new_email, algorithm="HS256"
     )
     send_confirmation_mail_change_email(
         email_update_schema,

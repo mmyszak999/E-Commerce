@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from src.core.exceptions import ServiceException
 
 
-def if_exists(model_class: Table, field: str, value: Any, session: Session) -> bool:
+def if_exists(model_class: Table, field: str, value: Any, session: Session):
     return session.scalar(
         select(model_class).filter(getattr(model_class, field) == value)
     )
