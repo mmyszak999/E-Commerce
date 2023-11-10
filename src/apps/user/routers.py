@@ -19,9 +19,10 @@ from src.apps.orders.services import get_all_user_orders
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.permissions import check_if_staff, check_if_staff_or_owner
-from src.core.utils import check_field_values
+from src.core.utils import check_field_values, generate_confirm_token
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
+from src.settings.general import settings
 
 user_router = APIRouter(prefix="/users", tags=["users"])
 
@@ -129,9 +130,7 @@ def change_email(
     check_field_values(
         request_user.email, email_update_schema.email, "Please type your current mail address in the 'email' field!"
     )
-    token = auth_jwt.create_access_token(
-        subject=email_update_schema.new_email, algorithm="HS256"
-    )
+    token = generate_confirm_token([email_update_schema.email, email_update_schema.new_email])
     send_confirmation_mail_change_email(
         email_update_schema,
         db,

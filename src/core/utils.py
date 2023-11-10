@@ -2,14 +2,31 @@ from typing import Any
 
 from sqlalchemy import Table, select
 from sqlalchemy.orm import Session
+from itsdangerous import URLSafeTimedSerializer
 
 from src.core.exceptions import ServiceException
+from src.settings.general import settings
 
 
 def if_exists(model_class: Table, field: str, value: Any, session: Session):
     return session.scalar(
         select(model_class).filter(getattr(model_class, field) == value)
     )
+    
+def generate_confirm_token(objects: list[str]) -> str:
+    serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
+    return serializer.dumps(objects, salt=settings.SECURITY_PASSWORD_SALT)
+
+def confirm_token(token: str, expiration=3600) -> list[str]:
+    serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
+    try:
+        objects = serializer.loads(
+            token, salt=settings.SECURITY_PASSWORD_SALT, max_age=expiration
+        )
+        return objects
+    
+    except Exception:
+        return False
 
 
 def check_field_values(

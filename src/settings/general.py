@@ -8,3 +8,6 @@ class GeneralSettings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        
+
+settings = GeneralSettings()
