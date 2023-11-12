@@ -53,6 +53,9 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
     return UserOutputSchema.from_orm(new_user)
 
+def activate_account():
+    pass
+
 
 def authenticate(email: str, password: str, session: Session) -> User:
     user = session.scalar(select(User).filter(User.email == email).limit(1))

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from src.apps.emails.services import (
     confirm_email_change_service,
-    send_confirmation_mail_change_email,
+    send_email_change_confirmation_mail,
     update_email,
 )
 from src.apps.user.schemas import UserOutputSchema
@@ -16,17 +16,17 @@ from src.core.utils import generate_confirm_token
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
-def test_if_user_cannot_send_confirmation_mail_change_email_when_new_email_equals_the_current_one(
+def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_equals_the_current_one(
     sync_session: Session, db_user: UserOutputSchema
 ):
     token = AuthJWT().create_access_token(db_user.email)
     schema = EmailUpdateSchemaFactory.build(email=db_user.email, new_email=db_user.email)
     
     with pytest.raises(ServiceException):
-        send_confirmation_mail_change_email(schema, sync_session, token, BackgroundTasks)
+        send_email_change_confirmation_mail(schema, sync_session, token, BackgroundTasks)
 
 
-def test_if_user_cannot_send_confirmation_mail_change_email_when_new_email_is_occupied(
+def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_is_occupied(
     sync_session: Session, db_user: UserOutputSchema
 ):  
     user_data = UserRegisterSchemaFactory.build(
@@ -38,7 +38,7 @@ def test_if_user_cannot_send_confirmation_mail_change_email_when_new_email_is_oc
     email_update_data = EmailUpdateSchemaFactory.build(email=new_user.email, new_email=db_user.email)
     
     with pytest.raises(IsOccupied):
-        send_confirmation_mail_change_email(email_update_data, sync_session, token, BackgroundTasks)
+        send_email_change_confirmation_mail(email_update_data, sync_session, token, BackgroundTasks)
 
 
 def test_raise_exception_while_updating_email_of_nonexistent_user(
