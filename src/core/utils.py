@@ -1,8 +1,8 @@
 from typing import Any
 
+from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import Table, select
 from sqlalchemy.orm import Session
-from itsdangerous import URLSafeTimedSerializer
 
 from src.core.exceptions import ServiceException
 from src.settings.general import settings
@@ -42,7 +42,7 @@ def filter_query_param_values_extractor(params_list):
         key, value = param
         try:
             field, oper = key.split("__")
-        except:
+        except Exception:
             field = key
             oper = "eq"
         yield field, oper, value

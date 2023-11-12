@@ -71,7 +71,7 @@ def test_staff_can_delete_product(
 def test_authenticated_user_cannot_update_product(
     sync_client: TestClient,
     auth_headers: dict[str, str],
-    db_products: list[CategoryOutputSchema] 
+    db_products: list[CategoryOutputSchema]
 ):
     update_data = ProductInputSchemaFactory.build()
     response = sync_client.patch(

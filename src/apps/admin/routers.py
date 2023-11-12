@@ -1,16 +1,18 @@
-from fastapi import Depends, status, Request
+from fastapi import Depends, Request, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.admin.services import (get_all_superusers,
-                                     grant_staff_permissions,
-                                     revoke_staff_permissions,
-                                     get_all_staff_users)
+from src.apps.admin.services import (
+    get_all_staff_users,
+    get_all_superusers,
+    grant_staff_permissions,
+    revoke_staff_permissions,
+)
 from src.apps.user.models import User
 from src.apps.user.schemas import UserOutputSchema
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.permissions import check_if_superuser, check_if_staff
+from src.core.permissions import check_if_staff, check_if_superuser
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 

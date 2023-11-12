@@ -1,15 +1,15 @@
 from fastapi import BackgroundTasks
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 from pydantic import BaseModel, BaseSettings
-from sqlalchemy import delete, select, update
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from src.apps.emails.schemas import EmailUpdateSchema, EmailSchema, EmailConfirmationSchema
+from src.apps.emails.schemas import EmailSchema, EmailUpdateSchema
+from src.apps.jwt.schemas import ConfirmationTokenSchema
 from src.apps.user.models import User
-from src.apps.user.services import authenticate
-from src.core.exceptions import ServiceException, IsOccupied
+from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
+from src.core.utils import check_field_values, confirm_token, if_exists
 from src.settings.email_settings import EmailSettings
-from src.core.utils import if_exists
 
 
 def email_config(settings: BaseSettings = EmailSettings):
@@ -39,6 +39,7 @@ def send_email(schema: EmailSchema, body_schema: BaseModel, background_tasks: Ba
         template_name=schema.template_name
     )
 
+
 def send_confirmation_mail_change_email(
     update_schema: EmailUpdateSchema, session: Session,
     token: str, background_tasks: BackgroundTasks) -> None:
@@ -49,5 +50,31 @@ def send_confirmation_mail_change_email(
         receivers=(update_schema.new_email,),
         template_name="email_update.html"
     )
-    body_schema = EmailConfirmationSchema(token=token)
+    body_schema = ConfirmationTokenSchema(token=token)
     send_email(email_schema, body_schema, background_tasks)
+    
+    
+def update_email(
+    session: Session, new_email: str, current_email: str
+) -> None:
+    user = if_exists(User, "email", current_email, session)
+
+    if user is None:
+        raise DoesNotExist(User.__name__, "email", current_email)
+    
+    if user.email == new_email:
+        raise ServiceException("Email cant't be updated! Desired email is the same as the current email")
+
+    statement = update(User).filter(User.email == current_email).values(email=new_email)
+    session.execute(statement)
+    session.commit()
+
+
+def confirm_email_change_service(db: Session, token: str, request_user_email: str) -> None:
+    emails = confirm_token(token)
+    current_email, new_email = emails[0], emails[1]
+    check_field_values(
+        request_user_email, current_email, "Your email is different from the email requested to be changed!"
+        )
+    
+    update_email(db, new_email, current_email)

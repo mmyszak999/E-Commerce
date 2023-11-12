@@ -4,9 +4,9 @@ import pytest
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
+from src.apps.admin.services import grant_staff_permissions
 from src.apps.user.schemas import UserOutputSchema
 from src.apps.user.services import register_user
-from src.apps.admin.services import grant_staff_permissions
 from src.core.factories import UserRegisterSchemaFactory
 
 DB_USER_SCHEMA = UserRegisterSchemaFactory.build(

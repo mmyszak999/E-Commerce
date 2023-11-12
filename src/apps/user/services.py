@@ -4,16 +4,25 @@ from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
-from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
-                                   UserRegisterSchema, UserUpdateSchema)
+from src.apps.user.schemas import (
+    UserLoginInputSchema,
+    UserOutputSchema,
+    UserRegisterSchema,
+    UserUpdateSchema,
+)
 from src.apps.user.utils import passwd_context
-from src.core.exceptions import AlreadyExists, AuthenticationException, DoesNotExist, IsOccupied, ServiceException
+from src.core.exceptions import (
+    AlreadyExists,
+    AuthenticationException,
+    DoesNotExist,
+    IsOccupied,
+)
 from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import if_exists, filter_query_param_values_extractor
+from src.core.utils import filter_query_param_values_extractor, if_exists
 
 
 def hash_user_password(password: str) -> str:
@@ -117,22 +126,6 @@ def update_single_user(
         session.commit()
 
     return get_single_user(session, user_id=user_id)
-
-
-def update_email(
-    session: Session, new_email: str, current_email: str
-) -> UserOutputSchema:
-    user = if_exists(User, "email", current_email, session)
-
-    if user is None:
-        raise DoesNotExist(User.__name__, "email", current_email)
-    
-    if user.email == new_email:
-        raise ServiceException("Email cant't be updated! Desired email is the same as the current email")
-
-    statement = update(User).filter(User.email == current_email).values(email=new_email)
-    session.execute(statement)
-    session.commit()
 
 
 def delete_single_user(session: Session, user_id: int):

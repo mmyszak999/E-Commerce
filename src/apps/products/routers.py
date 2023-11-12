@@ -9,17 +9,23 @@ from src.apps.products.schemas import (
     ProductOutputSchema,
 )
 from src.apps.products.services.category_services import (
-    create_category, delete_single_category,
-    get_all_categories, get_single_category, update_single_category)
-from src.apps.products.services.product_services import (create_product,
-                                                         delete_single_product,
-                                                         get_all_products,
-                                                         get_single_product,
-                                                         update_single_product)
+    create_category,
+    delete_single_category,
+    get_all_categories,
+    get_single_category,
+    update_single_category,
+)
+from src.apps.products.services.product_services import (
+    create_product,
+    delete_single_product,
+    get_all_products,
+    get_single_product,
+    update_single_product,
+)
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.permissions import check_if_staff_or_owner, check_if_staff
+from src.core.permissions import check_if_staff
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 

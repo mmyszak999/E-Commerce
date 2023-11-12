@@ -10,7 +10,3 @@ class EmailSchema(BaseModel):
 class EmailUpdateSchema(BaseModel):
     email: str
     new_email: str
-
-
-class EmailConfirmationSchema(BaseModel):
-    token: str

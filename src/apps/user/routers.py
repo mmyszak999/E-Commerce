@@ -1,28 +1,32 @@
-from fastapi import Depends, Response, status, BackgroundTasks, Request
-from fastapi.responses import JSONResponse
+from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
-from src.apps.emails.schemas import EmailUpdateSchema
-from src.apps.emails.services import send_confirmation_mail_change_email
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.orders.schemas import OrderOutputSchema
-from src.apps.user.models import User
-from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
-                                   UserRegisterSchema, UserUpdateSchema, UserInfoOutputSchema)
-from src.apps.user.services import (delete_single_user,
-                                    get_access_token_schema, get_all_users,
-                                    get_single_user, register_user,
-                                    update_single_user, get_access_token_schema)
 from src.apps.orders.services import get_all_user_orders
+from src.apps.user.models import User
+from src.apps.user.schemas import (
+    UserInfoOutputSchema,
+    UserLoginInputSchema,
+    UserOutputSchema,
+    UserRegisterSchema,
+    UserUpdateSchema,
+)
+from src.apps.user.services import (
+    delete_single_user,
+    get_access_token_schema,
+    get_all_users,
+    get_single_user,
+    register_user,
+    update_single_user,
+)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.permissions import check_if_staff, check_if_staff_or_owner
-from src.core.utils import check_field_values, generate_confirm_token
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
-from src.settings.general import settings
 
 user_router = APIRouter(prefix="/users", tags=["users"])
 
@@ -117,31 +121,6 @@ def update_user(
 ) -> UserOutputSchema:
     check_if_staff_or_owner(request_user, "id", user_id)
     return update_single_user(db, user, user_id)
-
-
-@user_router.post(
-    "/change-email",
-    status_code=status.HTTP_200_OK
-)
-def change_email(
-    email_update_schema: EmailUpdateSchema, background_tasks: BackgroundTasks, request_user: User = Depends(authenticate_user),
-    db: Session = Depends(get_db), auth_jwt: AuthJWT = Depends()
-) -> JSONResponse:
-    check_field_values(
-        request_user.email, email_update_schema.email, "Please type your current mail address in the 'email' field!"
-    )
-    token = generate_confirm_token([email_update_schema.email, email_update_schema.new_email])
-    send_confirmation_mail_change_email(
-        email_update_schema,
-        db,
-        token,
-        background_tasks,
-    )
-    
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={"message": "Email change confirmation mail has been sent to the new email address!"}
-    )
 
 
 @user_router.delete(

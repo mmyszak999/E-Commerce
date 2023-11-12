@@ -4,7 +4,6 @@ from src.apps.user.models import User
 from src.core.exceptions import AuthorizationException
 
 
-
 def check_if_superuser(request_user: User) -> None:
     if not request_user.is_superuser:
         raise AuthorizationException(
