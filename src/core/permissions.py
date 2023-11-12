@@ -1,3 +1,5 @@
+from typing import Any
+
 from src.apps.user.models import User
 from src.core.exceptions import AuthorizationException
 
@@ -16,6 +18,6 @@ def check_if_staff(request_user: User) -> None:
         )
 
 
-def check_if_staff_or_owner(request_user: User, user_id: int) -> None:
-    if not (request_user.is_superuser or request_user.id == user_id):
+def check_if_staff_or_owner(request_user: User, attribute: str, value: Any) -> None:
+    if not (request_user.is_superuser or getattr(request_user, attribute) == value):
         raise AuthorizationException("You don't have permissions to access the resource")

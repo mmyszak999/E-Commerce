@@ -11,11 +11,7 @@ from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import (
-    check_if_request_user,
-    filter_query_param_values_extractor,
-    if_exists,
-)
+from src.core.utils import filter_query_param_values_extractor, if_exists
 
 
 def create_order(
@@ -46,10 +42,6 @@ def get_single_order(
 ) -> OrderOutputSchema:
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, order_id)
-
-    check_if_request_user(
-        user_id, order_object.user_id, "You are not the owner of the order!"
-    )
 
     return OrderOutputSchema.from_orm(order_object)
 
@@ -109,12 +101,6 @@ def update_single_order(
 ) -> OrderOutputSchema:
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, order_id)
-
-    check_if_request_user(
-        user_id,
-        order_object.user_id,
-        "You can't update the order. You are not the owner of the order!",
-    )
 
     order_data = order_input.dict(exclude_none=True, exclude_unset=True)
 

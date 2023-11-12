@@ -1,18 +1,27 @@
-from fastapi import Depends, Response, status, Request
+from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.orders.schemas import OrderOutputSchema
-from src.apps.user.models import User
-from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
-                                   UserRegisterSchema, UserUpdateSchema, UserInfoOutputSchema)
-from src.apps.user.services import (delete_single_user,
-                                    get_access_token_schema, get_all_users,
-                                    get_single_user, register_user,
-                                    update_single_user)
 from src.apps.orders.services import get_all_user_orders
+from src.apps.user.models import User
+from src.apps.user.schemas import (
+    UserInfoOutputSchema,
+    UserLoginInputSchema,
+    UserOutputSchema,
+    UserRegisterSchema,
+    UserUpdateSchema,
+)
+from src.apps.user.services import (
+    delete_single_user,
+    get_access_token_schema,
+    get_all_users,
+    get_single_user,
+    register_user,
+    update_single_user,
+)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.permissions import check_if_staff, check_if_staff_or_owner
@@ -39,6 +48,7 @@ def login_user(
     auth_jwt: AuthJWT = Depends(),
     db: Session = Depends(get_db),
 ) -> AccessTokenOutputSchema:
+    
     return get_access_token_schema(user_login_schema, db, auth_jwt)
 
 
@@ -109,7 +119,7 @@ def update_user(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> UserOutputSchema:
-    check_if_staff_or_owner(request_user, user_id)
+    check_if_staff_or_owner(request_user, "id", user_id)
     return update_single_user(db, user, user_id)
 
 

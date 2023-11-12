@@ -4,16 +4,25 @@ from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
-from src.apps.user.schemas import (UserLoginInputSchema, UserOutputSchema,
-                                   UserRegisterSchema, UserUpdateSchema)
+from src.apps.user.schemas import (
+    UserLoginInputSchema,
+    UserOutputSchema,
+    UserRegisterSchema,
+    UserUpdateSchema,
+)
 from src.apps.user.utils import passwd_context
-from src.core.exceptions import AlreadyExists, AuthenticationException, DoesNotExist, IsOccupied
+from src.core.exceptions import (
+    AlreadyExists,
+    AuthenticationException,
+    DoesNotExist,
+    IsOccupied,
+)
 from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import if_exists, filter_query_param_values_extractor
+from src.core.utils import filter_query_param_values_extractor, if_exists
 
 
 def hash_user_password(password: str) -> str:
@@ -45,8 +54,8 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
     return UserOutputSchema.from_orm(new_user)
 
 
-def authenticate(username: str, password: str, session: Session) -> User:
-    user = session.scalar(select(User).filter(User.username == username).limit(1))
+def authenticate(email: str, password: str, session: Session) -> User:
+    user = session.scalar(select(User).filter(User.email == email).limit(1))
     if not (user or passwd_context.verify(password, user.password)):
         raise AuthenticationException("Invalid Credentials")
     return user
@@ -56,15 +65,15 @@ def get_access_token_schema(
     user_login_schema: UserLoginInputSchema, session: Session, auth_jwt: AuthJWT
 ) -> str:
     user = authenticate(**user_login_schema.dict(), session=session)
-    username = user.username
-    access_token = auth_jwt.create_access_token(subject=username, algorithm="HS256")
+    email = user.email
+    access_token = auth_jwt.create_access_token(subject=email, algorithm="HS256")
 
     return AccessTokenOutputSchema(access_token=access_token)
 
 
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
-        raise DoesNotExist(User.__name__, user_id)
+        raise DoesNotExist(User.__name__, "id", user_id)
 
     return UserOutputSchema.from_orm(user_object)
 
@@ -79,7 +88,7 @@ def get_all_users(
         filter_params = filter_query_param_values_extractor(query_params)
         if filter_params:
             for param in filter_params:
-                users = orders.perform_lookup(*param)
+                users = users.perform_lookup(*param)
 
         users = Sort(User, users.inst)
         users.set_sort_params(query_params)
@@ -99,7 +108,7 @@ def update_single_user(
     session: Session, user: UserUpdateSchema, user_id: int
 ) -> UserOutputSchema:
     if not if_exists(User, "id", user_id, session):
-        raise DoesNotExist(User.__name__, user_id)
+        raise DoesNotExist(User.__name__, "id", user_id)
 
     user_data = user.dict(exclude_unset=True)
     if user_data.get("username"):
@@ -121,7 +130,7 @@ def update_single_user(
 
 def delete_single_user(session: Session, user_id: int):
     if not if_exists(User, "id", user_id, session):
-        raise DoesNotExist(User.__name__, user_id)
+        raise DoesNotExist(User.__name__, "id", user_id)
 
     statement = delete(User).filter(User.id == user_id)
     result = session.execute(statement)

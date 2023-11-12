@@ -10,17 +10,17 @@ from src.apps.orders.schemas import (
 from src.apps.orders.services import (
     create_order,
     delete_single_order,
+    get_all_orders,
     get_all_user_orders,
     get_single_order,
-    get_all_orders,
     update_single_order,
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
+from src.core.permissions import check_if_staff, check_if_staff_or_owner
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
-from src.core.permissions import check_if_staff, check_if_staff_or_owner
 
 order_router = APIRouter(prefix="/orders", tags=["order"])
 
@@ -79,7 +79,7 @@ def get_order(
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     db_order = get_single_order(db, order_id)
-    check_if_staff_or_owner(user_id=db_order.user.id, request_user=request_user)
+    check_if_staff_or_owner(request_user, "id", db_order.user.id)
     return db_order
 
 
@@ -95,7 +95,7 @@ def update_order(
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     order_check = get_single_order(db, order_id)
-    check_if_staff_or_owner(user_id=order_check.user.id, request_user=request_user)
+    check_if_staff_or_owner(request_user, "id", order_check.user.id)
     return update_single_order(db, order, order_id)
 
 

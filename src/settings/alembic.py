@@ -1,4 +1,4 @@
 # Register models here
-from src.apps.user import models
-from src.apps.orders import models
-from src.apps.products import models
+from src.apps.orders.models import *
+from src.apps.products.models import *
+from src.apps.user.models import *

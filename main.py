@@ -5,6 +5,8 @@ from fastapi_jwt_auth.exceptions import AuthJWTException
 from src.apps.jwt.routers import jwt_router
 from src.apps.orders.routers import order_router
 from src.apps.products.routers import category_router, product_router
+from src.apps.orders.routers import order_router
+from src.apps.emails.routers import email_router
 from src.apps.user.routers import user_router
 from src.apps.admin.routers import admin_router
 from src.core.exceptions import (
@@ -25,6 +27,7 @@ root_router.include_router(jwt_router)
 root_router.include_router(category_router)
 root_router.include_router(product_router)
 root_router.include_router(order_router)
+root_router.include_router(email_router)
 root_router.include_router(admin_router)
 
 app.include_router(root_router)

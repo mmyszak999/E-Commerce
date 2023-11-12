@@ -9,7 +9,7 @@ from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import if_exists, filter_query_param_values_extractor
+from src.core.utils import filter_query_param_values_extractor, if_exists
 
 
 def create_category(
@@ -33,7 +33,7 @@ def create_category(
 
 def get_single_category(session: Session, category_id: int) -> CategoryOutputSchema:
     if not (category_object := if_exists(Category, "id", category_id, session)):
-        raise DoesNotExist(Category.__name__, category_id)
+        raise DoesNotExist(Category.__name__, "id", category_id)
 
     return CategoryOutputSchema.from_orm(category_object)
 
@@ -49,7 +49,7 @@ def get_all_categories(
         filter_params = filter_query_param_values_extractor(query_params)
         if filter_params:
             for param in filter_params:
-                categories = orders.perform_lookup(*param)
+                categories = categories.perform_lookup(*param)
 
         categories = Sort(Category, categories.inst)
         categories.set_sort_params(query_params)
@@ -69,7 +69,7 @@ def update_single_category(
     session: Session, category_input: CategoryInputSchema, category_id: int
 ) -> CategoryOutputSchema:
     if not if_exists(Category, "id", category_id, session):
-        raise DoesNotExist(Category.__name__, category_id)
+        raise DoesNotExist(Category.__name__, "id", category_id)
 
     category_data = category_input.dict(exclude_unset=True)
 
@@ -93,7 +93,7 @@ def update_single_category(
 
 def delete_single_category(session: Session, category_id: int):
     if not if_exists(Category, "id", category_id, session):
-        raise DoesNotExist(Category.__name__, category_id)
+        raise DoesNotExist(Category.__name__, "id", category_id)
 
     statement = delete(Category).filter(Category.id == category_id)
     result = session.execute(statement)

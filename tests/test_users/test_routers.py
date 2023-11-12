@@ -2,8 +2,8 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.apps.user.schemas import UserOutputSchema
-from src.apps.orders.schemas import OrderOutputSchema
 from src.core.factories import UserRegisterSchemaFactory
+from tests.test_products.conftest import db_categories, db_products
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
@@ -19,7 +19,7 @@ def test_if_user_was_logged_correctly(
     sync_client: TestClient, db_user: UserOutputSchema
 ):
     login_data = {
-        "username": DB_USER_SCHEMA.username,
+        "email": DB_USER_SCHEMA.email,
         "password": DB_USER_SCHEMA.password,
     }
     response = sync_client.post("users/login", json=login_data)
@@ -54,6 +54,7 @@ def test_authenticated_user_can_get_their_account(
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
 
+
 """
 def test_staff_can_get_some_user_orders(
     sync_client: TestClient,
@@ -75,6 +76,7 @@ def test_authenticated_user_can_update_their_account(
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["username"] == update_data["username"]
+
 
 
 def test_staff_can_delete_user(

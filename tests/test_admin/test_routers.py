@@ -2,8 +2,14 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.apps.user.schemas import UserOutputSchema
-from tests.test_users.conftest import (auth_headers, create_superuser, db_user,
-                                       superuser_auth_headers, db_staff_user, staff_auth_headers)
+from tests.test_users.conftest import (
+    auth_headers,
+    create_superuser,
+    db_staff_user,
+    db_user,
+    staff_auth_headers,
+    superuser_auth_headers,
+)
 
 
 def test_superuser_can_get_all_superusers(
