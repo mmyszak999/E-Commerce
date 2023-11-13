@@ -1,4 +1,5 @@
 from fastapi_jwt_auth import AuthJWT
+from fastapi import BackgroundTasks
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
@@ -51,7 +52,7 @@ def register_user(session: Session, user: UserRegisterSchema, background_tasks: 
 
     session.add(new_user)
     session.commit()
-    send_activation_email(new_user.email, session, background_tasks)
+    send_activation_email(user_data['email'], session, background_tasks)
     
     return UserOutputSchema.from_orm(new_user)
 

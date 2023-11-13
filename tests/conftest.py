@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+from fastapi import BackgroundTasks
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.event import listens_for

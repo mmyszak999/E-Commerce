@@ -8,6 +8,12 @@ from src.core.utils import generate_confirm_token
 from tests.test_users.conftest import auth_headers, db_user
 
 
+
+def test_user_can_activate_their_account_via_activation_link(
+    
+):
+    pass
+
 def test_authenticated_user_can_send_email_change_confirmation_mail(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
@@ -49,7 +55,7 @@ def test_anonymous_user_cannot_send_email_change_confirmation_email(
     assert response.json()["detail"] == "Missing Authorization Header"
 
 
-def test_confirm_email_change(
+def test_authenticated_user_can_confirm_email_change(
     sync_client: TestClient, db_user: UserOutputSchema, auth_headers: dict[str, str]):
     new_email = "new_email@mail.com"
     confirm_token = generate_confirm_token([db_user.email, new_email])

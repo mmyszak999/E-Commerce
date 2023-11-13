@@ -2,6 +2,7 @@ import subprocess
 
 import pytest
 from fastapi_jwt_auth import AuthJWT
+from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
 
 from src.apps.admin.services import grant_staff_permissions
@@ -9,12 +10,13 @@ from src.apps.user.schemas import UserOutputSchema
 from src.apps.user.services import register_user
 from src.core.factories import UserRegisterSchemaFactory
 
+
 DB_USER_SCHEMA = UserRegisterSchemaFactory.build(
     email="dbuser1@mail.com", password="vgo39845n", password_repeat="vgo39845n"
 )
 
 DB_STAFF_USER_SCHEMA = UserRegisterSchemaFactory.build(
-    password="v9845go3n", password_repeat="v9845go3n"
+    email="staff@mail.com", password="v9845go3n", password_repeat="v9845go3n"
 )
 
 
@@ -25,12 +27,12 @@ def create_superuser():
 
 @pytest.fixture
 def db_user(sync_session: Session) -> UserOutputSchema:
-    return register_user(sync_session, DB_USER_SCHEMA)
+    return register_user(sync_session, DB_USER_SCHEMA, BackgroundTasks())
 
 
 @pytest.fixture
 def db_staff_user(sync_session: Session) -> UserOutputSchema:
-    staff_user = register_user(sync_session, DB_STAFF_USER_SCHEMA)
+    staff_user = register_user(sync_session, DB_STAFF_USER_SCHEMA, BackgroundTasks())
     grant_staff_permissions(sync_session, staff_user.id)
     return staff_user
 

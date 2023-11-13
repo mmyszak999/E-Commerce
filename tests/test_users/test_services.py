@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy.orm import Session
+from fastapi import BackgroundTasks
 
 from src.apps.user.schemas import UserOutputSchema, UserUpdateSchema
 from src.apps.user.services import (
@@ -19,7 +20,7 @@ def test_register_user_that_already_exists(
     sync_session: Session, db_user: UserOutputSchema
 ):
     with pytest.raises(AlreadyExists):
-        register_user(sync_session, DB_USER_SCHEMA)
+        register_user(sync_session, DB_USER_SCHEMA, BackgroundTasks())
 
 
 def test_create_user_with_occupied_email(
@@ -29,7 +30,7 @@ def test_create_user_with_occupied_email(
         email=db_user.email, password="testtest", password_repeat="testtest"
     )
     with pytest.raises(AlreadyExists):
-        register_user(sync_session, user_data)
+        register_user(sync_session, user_data, BackgroundTasks())
 
 
 def test_create_user_with_occupied_username(
@@ -39,7 +40,7 @@ def test_create_user_with_occupied_username(
         username=db_user.username, password="testtest", password_repeat="testtest"
     )
     with pytest.raises(AlreadyExists):
-        register_user(sync_session, user_data)
+        register_user(sync_session, user_data, BackgroundTasks())
 
 
 def test_if_only_one_user_was_returned(
@@ -78,8 +79,9 @@ def test_if_user_can_update_their_username_to_occupied_one(
     user = register_user(
         sync_session,
         UserRegisterSchemaFactory.build(
-            password="testtestx", password_repeat="testtestx"
+            email="mail@mail.com", password="testtestx", password_repeat="testtestx"
         ),
+        BackgroundTasks()
     )
     update_data = {"username": db_user.username}
 

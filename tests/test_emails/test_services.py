@@ -32,7 +32,7 @@ def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_is_oc
     user_data = UserRegisterSchemaFactory.build(
         email="mail@mail.com", password="testtest", password_repeat="testtest"
     )
-    new_user = register_user(sync_session, user_data)
+    new_user = register_user(sync_session, user_data, BackgroundTasks())
     
     token = AuthJWT().create_access_token(new_user.email)
     email_update_data = EmailUpdateSchemaFactory.build(email=new_user.email, new_email=db_user.email)

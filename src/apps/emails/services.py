@@ -22,7 +22,7 @@ def send_activation_email(
     
     email_schema = EmailSchema(
         email_subject="Activate your account",
-        receivers=(email),
+        receivers=(email,),
         template_name="account_activation_email.html"
     )
     token = generate_confirm_token([email])
