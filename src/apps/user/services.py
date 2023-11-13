@@ -22,14 +22,15 @@ from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import filter_query_param_values_extractor, if_exists
+from src.core.utils import filter_query_param_values_extractor, if_exists, confirm_token
+from src.apps.emails.services import send_activation_email
 
 
 def hash_user_password(password: str) -> str:
     return passwd_context.hash(password)
 
 
-def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchema:
+def register_user(session: Session, user: UserRegisterSchema, background_tasks: BackgroundTasks) -> UserOutputSchema:
     user_data = user.dict()
     if user_data.pop("password_repeat"):
         user_data["password"] = hash_user_password(password=user_data.pop("password"))
@@ -50,12 +51,30 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
 
     session.add(new_user)
     session.commit()
-
+    send_activation_email(new_user.email, session, background_tasks)
+    
     return UserOutputSchema.from_orm(new_user)
 
-def activate_account():
-    pass
 
+def activate_account(session: Session, email: str) -> None:
+    user = if_exists(User, "email", email, session)
+
+    if user is None:
+        raise DoesNotExist(User.__name__, "email", email)
+    
+    if user.is_active:
+        raise ServiceException("This account was already activated!")
+
+    statement = update(User).filter(User.email == mail).values(is_active=True)
+    session.execute(statement)
+    session.commit()
+
+
+def activate_account_service(session: Session, token: str) -> None:
+    emails = confirm_token(token)
+    current_email = emails[0]
+    activate_account(session, current_email)
+    
 
 def authenticate(email: str, password: str, session: Session) -> User:
     user = session.scalar(select(User).filter(User.email == email).limit(1))

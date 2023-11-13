@@ -11,7 +11,7 @@ from src.apps.emails.services import (
     change_email_service
 )
 from src.apps.user.models import User
-from src.apps.user.services import activate_account
+from src.apps.user.services import activate_account_service
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -57,9 +57,9 @@ def confirm_email_change(
 )
 def confirm_account_activation(
    token: str, db: Session = Depends(get_db),
-   auth_jwt: AuthJWT = Depends(), request_user: User = Depends(authenticate_user)
+   auth_jwt: AuthJWT = Depends()
 ) -> JSONResponse:
-    activate_account()
+    activate_account_service(session, token)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={"message": "Account activated successfully!"}

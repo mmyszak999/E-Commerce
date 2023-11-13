@@ -1,4 +1,4 @@
-from fastapi import Depends, Request, Response, status
+from fastapi import Depends, Request, Response, status, BackgroundTasks
 from fastapi.routing import APIRouter
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
@@ -35,9 +35,9 @@ user_router = APIRouter(prefix="/users", tags=["users"])
     "/register", response_model=UserOutputSchema, status_code=status.HTTP_201_CREATED
 )
 def create_user(
-    user: UserRegisterSchema, db: Session = Depends(get_db)
+    user: UserRegisterSchema, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
 ) -> UserOutputSchema:
-    return register_user(db, user)
+    return register_user(db, user, background_tasks)
 
 
 @user_router.post(
