@@ -18,7 +18,7 @@ def test_user_register_schema_raises_validation_error_when_passwords_are_not_ide
     password1, password2, result
 ):
     with result:
-        UserRegisterSchemaFactory.build(password=password1, password_repeat=password2)
+        UserRegisterSchemaFactory(password=password1, password_repeat=password2)
 
 
 @pytest.mark.parametrize(
@@ -32,6 +32,6 @@ def test_user_register_schema_raises_validation_error_when_birth_date_is_from_fu
     future_date, result
 ):
     with result:
-        UserRegisterSchemaFactory.build(
+        UserRegisterSchemaFactory(
             birth_date=future_date, password="password", password_repeat="password"
         )

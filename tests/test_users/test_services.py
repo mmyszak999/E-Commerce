@@ -26,7 +26,7 @@ def test_register_user_that_already_exists(
 def test_create_user_with_occupied_email(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    user_data = UserRegisterSchemaFactory.build(
+    user_data = UserRegisterSchemaFactory(
         email=db_user.email, password="testtest", password_repeat="testtest"
     )
     with pytest.raises(AlreadyExists):
@@ -36,7 +36,7 @@ def test_create_user_with_occupied_email(
 def test_create_user_with_occupied_username(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    user_data = UserRegisterSchemaFactory.build(
+    user_data = UserRegisterSchemaFactory(
         username=db_user.username, password="testtest", password_repeat="testtest"
     )
     with pytest.raises(AlreadyExists):
@@ -78,8 +78,8 @@ def test_if_user_can_update_their_username_to_occupied_one(
 ):
     user = register_user(
         sync_session,
-        UserRegisterSchemaFactory.build(
-            email="mail@mail.com", password="testtestx", password_repeat="testtestx"
+        UserRegisterSchemaFactory(
+            password="testtestx", password_repeat="testtestx"
         ),
         BackgroundTasks()
     )

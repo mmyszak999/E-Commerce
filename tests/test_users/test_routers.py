@@ -8,8 +8,8 @@ from tests.test_users.conftest import DB_USER_SCHEMA
 
 
 def test_if_user_was_created_successfully(sync_client: TestClient):
-    register_data = UserRegisterSchemaFactory.build(
-        email="mail@mail.com", password="mtdqwc241", password_repeat="mtdqwc241"
+    register_data = UserRegisterSchemaFactory(
+        password="mtdqwc241", password_repeat="mtdqwc241"
     )
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED

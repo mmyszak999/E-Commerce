@@ -29,8 +29,8 @@ def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_equal
 def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_is_occupied(
     sync_session: Session, db_user: UserOutputSchema
 ):  
-    user_data = UserRegisterSchemaFactory.build(
-        email="mail@mail.com", password="testtest", password_repeat="testtest"
+    user_data = UserRegisterSchemaFactory(
+        password="testtest", password_repeat="testtest"
     )
     new_user = register_user(sync_session, user_data, BackgroundTasks())
     

@@ -11,12 +11,12 @@ from src.apps.user.services import register_user
 from src.core.factories import UserRegisterSchemaFactory
 
 
-DB_USER_SCHEMA = UserRegisterSchemaFactory.build(
-    email="dbuser1@mail.com", password="vgo39845n", password_repeat="vgo39845n"
+DB_USER_SCHEMA = UserRegisterSchemaFactory(
+    password="vgo39845n", password_repeat="vgo39845n"
 )
 
-DB_STAFF_USER_SCHEMA = UserRegisterSchemaFactory.build(
-    email="staff@mail.com", password="v9845go3n", password_repeat="v9845go3n"
+DB_STAFF_USER_SCHEMA = UserRegisterSchemaFactory(
+    password="v9845go3n", password_repeat="v9845go3n"
 )
 
 
