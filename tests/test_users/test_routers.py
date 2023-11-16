@@ -2,15 +2,16 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.apps.user.schemas import UserOutputSchema
-from src.core.factories import UserRegisterSchemaFactory
+from src.core.factories import generate_register_schema
 from tests.test_products.conftest import db_categories, db_products
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
 def test_if_user_was_created_successfully(sync_client: TestClient):
-    register_data = UserRegisterSchemaFactory(
+    register_data = generate_register_schema(
         password="mtdqwc241", password_repeat="mtdqwc241"
     )
+    
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
 

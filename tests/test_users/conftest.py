@@ -8,14 +8,14 @@ from sqlalchemy.orm import Session
 from src.apps.admin.services import grant_staff_permissions
 from src.apps.user.schemas import UserOutputSchema
 from src.apps.user.services import register_user
-from src.core.factories import UserRegisterSchemaFactory
+from src.core.factories import generate_register_schema
 
 
-DB_USER_SCHEMA = UserRegisterSchemaFactory(
+DB_USER_SCHEMA = generate_register_schema(
     password="vgo39845n", password_repeat="vgo39845n"
 )
 
-DB_STAFF_USER_SCHEMA = UserRegisterSchemaFactory(
+DB_STAFF_USER_SCHEMA = generate_register_schema(
     password="v9845go3n", password_repeat="v9845go3n"
 )
 

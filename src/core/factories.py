@@ -1,8 +1,6 @@
-from random import randint, Random
+from random import Random
 from datetime import datetime 
-from faker import Faker
 from pydantic import BaseModel
-from faker.providers import person, internet, date_time, misc
 
 from polyfactory.factories.pydantic_factory import ModelFactory
 
@@ -10,24 +8,25 @@ from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.orders.schemas import OrderInputSchema
 from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
 from src.apps.user.schemas import UserRegisterSchema
-
-faker = Faker('en_US')
-Faker.seed("")
-faker.add_provider(person)
-faker.add_provider(internet)
-faker.add_provider(date_time)
-faker.add_provider(misc)
+from src.core.utils import initialize_faker
 
 
-class UserRegisterSchemaFactory(UserRegisterSchema):   
-    first_name: str = faker.first_name()
-    last_name: str = faker.last_name()
-    email: str = faker.ascii_email()
-    birth_date: datetime = faker.date_of_birth()
-    username: str = faker.domain_word()
-    password: str = faker.password()
-    password_repeat: str = faker.password()
-          
+
+def generate_register_schema(
+    email: str = None, username: str = None, birth_date: datetime = None,
+    password: str = "password", password_repeat: str = "password"):
+    faker = initialize_faker()
+    return UserRegisterSchema(
+        first_name = faker.first_name(),
+        last_name = faker.last_name(),
+        email = email or faker.ascii_email(),
+        birth_date = birth_date or faker.date_of_birth(),
+        username = username or faker.user_name(),
+        password = password,
+        password_repeat = password_repeat
+    )
+    
+        
 
 class CategoryInputSchemaFactory(ModelFactory):
     __model__ = CategoryInputSchema

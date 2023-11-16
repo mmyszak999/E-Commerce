@@ -11,7 +11,7 @@ from src.apps.emails.services import (
 from src.apps.user.schemas import UserOutputSchema
 from src.apps.user.services import register_user
 from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
-from src.core.factories import EmailUpdateSchemaFactory, UserRegisterSchemaFactory
+from src.core.factories import EmailUpdateSchemaFactory, generate_register_schema
 from src.core.utils import generate_confirm_token
 from tests.test_users.conftest import DB_USER_SCHEMA
 
@@ -29,7 +29,7 @@ def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_equal
 def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_is_occupied(
     sync_session: Session, db_user: UserOutputSchema
 ):  
-    user_data = UserRegisterSchemaFactory(
+    user_data = generate_register_schema(
         password="testtest", password_repeat="testtest"
     )
     new_user = register_user(sync_session, user_data, BackgroundTasks())

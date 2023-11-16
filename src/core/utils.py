@@ -1,4 +1,7 @@
 from typing import Any
+from random import randint
+from faker import Faker
+from faker.providers import person, internet, date_time, misc
 
 from fastapi import BackgroundTasks
 from itsdangerous import URLSafeTimedSerializer
@@ -15,6 +18,16 @@ def if_exists(model_class: Table, field: str, value: Any, session: Session):
     return session.scalar(
         select(model_class).filter(getattr(model_class, field) == value)
     )
+
+def initialize_faker():
+    faker = Faker('en_US')
+    faker.seed_instance(randint(1,1000))
+    faker.add_provider(person)
+    faker.add_provider(internet)
+    faker.add_provider(date_time)
+    faker.add_provider(misc)
+    
+    return faker
     
 def generate_confirm_token(objects: list[str]) -> str:
     serializer = URLSafeTimedSerializer(settings.SECRET_KEY)

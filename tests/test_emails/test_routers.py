@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from fastapi_jwt_auth import AuthJWT
 
 from src.apps.user.schemas import UserOutputSchema
-from src.core.factories import EmailUpdateSchemaFactory, UserRegisterSchemaFactory
+from src.core.factories import EmailUpdateSchemaFactory, generate_register_schema
 from src.core.utils import generate_confirm_token
 from tests.test_users.conftest import auth_headers, db_user
 
@@ -30,11 +30,12 @@ def test_authenticated_user_can_send_email_change_confirmation_mail(
 def test_authenticated_user_cannot_send_email_change_confirmation_mail_to_change_not_their_email(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
-    register_data = UserRegisterSchemaFactory(
+    register_data = generate_register_schema(
         password="mtdqwc241", password_repeat="mtdqwc241"
     )
+    print(register_data, db_user)
     response = sync_client.post("users/register", data=register_data.json())
-    print(response.json())
+    
     assert response.status_code == status.HTTP_201_CREATED
     
     update_data = EmailUpdateSchemaFactory.build(
@@ -76,7 +77,7 @@ def test_authenticated_user_can_confirm_email_change(
 def test_authenticated_user_cannot_confirm_change_of_not_their_email(
     sync_client: TestClient, db_user: UserOutputSchema, auth_headers: dict[str, str]
 ):
-    register_data = UserRegisterSchemaFactory(password="mtdqwc241", password_repeat="mtdqwc241")
+    register_data = generate_register_schema(password="mtdqwc241", password_repeat="mtdqwc241")
     print(register_data)
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED

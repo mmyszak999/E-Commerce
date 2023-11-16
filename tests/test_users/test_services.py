@@ -11,7 +11,7 @@ from src.apps.user.services import (
     update_single_user,
 )
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
-from src.core.factories import UserRegisterSchemaFactory
+from src.core.factories import generate_register_schema
 from src.core.pagination.models import PageParams
 from tests.test_users.conftest import DB_USER_SCHEMA
 
@@ -26,7 +26,7 @@ def test_register_user_that_already_exists(
 def test_create_user_with_occupied_email(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    user_data = UserRegisterSchemaFactory(
+    user_data = generate_register_schema(
         email=db_user.email, password="testtest", password_repeat="testtest"
     )
     with pytest.raises(AlreadyExists):
@@ -36,7 +36,7 @@ def test_create_user_with_occupied_email(
 def test_create_user_with_occupied_username(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    user_data = UserRegisterSchemaFactory(
+    user_data = generate_register_schema(
         username=db_user.username, password="testtest", password_repeat="testtest"
     )
     with pytest.raises(AlreadyExists):
@@ -78,7 +78,7 @@ def test_if_user_can_update_their_username_to_occupied_one(
 ):
     user = register_user(
         sync_session,
-        UserRegisterSchemaFactory(
+        generate_register_schema(
             password="testtestx", password_repeat="testtestx"
         ),
         BackgroundTasks()
