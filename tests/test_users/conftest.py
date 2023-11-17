@@ -30,7 +30,7 @@ def register_user_without_activation(
 
     return UserOutputSchema.from_orm(new_user)
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def create_superuser():
     subprocess.run(["./app_scripts/create_superuser.sh", "test_db"])
 

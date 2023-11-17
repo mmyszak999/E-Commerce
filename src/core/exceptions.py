@@ -28,3 +28,9 @@ class AuthenticationException(ServiceException):
 class AuthorizationException(ServiceException):
     def __init__(self, message: str) -> None:
         super().__init__(f"{message}")
+    
+    
+class AccountNotActivatedException(ServiceException):
+    def __init__(self, field: str, value: Any) -> None:
+        super().__init__(f"The account of the user with {field}={value} has not been activated! "
+                         "Please check your mailbox to find the message with activation link!")

@@ -18,7 +18,8 @@ from src.core.exceptions import (
     AuthenticationException,
     DoesNotExist,
     IsOccupied,
-    ServiceException
+    ServiceException,
+    AccountNotActivatedException
 )
 from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
@@ -88,6 +89,8 @@ def authenticate(user_login_schema: UserLoginInputSchema, session: Session) -> U
     user = session.scalar(select(User).filter(User.email == login_data['email']).limit(1))
     if not (user or passwd_context.verify(login_data['password'], user.password)):
         raise AuthenticationException("Invalid Credentials")
+    if not user.is_active:
+        raise AccountNotActivatedException("email", login_data['email'])
     return user
 
 

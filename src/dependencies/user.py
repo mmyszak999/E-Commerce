@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
-from src.core.exceptions import AuthenticationException
+from src.core.exceptions import AuthenticationException, AccountNotActivatedException
 from src.dependencies.get_db import get_db
 from src.settings.jwt_settings import AuthJWTSettings
 
@@ -16,7 +16,11 @@ def authenticate_user(
     jwt_subject = auth_jwt.get_jwt_subject()
     user = session.scalar(select(User).filter(User.email == jwt_subject).limit(1))
     if not user:
+        print("1", user)
         raise AuthenticationException("Cannot find user")
+    if not user.is_active:
+        print("2", user.__dict__)
+        raise AccountNotActivatedException("email", jwt_subject)
 
     return user
 

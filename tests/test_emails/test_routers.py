@@ -5,7 +5,7 @@ from fastapi_jwt_auth import AuthJWT
 from src.apps.user.schemas import UserOutputSchema
 from src.core.factories import EmailUpdateSchemaFactory, generate_user_register_schema
 from src.core.utils import generate_confirm_token
-from tests.test_users.conftest import auth_headers, db_user
+from tests.test_users.conftest import auth_headers, db_user, staff_auth_headers, db_staff_user
 
 
 def test_user_can_activate_their_account_via_activation_link(
@@ -94,20 +94,13 @@ def test_authenticated_user_can_confirm_email_change(
 
 
 def test_authenticated_user_cannot_confirm_change_of_not_their_email(
-    sync_client: TestClient, db_user: UserOutputSchema, auth_headers: dict[str, str]
+    sync_client: TestClient, db_user: UserOutputSchema, staff_auth_headers: dict[str, str]
 ):
-    register_data = generate_user_register_schema()
-    response = sync_client.post("users/register", data=register_data.json())
-    assert response.status_code == status.HTTP_201_CREATED
-
-    new_user_token = AuthJWT().create_access_token(register_data.email)
-    new_user_auth_headers = {"Authorization": f"Bearer {new_user_token}"}
-
     new_email = "new_email@mail.com"
     confirm_token = generate_confirm_token([db_user.email, new_email])
 
     response = sync_client.post(
-        f"email/confirm-email-change/{confirm_token}", headers=new_user_auth_headers
+        f"email/confirm-email-change/{confirm_token}", headers=staff_auth_headers
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
