@@ -90,7 +90,7 @@ def update_email(session: Session, new_email: str, current_email: str) -> None:
 
     if user.email == new_email:
         raise ServiceException(
-            "Email cant't be updated! Desired email is the same as the current email"
+            "Email can't be updated! Desired email is the same as the current email"
         )
 
     statement = update(User).filter(User.email == current_email).values(email=new_email)

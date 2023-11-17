@@ -42,17 +42,17 @@ def test_create_user_with_occupied_username(
         register_user_without_activation(sync_session, user_data)
 
 
-def test_activate_account_when_user_does_not_exist(
-    sync_session: Session, 
+def test_raise_exception_when_activating_account_when_user_does_not_exist(
+    sync_session: Session
 ):
     with pytest.raises(DoesNotExist):
         activate_account(sync_session, email="nonexistent@mail.com")
     
 
-def test_activate_account_that_is_already_activated(
+def test_raise_exception_when_activating_account_that_is_already_activated(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    with pytest.raises(ServiceException) as exc:
+    with pytest.raises(ServiceException):
         activate_account(sync_session, email=db_user.email)
     
 
