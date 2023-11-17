@@ -7,8 +7,9 @@ from src.apps.user.services import (
     get_all_users,
     get_single_user,
     update_single_user,
+    activate_account
 )
-from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
+from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied, ServiceException
 from src.core.factories import generate_user_register_schema
 from src.core.pagination.models import PageParams
 from tests.test_users.conftest import DB_USER_SCHEMA, register_user_without_activation
@@ -40,6 +41,20 @@ def test_create_user_with_occupied_username(
     with pytest.raises(AlreadyExists):
         register_user_without_activation(sync_session, user_data)
 
+
+def test_activate_account_when_user_does_not_exist(
+    sync_session: Session, 
+):
+    with pytest.raises(DoesNotExist):
+        activate_account(sync_session, email="nonexistent@mail.com")
+    
+
+def test_activate_account_that_is_already_activated(
+    sync_session: Session, db_user: UserOutputSchema
+):
+    with pytest.raises(ServiceException) as exc:
+        activate_account(sync_session, email=db_user.email)
+    
 
 def test_if_only_one_user_was_returned(
     sync_session: Session, db_user: UserOutputSchema

@@ -18,6 +18,7 @@ from src.core.exceptions import (
     AuthenticationException,
     DoesNotExist,
     IsOccupied,
+    ServiceException
 )
 from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
@@ -71,7 +72,7 @@ def activate_account(session: Session, email: str) -> None:
     if user.is_active:
         raise ServiceException("This account was already activated!")
 
-    statement = update(User).filter(User.email == mail).values(is_active=True)
+    statement = update(User).filter(User.email == email).values(is_active=True)
     session.execute(statement)
     session.commit()
 
@@ -82,9 +83,10 @@ def activate_account_service(session: Session, token: str) -> None:
     activate_account(session, current_email)
 
 
-def authenticate(email: str, password: str, session: Session) -> User:
-    user = session.scalar(select(User).filter(User.email == email).limit(1))
-    if not (user or passwd_context.verify(password, user.password)):
+def authenticate(user_login_schema: UserLoginInputSchema, session: Session) -> User:
+    login_data = user_login_schema.dict()
+    user = session.scalar(select(User).filter(User.email == login_data['email']).limit(1))
+    if not (user or passwd_context.verify(login_data['password'], user.password)):
         raise AuthenticationException("Invalid Credentials")
     return user
 
@@ -92,7 +94,7 @@ def authenticate(email: str, password: str, session: Session) -> User:
 def get_access_token_schema(
     user_login_schema: UserLoginInputSchema, session: Session, auth_jwt: AuthJWT
 ) -> str:
-    user = authenticate(**user_login_schema.dict(), session=session)
+    user = authenticate(user_login_schema, session=session)
     email = user.email
     access_token = auth_jwt.create_access_token(subject=email, algorithm="HS256")
 

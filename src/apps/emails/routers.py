@@ -60,7 +60,7 @@ def confirm_email_change(
 def confirm_account_activation(
     token: str, db: Session = Depends(get_db), auth_jwt: AuthJWT = Depends()
 ) -> JSONResponse:
-    activate_account_service(session, token)
+    activate_account_service(db, token)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={"message": "Account activated successfully!"},

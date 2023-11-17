@@ -1,7 +1,7 @@
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from src.apps.user.schemas import UserOutputSchema
+from src.apps.user.schemas import UserOutputSchema, UserLoginInputSchema
 from src.core.factories import generate_user_register_schema
 from tests.test_products.conftest import db_categories, db_products
 from tests.test_users.conftest import DB_USER_SCHEMA
@@ -11,7 +11,7 @@ def test_if_user_was_created_successfully(sync_client: TestClient):
     register_data = generate_user_register_schema(
         password="mtdqwc241", password_repeat="mtdqwc241"
     )
-
+    
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -19,11 +19,8 @@ def test_if_user_was_created_successfully(sync_client: TestClient):
 def test_if_user_was_logged_correctly(
     sync_client: TestClient, db_user: UserOutputSchema
 ):
-    login_data = {
-        "email": DB_USER_SCHEMA.email,
-        "password": DB_USER_SCHEMA.password,
-    }
-    response = sync_client.post("users/login", json=login_data)
+    login_data = UserLoginInputSchema(email=DB_USER_SCHEMA.email, password=DB_USER_SCHEMA.password)
+    response = sync_client.post("users/login", json=login_data.dict())
     assert response.status_code == status.HTTP_200_OK
     assert "access_token" in response.json()
 

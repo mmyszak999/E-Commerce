@@ -8,9 +8,29 @@ from src.core.utils import generate_confirm_token
 from tests.test_users.conftest import auth_headers, db_user
 
 
-def test_user_can_activate_their_account_via_activation_link():
-    pass
+def test_user_can_activate_their_account_via_activation_link(
+    sync_client: TestClient, db_user: UserOutputSchema
+):
+    register_data = generate_user_register_schema()
+    response = sync_client.post("users/register", data=register_data.json())
 
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()['is_active'] == False
+    
+    token = generate_confirm_token([register_data.email])
+    response = sync_client.post(f"email/confirm-account-activation/{token}")
+    assert (
+        response.json()["message"]
+        == "Account activated successfully!"
+    )
+    
+    activated_user_token = AuthJWT().create_access_token(register_data.email)
+    activated_user_auth_headers = {"Authorization": f"Bearer {activated_user_token}"}
+    
+    response = sync_client.get("users/me", headers=activated_user_auth_headers)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["is_active"] == True
+    
 
 def test_authenticated_user_can_send_email_change_confirmation_mail(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
@@ -32,10 +52,7 @@ def test_authenticated_user_can_send_email_change_confirmation_mail(
 def test_authenticated_user_cannot_send_email_change_confirmation_mail_to_change_not_their_email(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
-    register_data = generate_user_register_schema(
-        password="mtdqwc241", password_repeat="mtdqwc241"
-    )
-    print(register_data, db_user)
+    register_data = generate_user_register_schema()
     response = sync_client.post("users/register", data=register_data.json())
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -79,10 +96,7 @@ def test_authenticated_user_can_confirm_email_change(
 def test_authenticated_user_cannot_confirm_change_of_not_their_email(
     sync_client: TestClient, db_user: UserOutputSchema, auth_headers: dict[str, str]
 ):
-    register_data = generate_user_register_schema(
-        password="mtdqwc241", password_repeat="mtdqwc241"
-    )
-    print(register_data)
+    register_data = generate_user_register_schema()
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
 
