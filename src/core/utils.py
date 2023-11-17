@@ -1,14 +1,14 @@
-from typing import Any
 from random import randint
-from faker import Faker
-from faker.providers import person, internet, date_time, misc
+from typing import Any
 
+from faker import Faker
+from faker.providers import date_time, internet, misc, person
 from fastapi import BackgroundTasks
+from fastapi_mail import FastMail, MessageSchema
 from itsdangerous import URLSafeTimedSerializer
+from pydantic import BaseModel, BaseSettings
 from sqlalchemy import Table, select
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, BaseSettings
-from fastapi_mail import FastMail, MessageSchema
 
 from src.core.exceptions import ServiceException
 from src.settings.general import settings
@@ -19,19 +19,22 @@ def if_exists(model_class: Table, field: str, value: Any, session: Session):
         select(model_class).filter(getattr(model_class, field) == value)
     )
 
+
 def initialize_faker():
-    faker = Faker('en_US')
-    faker.seed_instance(randint(1,1000))
+    faker = Faker("en_US")
+    faker.seed_instance(randint(1, 1000))
     faker.add_provider(person)
     faker.add_provider(internet)
     faker.add_provider(date_time)
     faker.add_provider(misc)
-    
+
     return faker
-    
+
+
 def generate_confirm_token(objects: list[str]) -> str:
     serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
     return serializer.dumps(objects, salt=settings.SECURITY_PASSWORD_SALT)
+
 
 def confirm_token(token: str, expiration=3600) -> list[str]:
     serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
@@ -40,7 +43,7 @@ def confirm_token(token: str, expiration=3600) -> list[str]:
             token, salt=settings.SECURITY_PASSWORD_SALT, max_age=expiration
         )
         return objects
-    
+
     except Exception:
         return False
 
@@ -78,19 +81,19 @@ def sort_query_param_values_extractor(
 
 
 def send_email(
-    schema: BaseModel, body_schema: BaseModel,
-    background_tasks: BackgroundTasks, settings: BaseSettings
-    ) -> None:
+    schema: BaseModel,
+    body_schema: BaseModel,
+    background_tasks: BackgroundTasks,
+    settings: BaseSettings,
+) -> None:
     email_message = MessageSchema(
         subject=schema.email_subject,
         recipients=schema.receivers,
         template_body=body_schema.dict(),
-        subtype='html'
+        subtype="html",
     )
-    
+
     fast_mail = FastMail(settings)
     background_tasks.add_task(
-        fast_mail.send_message,
-        email_message,
-        template_name=schema.template_name
+        fast_mail.send_message, email_message, template_name=schema.template_name
     )

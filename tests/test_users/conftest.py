@@ -1,24 +1,34 @@
 import subprocess
 
 import pytest
-from fastapi_jwt_auth import AuthJWT
 from fastapi import BackgroundTasks
+from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
-from src.apps.admin.services import grant_staff_permissions
-from src.apps.user.schemas import UserOutputSchema
-from src.apps.user.services import register_user
-from src.core.factories import generate_register_schema
+from src.apps.user.schemas import UserOutputSchema, UserRegisterSchema
+from src.apps.user.services import register_user_base
+from src.core.factories import generate_user_register_schema
 
-
-DB_USER_SCHEMA = generate_register_schema(
+DB_USER_SCHEMA = generate_user_register_schema(
     password="vgo39845n", password_repeat="vgo39845n"
 )
 
-DB_STAFF_USER_SCHEMA = generate_register_schema(
+DB_STAFF_USER_SCHEMA = generate_user_register_schema(
     password="v9845go3n", password_repeat="v9845go3n"
 )
 
+
+def register_user_without_activation(
+    sync_session: Session, user_schema: UserRegisterSchema,
+    is_active: bool = True, is_staff: bool = False
+    ):
+    new_user = register_user_base(sync_session, user_schema)
+    new_user.is_active = is_active
+    new_user.is_staff = is_staff
+    sync_session.add(new_user)
+    sync_session.commit()
+
+    return UserOutputSchema.from_orm(new_user)
 
 @pytest.fixture(autouse=True, scope="session")
 def create_superuser():
@@ -27,14 +37,12 @@ def create_superuser():
 
 @pytest.fixture
 def db_user(sync_session: Session) -> UserOutputSchema:
-    return register_user(sync_session, DB_USER_SCHEMA, BackgroundTasks())
+    return register_user_without_activation(sync_session, DB_USER_SCHEMA)
 
 
 @pytest.fixture
 def db_staff_user(sync_session: Session) -> UserOutputSchema:
-    staff_user = register_user(sync_session, DB_STAFF_USER_SCHEMA, BackgroundTasks())
-    grant_staff_permissions(sync_session, staff_user.id)
-    return staff_user
+    return register_user_without_activation(sync_session, DB_STAFF_USER_SCHEMA, is_staff=True)
 
 
 @pytest.fixture
@@ -44,12 +52,14 @@ def auth_headers(sync_session: Session, db_user: UserOutputSchema) -> dict[str, 
 
 
 @pytest.fixture
-def staff_auth_headers(sync_session: Session, db_staff_user: UserOutputSchema) -> dict[str, str]:
+def staff_auth_headers(
+    sync_session: Session, db_staff_user: UserOutputSchema
+) -> dict[str, str]:
     access_token = AuthJWT().create_access_token(db_staff_user.email)
     return {"Authorization": f"Bearer {access_token}"}
 
 
 @pytest.fixture
 def superuser_auth_headers(sync_session: Session) -> dict[str, str]:
-    access_token = AuthJWT().create_access_token('superuser@mail.com')
+    access_token = AuthJWT().create_access_token("superuser@mail.com")
     return {"Authorization": f"Bearer {access_token}"}

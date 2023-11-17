@@ -1,46 +1,44 @@
 import pytest
 from sqlalchemy.orm import Session
-from fastapi import BackgroundTasks
 
 from src.apps.user.schemas import UserOutputSchema, UserUpdateSchema
 from src.apps.user.services import (
     delete_single_user,
     get_all_users,
     get_single_user,
-    register_user,
     update_single_user,
 )
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
-from src.core.factories import generate_register_schema
+from src.core.factories import generate_user_register_schema
 from src.core.pagination.models import PageParams
-from tests.test_users.conftest import DB_USER_SCHEMA
+from tests.test_users.conftest import DB_USER_SCHEMA, register_user_without_activation
 
 
 def test_register_user_that_already_exists(
     sync_session: Session, db_user: UserOutputSchema
 ):
     with pytest.raises(AlreadyExists):
-        register_user(sync_session, DB_USER_SCHEMA, BackgroundTasks())
+        register_user_without_activation(sync_session, DB_USER_SCHEMA)
 
 
 def test_create_user_with_occupied_email(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    user_data = generate_register_schema(
+    user_data = generate_user_register_schema(
         email=db_user.email, password="testtest", password_repeat="testtest"
     )
     with pytest.raises(AlreadyExists):
-        register_user(sync_session, user_data, BackgroundTasks())
+        register_user_without_activation(sync_session, user_data)
 
 
 def test_create_user_with_occupied_username(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    user_data = generate_register_schema(
+    user_data = generate_user_register_schema(
         username=db_user.username, password="testtest", password_repeat="testtest"
     )
     with pytest.raises(AlreadyExists):
-        register_user(sync_session, user_data, BackgroundTasks())
+        register_user_without_activation(sync_session, user_data)
 
 
 def test_if_only_one_user_was_returned(
@@ -76,12 +74,11 @@ def test_raise_exception_while_updating_nonexistent_user(
 def test_if_user_can_update_their_username_to_occupied_one(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    user = register_user(
+    user = register_user_without_activation(
         sync_session,
-        generate_register_schema(
+        generate_user_register_schema(
             password="testtestx", password_repeat="testtestx"
         ),
-        BackgroundTasks()
     )
     update_data = {"username": db_user.username}
 

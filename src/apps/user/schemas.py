@@ -49,7 +49,7 @@ class UserUpdateSchema(BaseModel):
 
 class UserInfoOutputSchema(UserBaseSchema):
     id: int
-    
+
     class Config:
         orm_mode = True
 

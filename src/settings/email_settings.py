@@ -11,10 +11,7 @@ class EmailSettings(BaseSettings):
     MAIL_SSL: bool = True
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
-    TEMPLATE_FOLDER='./templates/'
-    
-    
+    TEMPLATE_FOLDER = "./templates/"
+
     class Config:
         env_file = ".env"
-        
-    

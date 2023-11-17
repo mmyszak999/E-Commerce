@@ -78,7 +78,6 @@ def get_all_staff_users(
         users.set_sort_params(query_params)
         users.get_sorted_instances()
         query = users.inst
-        
 
     return paginate(
         query=query,

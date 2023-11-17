@@ -2,16 +2,16 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.apps.user.schemas import UserOutputSchema
-from src.core.factories import generate_register_schema
+from src.core.factories import generate_user_register_schema
 from tests.test_products.conftest import db_categories, db_products
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
 def test_if_user_was_created_successfully(sync_client: TestClient):
-    register_data = generate_register_schema(
+    register_data = generate_user_register_schema(
         password="mtdqwc241", password_repeat="mtdqwc241"
     )
-    
+
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -39,7 +39,9 @@ def test_staff_can_get_users(
 
 
 def test_staff_can_get_single_user(
-    sync_client: TestClient, staff_auth_headers: dict[str, str], db_user: UserOutputSchema
+    sync_client: TestClient,
+    staff_auth_headers: dict[str, str],
+    db_user: UserOutputSchema,
 ):
     response = sync_client.get(f"users/{db_user.id}", headers=staff_auth_headers)
     print(response.json())
@@ -79,7 +81,6 @@ def test_authenticated_user_can_update_their_account(
     assert response.json()["username"] == update_data["username"]
 
 
-
 def test_staff_can_delete_user(
     sync_client: TestClient,
     staff_auth_headers: dict[str, str],
@@ -105,7 +106,9 @@ def test_anonymous_user_cannot_get_users(
 
 
 def test_authenticated_user_cannot_get_single_user(
-    sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema,
+    sync_client: TestClient,
+    auth_headers: dict[str, str],
+    db_user: UserOutputSchema,
 ):
     response = sync_client.get(f"users/{db_user.id}", headers=auth_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
