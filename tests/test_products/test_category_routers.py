@@ -77,9 +77,11 @@ def test_anonymous_user_cannot_get_categories(
 def test_authenticated_user_cannot_get_single_category(
     sync_client: TestClient,
     auth_headers: dict[str, str],
-    db_categories: list[CategoryOutputSchema]
+    db_categories: list[CategoryOutputSchema],
 ):
-    response = sync_client.get(f"categories/{db_categories[0].id}", headers=auth_headers)
+    response = sync_client.get(
+        f"categories/{db_categories[0].id}", headers=auth_headers
+    )
     print(response.json())
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -87,20 +89,24 @@ def test_authenticated_user_cannot_get_single_category(
 def test_authenticated_user_cannot_update_category(
     sync_client: TestClient,
     auth_headers: dict[str, str],
-    db_categories: list[CategoryOutputSchema]
+    db_categories: list[CategoryOutputSchema],
 ):
     update_data = CategoryInputSchemaFactory.build()
     response = sync_client.patch(
-        f"categories/{db_categories[0].id}", data=update_data.json(), headers=auth_headers
+        f"categories/{db_categories[0].id}",
+        data=update_data.json(),
+        headers=auth_headers,
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_anonymous_user_cannot_update_category(
     sync_client: TestClient, db_categories: list[CategoryOutputSchema]
-    ):
+):
     update_data = CategoryInputSchemaFactory.build()
-    response = sync_client.patch(f"categories/{db_categories[0].id}", data=update_data.json())
+    response = sync_client.patch(
+        f"categories/{db_categories[0].id}", data=update_data.json()
+    )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 
@@ -108,16 +114,17 @@ def test_anonymous_user_cannot_update_category(
 def test_authenticated_user_cannot_delete_category(
     sync_client: TestClient,
     auth_headers: dict[str, str],
-    db_categories: list[CategoryOutputSchema]
+    db_categories: list[CategoryOutputSchema],
 ):
-    response = sync_client.delete(f"categories/{db_categories[0].id}", headers=auth_headers)
+    response = sync_client.delete(
+        f"categories/{db_categories[0].id}", headers=auth_headers
+    )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_anonymous_user_cannot_delete_category(
     sync_client: TestClient, db_categories: list[CategoryOutputSchema]
-    ):
+):
     response = sync_client.delete(f"categories/{db_categories[0].id}")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
-

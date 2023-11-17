@@ -67,7 +67,9 @@ def get_categories(
     status_code=status.HTTP_200_OK,
 )
 def get_category(
-    category_id: int, db: Session = Depends(get_db), request_user: User = Depends(authenticate_user)
+    category_id: int,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
 ) -> CategoryOutputSchema:
     check_if_staff(request_user)
     return get_single_category(db, category_id)
@@ -122,9 +124,7 @@ def post_product(
     status_code=status.HTTP_200_OK,
 )
 def get_products(
-    request: Request,
-    db: Session = Depends(get_db),
-    page_params: PageParams = Depends()
+    request: Request, db: Session = Depends(get_db), page_params: PageParams = Depends()
 ) -> PagedResponseSchema[ProductOutputSchema]:
     return get_all_products(db, page_params, request.query_params.multi_items())
 
@@ -165,4 +165,3 @@ def delete_product(
     check_if_staff(request_user)
     delete_single_product(db, product_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-

@@ -65,7 +65,9 @@ def get_logged_user_orders(
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
-    return get_all_user_orders(db, request_user.id, page_params, request.query_params.multi_items())
+    return get_all_user_orders(
+        db, request_user.id, page_params, request.query_params.multi_items()
+    )
 
 
 @order_router.get(

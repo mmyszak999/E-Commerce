@@ -71,7 +71,7 @@ def test_staff_can_delete_product(
 def test_authenticated_user_cannot_update_product(
     sync_client: TestClient,
     auth_headers: dict[str, str],
-    db_products: list[CategoryOutputSchema]
+    db_products: list[CategoryOutputSchema],
 ):
     update_data = ProductInputSchemaFactory.build()
     response = sync_client.patch(
@@ -99,9 +99,8 @@ def test_authenticated_user_cannot_delete_product(
 
 
 def test_anonymous_user_cannot_delete_product(
-    sync_client: TestClient, db_products: list[CategoryOutputSchema]):
+    sync_client: TestClient, db_products: list[CategoryOutputSchema]
+):
     response = sync_client.delete(f"products/{db_products[0].id}")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
-
-

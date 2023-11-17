@@ -1,7 +1,9 @@
+from fastapi import BackgroundTasks
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
+from src.apps.emails.services import send_activation_email
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.user.models import User
 from src.apps.user.schemas import (
@@ -16,20 +18,20 @@ from src.core.exceptions import (
     AuthenticationException,
     DoesNotExist,
     IsOccupied,
+    ServiceException
 )
 from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.sort import Sort
-from src.core.utils import filter_query_param_values_extractor, if_exists
+from src.core.utils import confirm_token, filter_query_param_values_extractor, if_exists
 
 
 def hash_user_password(password: str) -> str:
     return passwd_context.hash(password)
 
-
-def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchema:
+def register_user_base(session: Session, user: UserRegisterSchema) -> User:
     user_data = user.dict()
     if user_data.pop("password_repeat"):
         user_data["password"] = hash_user_password(password=user_data.pop("password"))
@@ -47,16 +49,44 @@ def register_user(session: Session, user: UserRegisterSchema) -> UserOutputSchem
         raise AlreadyExists(User.__name__, "email", user.email)
 
     new_user = User(**user_data)
+    return new_user
 
+
+def register_user(
+    session: Session, user: UserRegisterSchema, background_tasks: BackgroundTasks
+) -> UserOutputSchema:
+    new_user = register_user_base(session, user)
     session.add(new_user)
     session.commit()
+    send_activation_email(new_user.email, session, background_tasks)
 
     return UserOutputSchema.from_orm(new_user)
 
 
-def authenticate(email: str, password: str, session: Session) -> User:
-    user = session.scalar(select(User).filter(User.email == email).limit(1))
-    if not (user or passwd_context.verify(password, user.password)):
+def activate_account(session: Session, email: str) -> None:
+    user = if_exists(User, "email", email, session)
+
+    if user is None:
+        raise DoesNotExist(User.__name__, "email", email)
+
+    if user.is_active:
+        raise ServiceException("This account was already activated!")
+
+    statement = update(User).filter(User.email == email).values(is_active=True)
+    session.execute(statement)
+    session.commit()
+
+
+def activate_account_service(session: Session, token: str) -> None:
+    emails = confirm_token(token)
+    current_email = emails[0]
+    activate_account(session, current_email)
+
+
+def authenticate(user_login_schema: UserLoginInputSchema, session: Session) -> User:
+    login_data = user_login_schema.dict()
+    user = session.scalar(select(User).filter(User.email == login_data['email']).limit(1))
+    if not (user or passwd_context.verify(login_data['password'], user.password)):
         raise AuthenticationException("Invalid Credentials")
     return user
 
@@ -64,7 +94,7 @@ def authenticate(email: str, password: str, session: Session) -> User:
 def get_access_token_schema(
     user_login_schema: UserLoginInputSchema, session: Session, auth_jwt: AuthJWT
 ) -> str:
-    user = authenticate(**user_login_schema.dict(), session=session)
+    user = authenticate(user_login_schema, session=session)
     email = user.email
     access_token = auth_jwt.create_access_token(subject=email, algorithm="HS256")
 

@@ -1,4 +1,4 @@
-from fastapi import Depends, Request, Response, status
+from fastapi import BackgroundTasks, Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
@@ -35,9 +35,11 @@ user_router = APIRouter(prefix="/users", tags=["users"])
     "/register", response_model=UserOutputSchema, status_code=status.HTTP_201_CREATED
 )
 def create_user(
-    user: UserRegisterSchema, db: Session = Depends(get_db)
+    user: UserRegisterSchema,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
 ) -> UserOutputSchema:
-    return register_user(db, user)
+    return register_user(db, user, background_tasks)
 
 
 @user_router.post(
@@ -48,7 +50,6 @@ def login_user(
     auth_jwt: AuthJWT = Depends(),
     db: Session = Depends(get_db),
 ) -> AccessTokenOutputSchema:
-    
     return get_access_token_schema(user_login_schema, db, auth_jwt)
 
 
@@ -87,7 +88,8 @@ def get_users(
 def get_user(
     user_id: int,
     db: Session = Depends(get_db),
-    request_user: User = Depends(authenticate_user)) -> UserOutputSchema:
+    request_user: User = Depends(authenticate_user),
+) -> UserOutputSchema:
     check_if_staff(request_user)
     return get_single_user(db, user_id)
 
@@ -105,7 +107,9 @@ def get_user_orders(
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[OrderOutputSchema]:
     check_if_staff(request_user)
-    return get_all_user_orders(db, user_id, page_params, request.query_params.multi_items())
+    return get_all_user_orders(
+        db, user_id, page_params, request.query_params.multi_items()
+    )
 
 
 @user_router.patch(
