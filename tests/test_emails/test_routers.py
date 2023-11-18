@@ -8,7 +8,7 @@ from src.core.utils import generate_confirm_token
 from tests.test_users.conftest import auth_headers, db_user, staff_auth_headers, db_staff_user
 
 
-def test_user_can_activate_their_account_via_activation_link(
+def test_user_can_succesfully_activate_their_account_via_activation_link(
     sync_client: TestClient, db_user: UserOutputSchema
 ):
     register_data = generate_user_register_schema()

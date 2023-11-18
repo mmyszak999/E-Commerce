@@ -17,7 +17,6 @@ def test_superuser_can_get_all_superusers(
 ):
     response = sync_client.get("admin/superusers", headers=superuser_auth_headers)
 
-    print(response.json())
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["total"] == 1
 
