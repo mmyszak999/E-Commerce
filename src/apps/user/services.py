@@ -14,12 +14,12 @@ from src.apps.user.schemas import (
 )
 from src.apps.user.utils import passwd_context
 from src.core.exceptions import (
+    AccountNotActivatedException,
     AlreadyExists,
     AuthenticationException,
     DoesNotExist,
     IsOccupied,
     ServiceException,
-    AccountNotActivatedException
 )
 from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
@@ -31,6 +31,7 @@ from src.core.utils import confirm_token, filter_query_param_values_extractor, i
 
 def hash_user_password(password: str) -> str:
     return passwd_context.hash(password)
+
 
 def register_user_base(session: Session, user: UserRegisterSchema) -> User:
     user_data = user.dict()
@@ -86,11 +87,13 @@ def activate_account_service(session: Session, token: str) -> None:
 
 def authenticate(user_login_schema: UserLoginInputSchema, session: Session) -> User:
     login_data = user_login_schema.dict()
-    user = session.scalar(select(User).filter(User.email == login_data['email']).limit(1))
-    if not (user or passwd_context.verify(login_data['password'], user.password)):
+    user = session.scalar(
+        select(User).filter(User.email == login_data["email"]).limit(1)
+    )
+    if not (user or passwd_context.verify(login_data["password"], user.password)):
         raise AuthenticationException("Invalid Credentials")
     if not user.is_active:
-        raise AccountNotActivatedException("email", login_data['email'])
+        raise AccountNotActivatedException("email", login_data["email"])
     return user
 
 

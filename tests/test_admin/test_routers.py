@@ -84,11 +84,14 @@ def test_superuser_can_revoke_staff_permissions(
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["message"] == "Staff status has been revoked successfully"
-    
-    response = sync_client.get(f"users/{db_staff_user.id}", headers=superuser_auth_headers)
+
+    response = sync_client.get(
+        f"users/{db_staff_user.id}", headers=superuser_auth_headers
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["is_staff"] == False
+
 
 def test_non_superuser_cannot_revoke_staff_permissions(
     sync_client: TestClient,

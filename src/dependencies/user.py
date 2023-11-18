@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.apps.user.models import User
-from src.core.exceptions import AuthenticationException, AccountNotActivatedException
+from src.core.exceptions import AccountNotActivatedException, AuthenticationException
 from src.dependencies.get_db import get_db
 from src.settings.jwt_settings import AuthJWTSettings
 

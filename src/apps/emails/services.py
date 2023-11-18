@@ -21,6 +21,7 @@ from src.settings.email_settings import EmailSettings
 def email_config(settings: BaseSettings = EmailSettings):
     return ConnectionConfig(**settings().dict())
 
+
 def send_activation_email(
     email: str, session: Session, background_tasks: BackgroundTasks
 ) -> None:

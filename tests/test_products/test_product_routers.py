@@ -20,7 +20,7 @@ def test_staff_can_create_product(
 def test_authenticated_user_can_get_all_products(
     sync_client: TestClient,
     db_products: list[ProductOutputSchema],
-    auth_headers: dict[str, str]
+    auth_headers: dict[str, str],
 ):
     response = sync_client.get("products/", headers=auth_headers)
 
