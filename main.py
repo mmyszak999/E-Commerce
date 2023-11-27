@@ -16,6 +16,7 @@ from src.core.exceptions import (
     DoesNotExist,
     IsOccupied,
     ServiceException,
+    AccountNotActivatedException
 )
 
 app = FastAPI()
@@ -87,4 +88,13 @@ def handle_authorization_exception(
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exception)}
+    )
+
+
+@app.exception_handler(AccountNotActivatedException)
+def handle_account_not_activated_exception(
+    request: Request, exception: AccountNotActivatedException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
     )

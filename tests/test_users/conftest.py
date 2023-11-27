@@ -19,9 +19,11 @@ DB_STAFF_USER_SCHEMA = generate_user_register_schema(
 
 
 def register_user_without_activation(
-    sync_session: Session, user_schema: UserRegisterSchema,
-    is_active: bool = True, is_staff: bool = False
-    ):
+    sync_session: Session,
+    user_schema: UserRegisterSchema,
+    is_active: bool = True,
+    is_staff: bool = False,
+):
     new_user = register_user_base(sync_session, user_schema)
     new_user.is_active = is_active
     new_user.is_staff = is_staff
@@ -30,7 +32,8 @@ def register_user_without_activation(
 
     return UserOutputSchema.from_orm(new_user)
 
-@pytest.fixture(autouse=True, scope="session")
+
+@pytest.fixture(scope="session", autouse=True)
 def create_superuser():
     subprocess.run(["./app_scripts/create_superuser.sh", "test_db"])
 
@@ -42,7 +45,9 @@ def db_user(sync_session: Session) -> UserOutputSchema:
 
 @pytest.fixture
 def db_staff_user(sync_session: Session) -> UserOutputSchema:
-    return register_user_without_activation(sync_session, DB_STAFF_USER_SCHEMA, is_staff=True)
+    return register_user_without_activation(
+        sync_session, DB_STAFF_USER_SCHEMA, is_staff=True
+    )
 
 
 @pytest.fixture

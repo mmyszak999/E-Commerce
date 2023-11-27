@@ -1,17 +1,15 @@
 from fastapi import status
 from fastapi.testclient import TestClient
+from fastapi_jwt_auth import AuthJWT
 
-from src.apps.user.schemas import UserOutputSchema, UserLoginInputSchema
+from src.apps.user.schemas import UserLoginInputSchema, UserOutputSchema
 from src.core.factories import generate_user_register_schema
 from tests.test_products.conftest import db_categories, db_products
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
 def test_if_user_was_created_successfully(sync_client: TestClient):
-    register_data = generate_user_register_schema(
-        password="mtdqwc241", password_repeat="mtdqwc241"
-    )
-    
+    register_data = generate_user_register_schema()
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -19,10 +17,25 @@ def test_if_user_was_created_successfully(sync_client: TestClient):
 def test_if_user_was_logged_correctly(
     sync_client: TestClient, db_user: UserOutputSchema
 ):
-    login_data = UserLoginInputSchema(email=DB_USER_SCHEMA.email, password=DB_USER_SCHEMA.password)
+    login_data = UserLoginInputSchema(
+        email=DB_USER_SCHEMA.email, password=DB_USER_SCHEMA.password
+    )
     response = sync_client.post("users/login", json=login_data.dict())
     assert response.status_code == status.HTTP_200_OK
     assert "access_token" in response.json()
+
+
+def test_user_cannot_be_logged_without_activated_account(sync_client: TestClient):
+    register_data = generate_user_register_schema()
+    response = sync_client.post("users/register", data=register_data.json())
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["is_active"] == False
+
+    login_data = UserLoginInputSchema(
+        email=register_data.email, password=register_data.password
+    )
+    response = sync_client.post("users/login", json=login_data.dict())
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def test_staff_can_get_users(
@@ -31,7 +44,6 @@ def test_staff_can_get_users(
     response = sync_client.get("users/", headers=staff_auth_headers)
 
     assert response.status_code == status.HTTP_200_OK
-    print(response.json())
     assert response.json()["total"] == 2
 
 
@@ -41,18 +53,36 @@ def test_staff_can_get_single_user(
     db_user: UserOutputSchema,
 ):
     response = sync_client.get(f"users/{db_user.id}", headers=staff_auth_headers)
-    print(response.json())
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
 
 
-def test_authenticated_user_can_get_their_account(
+def test_authenticated_user_can_get_their_account_info_page(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
     response = sync_client.get("users/me", headers=auth_headers)
 
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
+
+
+def test_authenticated_user_cannot_get_their_account_info_page_with_inactive_account(
+    sync_client: TestClient,
+):
+    """
+    in this case we assume the user obtained token in the other way
+    than by login to the account
+    """
+    register_data = generate_user_register_schema()
+    response = sync_client.post("users/register", data=register_data.json())
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["is_active"] == False
+
+    user_token = AuthJWT().create_access_token(register_data.email)
+    user_auth_headers = {"Authorization": f"Bearer {user_token}"}
+
+    response = sync_client.get("users/me", headers=user_auth_headers)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 """

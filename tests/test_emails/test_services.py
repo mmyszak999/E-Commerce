@@ -1,13 +1,13 @@
 import pytest
+from fastapi import BackgroundTasks
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
-from fastapi import BackgroundTasks
 
 from src.apps.emails.services import (
     confirm_email_change_service,
+    send_activation_email,
     send_email_change_confirmation_mail,
     update_email,
-    send_activation_email
 )
 from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
