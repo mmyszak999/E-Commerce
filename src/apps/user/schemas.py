@@ -49,7 +49,7 @@ class UserUpdateSchema(BaseModel):
 
 class UserInfoOutputSchema(UserBaseSchema):
     id: int
-    is_active: bool = True
+    is_active: bool
 
     class Config:
         orm_mode = True
@@ -57,9 +57,9 @@ class UserInfoOutputSchema(UserBaseSchema):
 
 class UserOutputSchema(UserBaseSchema):
     id: int
-    is_active: bool = True
-    is_superuser: bool = False
-    is_staff: bool = False
+    is_active: bool
+    is_superuser: bool
+    is_staff: bool
 
     class Config:
         orm_mode = True

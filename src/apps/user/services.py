@@ -51,6 +51,7 @@ def register_user_base(session: Session, user: UserRegisterSchema) -> User:
         raise AlreadyExists(User.__name__, "email", user.email)
 
     new_user = User(**user_data)
+    print(new_user.is_active, "during register base")
     return new_user
 
 
@@ -58,6 +59,7 @@ def register_user(
     session: Session, user: UserRegisterSchema, background_tasks: BackgroundTasks
 ) -> UserOutputSchema:
     new_user = register_user_base(session, user)
+    print(new_user.__dict__, new_user.is_active, "after register base")
     session.add(new_user)
     session.commit()
     send_activation_email(new_user.email, session, background_tasks)
@@ -110,6 +112,7 @@ def get_access_token_schema(
 def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, "id", user_id)
+    print(user_object.__dict__)
 
     return UserOutputSchema.from_orm(user_object)
 
@@ -118,7 +121,7 @@ def get_all_users(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
     query = select(User)
-
+    print(query_params)
     if query_params:
         users = Lookup(User, query)
         filter_params = filter_query_param_values_extractor(query_params)

@@ -58,6 +58,8 @@ def check_field_values(
 def filter_query_param_values_extractor(params_list):
     desired_params_list = [param for param in params_list if not param[0] == "sort"]
     for param in desired_params_list:
+        if 'page' or 'size' in param:
+            continue
         key, value = param
         try:
             field, oper = key.split("__")
@@ -94,6 +96,7 @@ def send_email(
     )
 
     fast_mail = FastMail(settings)
+    print("okay")
     background_tasks.add_task(
         fast_mail.send_message, email_message, template_name=schema.template_name
     )
