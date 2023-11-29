@@ -6,12 +6,10 @@ from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
 from src.apps.products.models import Product
 from src.apps.user.models import User
 from src.core.exceptions import DoesNotExist, ServiceException
-from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.sort import Sort
-from src.core.utils import filter_query_param_values_extractor, if_exists
+from src.core.utils import if_exists, filter_and_sort_instances
 
 
 def create_order(
@@ -51,18 +49,11 @@ def get_all_orders(
 ) -> PagedResponseSchema:
     query = select(Order).options(selectinload(Order.products))
 
-    orders = Lookup(Order, query)
-    filter_params = filter_query_param_values_extractor(query_params)
-    if filter_params:
-        for param in filter_params:
-            orders = orders.perform_lookup(*param)
-
-    orders = Sort(Order, orders.inst)
-    orders.set_sort_params(query_params)
-    orders.get_sorted_instances()
-
+    if query_params:
+        query = filter_and_sort_instances(query_params, query, Order)
+        
     return paginate(
-        query=orders.inst,
+        query=query,
         response_schema=OrderOutputSchema,
         table=Order,
         page_params=page_params,
@@ -76,19 +67,11 @@ def get_all_user_orders(
     query = (
         select(Order).filter(User.id == user_id).options(selectinload(Order.products))
     )
-
-    orders = Lookup(Order, query)
-    filter_params = filter_query_param_values_extractor(query_params)
-    if filter_params:
-        for param in filter_params:
-            orders = orders.perform_lookup(*param)
-
-    orders = Sort(Order, orders.inst)
-    orders.set_sort_params(query_params)
-    orders.get_sorted_instances()
+    if query_params:
+        query = filter_and_sort_instances(query_params, query, Order)
 
     return paginate(
-        query=orders.inst,
+        query=query,
         response_schema=OrderOutputSchema,
         table=Order,
         page_params=page_params,

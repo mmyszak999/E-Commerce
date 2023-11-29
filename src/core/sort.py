@@ -1,7 +1,5 @@
 from typing import Any
 
-from src.core.utils import sort_query_param_values_extractor
-
 
 class Sort:
     def __init__(self, model, inst):
@@ -10,6 +8,8 @@ class Sort:
         self.sort_params = None
 
     def set_sort_params(self, query_params: list[tuple]) -> dict[Any, str]:
+        from src.core.utils import sort_query_param_values_extractor
+        
         self.sort_params = sort_query_param_values_extractor(query_params, self.model)
 
     def get_sorted_instances(self):

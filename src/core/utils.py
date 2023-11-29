@@ -11,6 +11,8 @@ from sqlalchemy import Table, select
 from sqlalchemy.orm import Session
 
 from src.core.exceptions import ServiceException
+from src.core.sort import Sort
+from src.core.filters import Lookup
 from src.settings.general import settings
 
 
@@ -56,10 +58,8 @@ def check_field_values(
 
 
 def filter_query_param_values_extractor(params_list):
-    desired_params_list = [param for param in params_list if not param[0] == "sort"]
+    desired_params_list = [param for param in params_list if not param[0] in ["sort", "page", "size"]]
     for param in desired_params_list:
-        if 'page' or 'size' in param:
-            continue
         key, value = param
         try:
             field, oper = key.split("__")
@@ -80,6 +80,39 @@ def sort_query_param_values_extractor(
             field = getattr(model_class, field)
             criteria[field] = sorting_order
         return criteria
+    
+
+def filter_instances(query_params: list[tuple], instances, model):
+    filter_class = Lookup(model, instances)
+    filter_params = filter_query_param_values_extractor(query_params)
+    for param in filter_params:
+        instances = filter_class.perform_lookup(*param)
+    return instances.inst    
+
+
+def sort_instances(query_params: list[tuple], instances, model):
+    sort = Sort(model, instances)
+    sort.set_sort_params(query_params)
+    sort.get_sorted_instances()
+    return sort.inst
+    
+    
+def filter_and_sort_instances(query_params: list[tuple], instances, model):
+    params_keys = [param[0] for param in query_params]
+    pagination_keys = [param for param in params_keys if param in ['page', 'size']]
+    if pagination_keys == params_keys:
+        return instances
+    
+    [params_keys.remove(value) for value in pagination_keys]
+    check_if_sort_key = 'sort' in params_keys
+    filter_keys = [param for param in params_keys if param != 'sort']
+    if filter_keys:
+        instances = filter_instances(query_params, instances, model)
+
+    if check_if_sort_key:
+        instances = sort_instances(query_params, instances, model)
+    
+    return instances
 
 
 def send_email(
@@ -96,7 +129,6 @@ def send_email(
     )
 
     fast_mail = FastMail(settings)
-    print("okay")
     background_tasks.add_task(
         fast_mail.send_message, email_message, template_name=schema.template_name
     )
