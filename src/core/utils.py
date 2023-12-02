@@ -58,7 +58,7 @@ def check_field_values(
 
 
 def filter_query_param_values_extractor(params_list):
-    desired_params_list = [param for param in params_list if not param[0] in ["sort", "page", "size"]]
+    desired_params_list = [param for param in params_list if param[0] not in ['sort', 'page', 'size']]
     for param in desired_params_list:
         key, value = param
         try:
@@ -74,6 +74,7 @@ def sort_query_param_values_extractor(
 ) -> dict[Any, str]:
     params = [param for param in params_list if param[0] == "sort"]
     criteria = dict()
+    # use try, except block + yield like above
     if params:
         for criterion in params[0][1].split(","):
             field, sorting_order = criterion.split("__")
@@ -84,17 +85,16 @@ def sort_query_param_values_extractor(
 
 def filter_instances(query_params: list[tuple], instances, model):
     filter_class = Lookup(model, instances)
-    filter_params = filter_query_param_values_extractor(query_params)
-    for param in filter_params:
-        instances = filter_class.perform_lookup(*param)
-    return instances.inst    
+    filter_class.set_filter_params(query_params)
+    filter_class.get_filtered_instances()
+    return filter_class.inst    
 
 
 def sort_instances(query_params: list[tuple], instances, model):
-    sort = Sort(model, instances)
-    sort.set_sort_params(query_params)
-    sort.get_sorted_instances()
-    return sort.inst
+    sort_class = Sort(model, instances)
+    sort_class.set_sort_params(query_params)
+    sort_class.get_sorted_instances()
+    return sort_class.inst
     
     
 def filter_and_sort_instances(query_params: list[tuple], instances, model):

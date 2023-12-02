@@ -7,7 +7,7 @@ class Sort:
         self.inst = inst
         self.sort_params = None
 
-    def set_sort_params(self, query_params: list[tuple]) -> dict[Any, str]:
+    def set_sort_params(self, query_params: list[tuple]) -> None:
         from src.core.utils import sort_query_param_values_extractor
         
         self.sort_params = sort_query_param_values_extractor(query_params, self.model)
