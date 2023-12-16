@@ -9,7 +9,7 @@ from src.core.exceptions import DoesNotExist, ServiceException
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils import if_exists, filter_and_sort_instances
+from src.core.utils import filter_and_sort_instances, if_exists
 
 
 def create_order(
@@ -51,7 +51,7 @@ def get_all_orders(
 
     if query_params:
         query = filter_and_sort_instances(query_params, query, Order)
-        
+
     return paginate(
         query=query,
         response_schema=OrderOutputSchema,

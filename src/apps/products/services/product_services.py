@@ -63,7 +63,7 @@ def get_all_products(
 
     if query_params:
         query = filter_and_sort_instances(query_params, query, Product)
-        
+
     return paginate(
         query=query,
         response_schema=ProductOutputSchema,

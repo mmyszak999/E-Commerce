@@ -55,7 +55,9 @@ def test_raise_exception_while_updating_nonexistent_category(
 def test_if_category_can_have_occupied_name(
     sync_session: Session, db_categories: list[CategoryOutputSchema]
 ):
-    category_data = CategoryInputSchemaFactory().generate(name=DB_CATEGORY_SCHEMAS[0].name)
+    category_data = CategoryInputSchemaFactory().generate(
+        name=DB_CATEGORY_SCHEMAS[0].name
+    )
     with pytest.raises(IsOccupied):
         update_single_category(sync_session, category_data, db_categories[1].id)
 

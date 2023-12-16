@@ -55,9 +55,7 @@ def test_raise_exception_while_updating_nonexistent_product(
 def test_if_product_can_have_occupied_name(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
-    product_data = ProductInputSchemaFactory().generate(
-        name=DB_PRODUCT_SCHEMAS[0].name
-    )
+    product_data = ProductInputSchemaFactory().generate(name=DB_PRODUCT_SCHEMAS[0].name)
     with pytest.raises(IsOccupied):
         update_single_product(sync_session, product_data, db_products[1].id)
 

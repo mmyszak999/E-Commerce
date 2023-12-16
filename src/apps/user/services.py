@@ -24,7 +24,7 @@ from src.core.exceptions import (
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils import confirm_token, if_exists, filter_and_sort_instances
+from src.core.utils import confirm_token, filter_and_sort_instances, if_exists
 
 
 def hash_user_password(password: str) -> str:
@@ -119,7 +119,7 @@ def get_all_users(
     query = select(User)
     if query_params:
         query = filter_and_sort_instances(query_params, query, User)
-    
+
     return paginate(
         query=query,
         response_schema=UserOutputSchema,

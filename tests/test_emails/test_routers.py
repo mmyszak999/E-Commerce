@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from fastapi_jwt_auth import AuthJWT
 
 from src.apps.user.schemas import UserOutputSchema
-from src.core.factories import EmailUpdateSchemaFactory, generate_user_register_schema
+from src.core.factories import EmailUpdateSchemaFactory, UserRegisterSchemaFactory
 from src.core.utils import generate_confirm_token
 from tests.test_users.conftest import (
     auth_headers,
@@ -16,7 +16,7 @@ from tests.test_users.conftest import (
 def test_user_can_succesfully_activate_their_account_via_activation_link(
     sync_client: TestClient, db_user: UserOutputSchema
 ):
-    register_data = generate_user_register_schema()
+    register_data = UserRegisterSchemaFactory().generate()
     response = sync_client.post("users/register", data=register_data.json())
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -37,7 +37,7 @@ def test_user_can_succesfully_activate_their_account_via_activation_link(
 def test_authenticated_user_can_send_email_change_confirmation_mail(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
-    update_data = EmailUpdateSchemaFactory.build(
+    update_data = EmailUpdateSchemaFactory().generate(
         email=db_user.email, new_email="mail@mail.com"
     )
     response = sync_client.post(
@@ -54,12 +54,12 @@ def test_authenticated_user_can_send_email_change_confirmation_mail(
 def test_authenticated_user_cannot_send_email_change_confirmation_mail_to_change_not_their_email(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
-    register_data = generate_user_register_schema()
+    register_data = UserRegisterSchemaFactory().generate()
     response = sync_client.post("users/register", data=register_data.json())
 
     assert response.status_code == status.HTTP_201_CREATED
 
-    update_data = EmailUpdateSchemaFactory.build(
+    update_data = EmailUpdateSchemaFactory().generate(
         email=register_data.email, new_email="new_email@mail.com"
     )
     response = sync_client.post(
@@ -71,7 +71,7 @@ def test_authenticated_user_cannot_send_email_change_confirmation_mail_to_change
 def test_anonymous_user_cannot_send_email_change_confirmation_email(
     sync_client: TestClient,
 ):
-    update_data = EmailUpdateSchemaFactory.build(new_email="mail@mail.com")
+    update_data = EmailUpdateSchemaFactory().generate(new_email="mail@mail.com")
     response = sync_client.post(f"email/change-email", data=update_data.json())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"

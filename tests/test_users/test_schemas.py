@@ -18,7 +18,9 @@ def test_user_register_schema_raises_validation_error_when_passwords_are_not_ide
     password1, password2, result
 ):
     with result:
-        UserRegisterSchemaFactory().generate(password=password1, password_repeat=password2)
+        UserRegisterSchemaFactory().generate(
+            password=password1, password_repeat=password2
+        )
 
 
 @pytest.mark.parametrize(

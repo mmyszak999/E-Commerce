@@ -16,16 +16,16 @@ class SchemaFactory:
     def __init__(self, schema_class):
         self.schema_class = schema_class
         self.faker = initialize_faker()
-    
+
     @abstractmethod
     def generate(self, **kwargs):
         raise NotImplementedError()
-    
+
 
 class UserRegisterSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=UserRegisterSchema):
         super().__init__(schema_class)
-    
+
     def generate(
         self,
         email: str = None,
@@ -43,57 +43,48 @@ class UserRegisterSchemaFactory(SchemaFactory):
             password=password,
             password_repeat=password_repeat,
         )
-    
 
-"""def generate_user_register_schema(
-    email: str = None,
-    username: str = None,
-    birth_date: datetime = None,
-    password: str = "password",
-    password_repeat: str = "password",
-):
-    faker = initialize_faker()
-    return UserRegisterSchema(
-        first_name=faker.first_name(),
-        last_name=faker.last_name(),
-        email=email or faker.ascii_email(),
-        birth_date=birth_date or faker.date_of_birth(),
-        username=username or faker.user_name(),
-        password=password,
-        password_repeat=password_repeat,
-    )"""
 
 class CategoryInputSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=CategoryInputSchema):
         super().__init__(schema_class)
-    
-    def generate(self, category_name: str = None):
+
+    def generate(self, name: str = None):
         return self.schema_class(
-            name=category_name or self.faker.ecommerce_category(),
+            name=name or self.faker.ecommerce_category(),
         )
 
 
 class ProductInputSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=ProductInputSchema):
         super().__init__(schema_class)
-    
+
     def generate(
-        self,
-        product_name: str = None,
-        price: str = None,
-        category_ids: list[int] = []
+        self, name: str = None, price: str = None, category_ids: list[int] = []
     ):
         return self.schema_class(
-            name=product_name or self.faker.ecommerce_name(),
+            name=name or self.faker.ecommerce_name(),
             price=price or self.faker.ecommerce_price(),
-            category_ids=category_ids
+            category_ids=category_ids,
         )
 
 
-class OrderInputSchemaFactory(ModelFactory):
-    __model__ = OrderInputSchema
-    __random__ = Random(10)
+class OrderInputSchemaFactory(SchemaFactory):
+    def __init__(self, schema_class=OrderInputSchema):
+        super().__init__(schema_class)
+
+    def generate(self, product_ids: list[int] = []):
+        return self.schema_class(product_ids=product_ids)
 
 
-class EmailUpdateSchemaFactory(ModelFactory):
-    __model__ = EmailUpdateSchema
+class EmailUpdateSchemaFactory(SchemaFactory):
+    def __init__(self, schema_class=EmailUpdateSchema):
+        super().__init__(schema_class)
+
+    def generate(
+        self, email: str = "default@mail.com", new_email: str = "new@mail.com"
+    ):
+        return self.schema_class(
+            email=email,
+            new_email=new_email,
+        )

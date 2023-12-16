@@ -7,7 +7,11 @@ from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils import filter_query_param_values_extractor, if_exists, filter_and_sort_instances
+from src.core.utils import (
+    filter_and_sort_instances,
+    filter_query_param_values_extractor,
+    if_exists,
+)
 
 
 def create_category(
@@ -43,7 +47,7 @@ def get_all_categories(
 
     if query_params:
         query = filter_and_sort_instances(query_params, query, Category)
-        
+
     return paginate(
         query=query,
         response_schema=CategoryOutputSchema,

@@ -10,7 +10,9 @@ def test_staff_can_create_product(
     staff_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
 ):
-    product_data = ProductInputSchemaFactory().generate(category_ids=[db_categories[0].id])
+    product_data = ProductInputSchemaFactory().generate(
+        category_ids=[db_categories[0].id]
+    )
     response = sync_client.post(
         "products/", data=product_data.json(), headers=staff_auth_headers
     )
