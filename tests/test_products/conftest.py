@@ -13,11 +13,11 @@ from tests.test_users.conftest import (
     superuser_auth_headers,
 )
 
-DB_CATEGORY_SCHEMAS = [CategoryInputSchemaFactory.build() for _ in range(3)]
+DB_CATEGORY_SCHEMAS = [CategoryInputSchemaFactory().generate() for _ in range(3)]
 
 EXISTING_CATEGORY_DATA = DB_CATEGORY_SCHEMAS[0]
 
-DB_PRODUCT_SCHEMAS = [ProductInputSchemaFactory.build() for _ in range(3)]
+DB_PRODUCT_SCHEMAS = [ProductInputSchemaFactory().generate() for _ in range(3)]
 
 EXISTING_PRODUCT_DATA = DB_PRODUCT_SCHEMAS[0]
 

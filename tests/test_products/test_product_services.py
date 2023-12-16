@@ -47,7 +47,7 @@ def test_if_multiple_products_were_returned(
 def test_raise_exception_while_updating_nonexistent_product(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
-    update_data = ProductInputSchemaFactory.build()
+    update_data = ProductInputSchemaFactory().generate()
     with pytest.raises(DoesNotExist):
         update_single_product(sync_session, update_data, len(db_products) + 2)
 
@@ -55,8 +55,8 @@ def test_raise_exception_while_updating_nonexistent_product(
 def test_if_product_can_have_occupied_name(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
-    product_data = ProductInputSchemaFactory.build(
-        name=DB_PRODUCT_SCHEMAS[0].name, category_ids=[]
+    product_data = ProductInputSchemaFactory().generate(
+        name=DB_PRODUCT_SCHEMAS[0].name
     )
     with pytest.raises(IsOccupied):
         update_single_product(sync_session, product_data, db_products[1].id)

@@ -3,13 +3,13 @@ from fastapi.testclient import TestClient
 from fastapi_jwt_auth import AuthJWT
 
 from src.apps.user.schemas import UserLoginInputSchema, UserOutputSchema
-from src.core.factories import generate_user_register_schema
+from src.core.factories import UserRegisterSchemaFactory
 from tests.test_products.conftest import db_categories, db_products
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
 def test_if_user_was_created_successfully(sync_client: TestClient):
-    register_data = generate_user_register_schema()
+    register_data = UserRegisterSchemaFactory().generate()
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -26,7 +26,7 @@ def test_if_user_was_logged_correctly(
 
 
 def test_user_cannot_be_logged_without_activated_account(sync_client: TestClient):
-    register_data = generate_user_register_schema()
+    register_data = UserRegisterSchemaFactory().generate()
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["is_active"] == False
@@ -73,7 +73,7 @@ def test_authenticated_user_cannot_get_their_account_info_page_with_inactive_acc
     in this case we assume the user obtained token in the other way
     than by login to the account
     """
-    register_data = generate_user_register_schema()
+    register_data = UserRegisterSchemaFactory().generate()
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["is_active"] == False

@@ -3,6 +3,7 @@ from typing import Any
 
 from faker import Faker
 from faker.providers import date_time, internet, misc, person
+from faker_commerce import Provider as commerce_provider
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema
 from itsdangerous import URLSafeTimedSerializer
@@ -29,6 +30,7 @@ def initialize_faker():
     faker.add_provider(internet)
     faker.add_provider(date_time)
     faker.add_provider(misc)
+    faker.add_provider(commerce_provider)
 
     return faker
 
