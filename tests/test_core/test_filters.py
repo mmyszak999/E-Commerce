@@ -3,11 +3,11 @@ from fastapi.testclient import TestClient
 
 from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
 from src.apps.user.schemas import UserOutputSchema
-from src.core.factories import UserRegisterSchemaFactory
+from src.core.factories import UserRegisterSchemaFactory, CategoryInputSchemaFactory, ProductInputSchemaFactory
 from tests.test_core.conftest import db_categories, db_products, db_staff_user, db_user
 
 
-def test_users_can_be_filtered_by_the_attributes(
+def test_users_can_be_filtered_by_their_attributes(
     sync_client: TestClient,
     staff_auth_headers: dict[str, str],
     db_user: UserOutputSchema,
@@ -34,9 +34,51 @@ def test_users_can_be_filtered_by_the_attributes(
     assert response.json()["total"] == 2
 
 
-def test_categories_can_be_filtered_by_the_attributes(
+def test_categories_can_be_filtered_by_their_attributes(
     sync_client: TestClient,
     staff_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
 ):
-    pass
+    new_category_1 = CategoryInputSchemaFactory().generate("zazzz")
+    new_category_2 = CategoryInputSchemaFactory().generate(name="zbzzz")
+    response = sync_client.post("categories/", data=new_category_1.json(), headers=staff_auth_headers)
+    assert response.status_code == status.HTTP_201_CREATED
+    
+    response = sync_client.post("categories/", data=new_category_2.json(), headers=staff_auth_headers)
+    assert response.status_code == status.HTTP_201_CREATED
+
+    response = sync_client.get(f"categories/?name__eq={new_category_2.name}", headers=staff_auth_headers)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["total"] == 1
+
+    response = sync_client.get(
+        f"categories/?name__ge={new_category_1.name}", headers=staff_auth_headers
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["total"] == 2
+
+
+def test_products_can_be_filtered_by_their_attributes(
+    sync_client: TestClient,
+    staff_auth_headers: dict[str, str],
+    db_products: list[ProductOutputSchema],
+    db_categories: list[CategoryOutputSchema]
+):
+    new_product_1 = ProductInputSchemaFactory().generate(category_ids=[db_categories[0].id])
+    new_product_2 = ProductInputSchemaFactory().generate(
+        category_ids=[db_categories[1].id, db_categories[2].id], price=0.09)
+    response = sync_client.post("products/", data=new_product_1.json(), headers=staff_auth_headers)
+    assert response.status_code == status.HTTP_201_CREATED
+    
+    response = sync_client.post("products/", data=new_product_2.json(), headers=staff_auth_headers)
+    assert response.status_code == status.HTTP_201_CREATED
+
+    response = sync_client.get(f"products/?price__le={new_product_2.price}")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["total"] == 1
+
+    response = sync_client.get(
+        f"products/?name__eq={new_product_1.name}"
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["total"] == 1
