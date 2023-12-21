@@ -66,7 +66,7 @@ def filter_query_param_values_extractor(params_list):
     for param in desired_params_list:
         key, value = param
         try:
-            field, oper = key.split("__")
+            field, oper = key.rsplit("__", 1)
         except Exception:
             field = key
             oper = "eq"
@@ -117,6 +117,15 @@ def filter_and_sort_instances(query_params: list[tuple], instances, model):
         instances = sort_instances(query_params, instances, model)
 
     return instances
+
+def get_class_by_tablename(tablename, Base):
+  for klass in Base._decl_class_registry.values():
+    if klass.__table__.name == tablename:
+      return klass
+
+def check_relationships(model, relationship_key: str):
+    pass
+    
 
 
 def send_email(

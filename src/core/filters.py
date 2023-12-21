@@ -1,6 +1,11 @@
 import operator
 
 from sqlalchemy.sql.expression import Select
+from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm.properties import RelationshipProperty
+
+from src.apps.products.models import Product
+from src.database.db_connection import Base
 
 
 class Lookup(Select):
@@ -37,7 +42,17 @@ class Lookup(Select):
         self.filter_params = filter_query_param_values_extractor(query_params)
 
     def perform_lookup(self, field, operation, value):
-        self.field = field
+        if len(field.split("__")) == 1:
+            self.field = field
+        else:
+            key, self.field = field.split("__")
+            mapper = class_mapper(self.model)
+            for prop in mapper.iterate_properties:
+                if isinstance(prop, RelationshipProperty) and prop.key == key:
+                    for c in Base.__subclasses__():
+                        if c.__tablename__ == prop.target.name:
+                            print(c)
+                        
         res = getattr(operator, operation)(self, value)
         return Lookup(self.model, res)
 
