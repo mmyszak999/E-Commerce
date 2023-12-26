@@ -9,12 +9,15 @@ from fastapi_mail import FastMail, MessageSchema
 from itsdangerous import URLSafeTimedSerializer
 from pydantic import BaseModel, BaseSettings
 from sqlalchemy import Table, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, class_mapper
+from sqlalchemy.orm.properties import RelationshipProperty
 
 from src.core.exceptions import ServiceException
 from src.core.filters import Lookup
 from src.core.sort import Sort
+from src.database.db_connection import Base
 from src.settings.general import settings
+
 
 
 def if_exists(model_class: Table, field: str, value: Any, session: Session):
@@ -118,15 +121,15 @@ def filter_and_sort_instances(query_params: list[tuple], instances, model):
 
     return instances
 
-def get_class_by_tablename(tablename, Base):
-  for klass in Base._decl_class_registry.values():
-    if klass.__table__.name == tablename:
-      return klass
 
 def check_relationships(model, relationship_key: str):
-    pass
+    mapper = class_mapper(model)
+    for property in mapper.iterate_properties:
+        if isinstance(property, RelationshipProperty) and property.key == relationship_key:
+            for klass in Base.__subclasses__():
+                if klass.__tablename__ == property.target.name:
+                    return klass
     
-
 
 def send_email(
     schema: BaseModel,

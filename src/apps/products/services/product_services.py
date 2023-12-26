@@ -59,14 +59,6 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
 def get_all_products(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
-    print(
-        paginate(
-        query=select(Product).join(Product.categories).filter(Category.name.in_(["shoes"])),
-        response_schema=ProductOutputSchema,
-        table=Product,
-        page_params=page_params,
-        session=session,
-    ))
     query = select(Product).join(Product.categories)
     
     if query_params:
