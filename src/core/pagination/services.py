@@ -16,7 +16,7 @@ def paginate(
         query.offset((page_params.page - 1) * page_params.size).limit(
             page_params.size + 1
         )
-    ).all()
+    ).unique().all()
     total_amount = len(instances)
     next_page_check = (
         total_amount - ((page_params.page - 1) * page_params.size)

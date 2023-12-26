@@ -1,5 +1,5 @@
 from sqlalchemy import delete, insert, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from src.apps.products.models import (
     Category,
@@ -59,7 +59,7 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
 def get_all_products(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
-    query = select(Product).join(Product.categories)
+    query = select(Product).options(joinedload(Product.categories, innerjoin=True))
     
     if query_params:
         query = filter_and_sort_instances(query_params, query, Product)

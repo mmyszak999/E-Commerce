@@ -81,11 +81,9 @@ def sort_query_param_values_extractor(
 ) -> dict[Any, str]:
     params = [param for param in params_list if param[0] == "sort"]
     criteria = dict()
-    # use try, except block + yield like above
     if params:
         for criterion in params[0][1].split(","):
-            field, sorting_order = criterion.split("__")
-            field = getattr(model_class, field)
+            field, sorting_order = criterion.rsplit("__", 1)
             criteria[field] = sorting_order
         return criteria
 

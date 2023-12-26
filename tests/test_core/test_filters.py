@@ -72,6 +72,9 @@ def test_products_can_be_filtered_by_their_attributes(
     
     response = sync_client.post("products/", data=new_product_2.json(), headers=staff_auth_headers)
     assert response.status_code == status.HTTP_201_CREATED
+    
+    response = sync_client.get("products/")
+
 
     response = sync_client.get(f"products/?price__le={new_product_2.price}")
     assert response.status_code == status.HTTP_200_OK
