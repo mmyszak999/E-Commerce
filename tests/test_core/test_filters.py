@@ -72,9 +72,6 @@ def test_products_can_be_filtered_by_their_attributes(
     
     response = sync_client.post("products/", data=new_product_2.json(), headers=staff_auth_headers)
     assert response.status_code == status.HTTP_201_CREATED
-    
-    response = sync_client.get("products/")
-
 
     response = sync_client.get(f"products/?price__le={new_product_2.price}")
     assert response.status_code == status.HTTP_200_OK
@@ -82,6 +79,21 @@ def test_products_can_be_filtered_by_their_attributes(
 
     response = sync_client.get(
         f"products/?name__eq={new_product_1.name}"
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["total"] == 1
+    
+    response = sync_client.get(
+        f"products/?categories__id__eq={new_product_1.category_ids[0]}"
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["total"] == 2
+    
+    print(new_product_2.category_ids, type(new_product_2.category_ids))
+    response = sync_client.get(
+        f"products/?categories__id__eq="
+        f"{new_product_2.category_ids[0]},{new_product_2.category_ids[1]}&"
+        f"name__eq={new_product_2.name}"
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["total"] == 1

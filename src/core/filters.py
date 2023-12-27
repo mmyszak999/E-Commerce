@@ -1,6 +1,8 @@
+from ast import literal_eval
 import operator
 
 from sqlalchemy.sql.expression import Select
+from sqlalchemy import select
 
 from src.apps.products.models import Product
 
@@ -26,11 +28,14 @@ class Lookup(Select):
         return self.inst.filter(getattr(self.current_model, self.field) <= other)
 
     def __eq__(self, other):
+        values = other.split(",")
+        if len(values) > 1:
+            return self.inst.filter(getattr(self.current_model, self.field).in_(values))
         return self.inst.filter(getattr(self.current_model, self.field) == other)
 
     def __ne__(self, other):
         return self.inst.filter(getattr(self.current_model, self.field) != other)
-
+    
     def __setattr__(self, key, value):
         super().__setattr__(key, value)
 
