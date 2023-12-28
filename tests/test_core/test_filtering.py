@@ -89,7 +89,6 @@ def test_products_can_be_filtered_by_their_attributes(
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["total"] == 2
     
-    print(new_product_2.category_ids, type(new_product_2.category_ids))
     response = sync_client.get(
         f"products/?categories__id__eq="
         f"{new_product_2.category_ids[0]},{new_product_2.category_ids[1]}&"

@@ -29,6 +29,8 @@ class UserRegisterSchemaFactory(SchemaFactory):
     def generate(
         self,
         email: str = None,
+        first_name: str = None,
+        last_name: str = None,
         username: str = None,
         birth_date: datetime = None,
         password: str = "password",

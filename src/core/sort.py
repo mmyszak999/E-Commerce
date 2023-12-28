@@ -18,7 +18,6 @@ class Sort:
         
         if self.sort_params:
             for field, sort_order in self.sort_params.items():
-                print(field, sort_order)
                 if len(field.split("__")) == 1:
                     self.current_model = self.main_model
                 else:
