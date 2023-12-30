@@ -34,6 +34,6 @@ def test_user_register_schema_raises_validation_error_when_birth_date_is_from_fu
     future_date, result
 ):
     with result:
-        schema = UserRegisterSchemaFactory().generate(
+        UserRegisterSchemaFactory().generate(
             birth_date=future_date, password="password", password_repeat="password"
         )

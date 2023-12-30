@@ -9,7 +9,6 @@ from src.core.factories import (
     ProductInputSchemaFactory,
     UserRegisterSchemaFactory,
 )
-from src.core.utils.utils import if_exists
 from tests.test_core.conftest import db_categories, db_products, db_staff_user, db_user
 
 

@@ -5,11 +5,7 @@ from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
 from src.apps.emails.schemas import EmailUpdateSchema
-from src.apps.emails.services import (
-    change_email_service,
-    confirm_email_change_service,
-    send_email_change_confirmation_mail,
-)
+from src.apps.emails.services import change_email_service, confirm_email_change_service
 from src.apps.user.models import User
 from src.apps.user.services import activate_account_service
 from src.dependencies.get_db import get_db

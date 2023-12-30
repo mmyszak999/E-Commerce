@@ -1,9 +1,5 @@
 from abc import abstractmethod
 from datetime import datetime
-from random import Random
-
-from polyfactory.factories.pydantic_factory import ModelFactory
-from pydantic import BaseModel
 
 from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.orders.schemas import OrderInputSchema

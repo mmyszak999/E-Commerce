@@ -1,6 +1,6 @@
 from fastapi import BackgroundTasks
-from fastapi_mail import ConnectionConfig, FastMail
-from pydantic import BaseModel, BaseSettings
+from fastapi_mail import ConnectionConfig
+from pydantic import BaseSettings
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 

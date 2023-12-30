@@ -7,11 +7,7 @@ from src.core.exceptions import DoesNotExist
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils.utils import (
-    filter_and_sort_instances,
-    filter_query_param_values_extractor,
-    if_exists,
-)
+from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
 def modify_staff_permissions(

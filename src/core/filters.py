@@ -1,9 +1,6 @@
 import operator
 
-from sqlalchemy import select
 from sqlalchemy.sql.expression import Select
-
-from src.apps.products.models import Product
 
 
 class Lookup(Select):

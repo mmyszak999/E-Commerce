@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from src.apps.emails.services import (
     confirm_email_change_service,
-    send_activation_email,
     send_email_change_confirmation_mail,
     update_email,
 )

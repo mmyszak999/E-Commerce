@@ -1,6 +1,3 @@
-from typing import Any
-
-
 class Sort:
     def __init__(self, main_model, inst, current_model=None):
         self.main_model = main_model
