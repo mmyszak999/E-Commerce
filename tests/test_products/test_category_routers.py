@@ -9,7 +9,7 @@ def test_staff_can_create_category(
     sync_client: TestClient,
     staff_auth_headers: dict[str, str],
 ):
-    create_data = CategoryInputSchemaFactory.build()
+    create_data = CategoryInputSchemaFactory().generate()
     response = sync_client.post(
         "categories/", data=create_data.json(), headers=staff_auth_headers
     )
@@ -44,7 +44,7 @@ def test_staff_can_update_category(
     staff_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
 ):
-    update_data = CategoryInputSchemaFactory.build()
+    update_data = CategoryInputSchemaFactory().generate()
     response = sync_client.patch(
         f"categories/{db_categories[0].id}",
         data=update_data.json(),
@@ -91,7 +91,7 @@ def test_authenticated_user_cannot_update_category(
     auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
 ):
-    update_data = CategoryInputSchemaFactory.build()
+    update_data = CategoryInputSchemaFactory().generate()
     response = sync_client.patch(
         f"categories/{db_categories[0].id}",
         data=update_data.json(),
@@ -103,7 +103,7 @@ def test_authenticated_user_cannot_update_category(
 def test_anonymous_user_cannot_update_category(
     sync_client: TestClient, db_categories: list[CategoryOutputSchema]
 ):
-    update_data = CategoryInputSchemaFactory.build()
+    update_data = CategoryInputSchemaFactory().generate()
     response = sync_client.patch(
         f"categories/{db_categories[0].id}", data=update_data.json()
     )

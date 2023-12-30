@@ -4,12 +4,10 @@ from sqlalchemy.orm import Session
 from src.apps.user.models import User
 from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import DoesNotExist
-from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.sort import Sort
-from src.core.utils import filter_query_param_values_extractor, if_exists
+from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
 def modify_staff_permissions(
@@ -42,16 +40,7 @@ def get_all_superusers(
     query = select(User).filter(User.is_superuser == True)
 
     if query_params:
-        users = Lookup(User, query)
-        filter_params = filter_query_param_values_extractor(query_params)
-        if filter_params:
-            for param in filter_params:
-                users = orders.perform_lookup(*param)
-
-        users = Sort(User, users.inst)
-        users.set_sort_params(query_params)
-        users.get_sorted_instances()
-        query = users.inst
+        query = filter_and_sort_instances(query_params, query, User)
 
     return paginate(
         query=query,
@@ -68,16 +57,7 @@ def get_all_staff_users(
     query = select(User).filter(User.is_staff == True)
 
     if query_params:
-        users = Lookup(User, query)
-        filter_params = filter_query_param_values_extractor(query_params)
-        if filter_params:
-            for param in filter_params:
-                users = orders.perform_lookup(*param)
-
-        users = Sort(User, users.inst)
-        users.set_sort_params(query_params)
-        users.get_sorted_instances()
-        query = users.inst
+        query = filter_and_sort_instances(query_params, query, User)
 
     return paginate(
         query=query,

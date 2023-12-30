@@ -10,7 +10,9 @@ def test_staff_can_create_product(
     staff_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
 ):
-    product_data = ProductInputSchemaFactory.build(category_ids=[db_categories[0].id])
+    product_data = ProductInputSchemaFactory().generate(
+        category_ids=[db_categories[0].id]
+    )
     response = sync_client.post(
         "products/", data=product_data.json(), headers=staff_auth_headers
     )
@@ -54,8 +56,8 @@ def test_staff_can_update_product(
     db_products: list[ProductOutputSchema],
     db_categories: list[CategoryOutputSchema],
 ):
-    update_data = ProductInputSchemaFactory.build(
-        name="test_name", price=14.88, category_ids=[db_categories[0].id]
+    update_data = ProductInputSchemaFactory().generate(
+        category_ids=[db_categories[0].id]
     )
     response = sync_client.patch(
         f"products/{db_products[0].id}",
@@ -84,7 +86,7 @@ def test_authenticated_user_cannot_update_product(
     auth_headers: dict[str, str],
     db_products: list[CategoryOutputSchema],
 ):
-    update_data = ProductInputSchemaFactory.build()
+    update_data = ProductInputSchemaFactory().generate()
     response = sync_client.patch(
         f"products/{db_products[0].id}", headers=auth_headers, data=update_data.json()
     )
@@ -94,7 +96,7 @@ def test_authenticated_user_cannot_update_product(
 def test_anonymous_user_cannot_update_product(
     sync_client: TestClient,
 ):
-    update_data = ProductInputSchemaFactory.build()
+    update_data = ProductInputSchemaFactory().generate()
     response = sync_client.patch("products/1", data=update_data.json())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"

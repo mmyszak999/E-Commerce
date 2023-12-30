@@ -1,6 +1,6 @@
 from fastapi import BackgroundTasks
-from fastapi_mail import ConnectionConfig, FastMail
-from pydantic import BaseModel, BaseSettings
+from fastapi_mail import ConnectionConfig
+from pydantic import BaseSettings
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
@@ -8,7 +8,7 @@ from src.apps.emails.schemas import EmailSchema, EmailUpdateSchema
 from src.apps.jwt.schemas import ConfirmationTokenSchema
 from src.apps.user.models import User
 from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
-from src.core.utils import (
+from src.core.utils.utils import (
     check_field_values,
     confirm_token,
     generate_confirm_token,

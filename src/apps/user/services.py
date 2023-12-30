@@ -21,12 +21,10 @@ from src.core.exceptions import (
     IsOccupied,
     ServiceException,
 )
-from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.sort import Sort
-from src.core.utils import confirm_token, filter_query_param_values_extractor, if_exists
+from src.core.utils.utils import confirm_token, filter_and_sort_instances, if_exists
 
 
 def hash_user_password(password: str) -> str:
@@ -58,6 +56,7 @@ def register_user(
     session: Session, user: UserRegisterSchema, background_tasks: BackgroundTasks
 ) -> UserOutputSchema:
     new_user = register_user_base(session, user)
+
     session.add(new_user)
     session.commit()
     send_activation_email(new_user.email, session, background_tasks)
@@ -118,18 +117,8 @@ def get_all_users(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
     query = select(User)
-
     if query_params:
-        users = Lookup(User, query)
-        filter_params = filter_query_param_values_extractor(query_params)
-        if filter_params:
-            for param in filter_params:
-                users = users.perform_lookup(*param)
-
-        users = Sort(User, users.inst)
-        users.set_sort_params(query_params)
-        users.get_sorted_instances()
-        query = users.inst
+        query = filter_and_sort_instances(query_params, query, User)
 
     return paginate(
         query=query,

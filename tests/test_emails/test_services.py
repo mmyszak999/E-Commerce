@@ -5,14 +5,13 @@ from sqlalchemy.orm import Session
 
 from src.apps.emails.services import (
     confirm_email_change_service,
-    send_activation_email,
     send_email_change_confirmation_mail,
     update_email,
 )
 from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
-from src.core.factories import EmailUpdateSchemaFactory, generate_user_register_schema
-from src.core.utils import generate_confirm_token
+from src.core.factories import EmailUpdateSchemaFactory, UserRegisterSchemaFactory
+from src.core.utils.utils import generate_confirm_token
 from tests.test_users.conftest import DB_USER_SCHEMA, register_user_without_activation
 
 
@@ -20,7 +19,7 @@ def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_equal
     sync_session: Session, db_user: UserOutputSchema
 ):
     token = AuthJWT().create_access_token(db_user.email)
-    schema = EmailUpdateSchemaFactory.build(
+    schema = EmailUpdateSchemaFactory().generate(
         email=db_user.email, new_email=db_user.email
     )
 
@@ -33,11 +32,11 @@ def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_equal
 def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_is_occupied(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    user_data = generate_user_register_schema()
+    user_data = UserRegisterSchemaFactory().generate()
     new_user = register_user_without_activation(sync_session, user_data)
 
     token = AuthJWT().create_access_token(new_user.email)
-    email_update_data = EmailUpdateSchemaFactory.build(
+    email_update_data = EmailUpdateSchemaFactory().generate(
         email=new_user.email, new_email=db_user.email
     )
 

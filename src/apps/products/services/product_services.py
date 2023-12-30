@@ -1,5 +1,5 @@
 from sqlalchemy import delete, insert, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from src.apps.products.models import (
     Category,
@@ -13,12 +13,10 @@ from src.core.exceptions import (
     IsOccupied,
     ServiceException,
 )
-from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.sort import Sort
-from src.core.utils import filter_query_param_values_extractor, if_exists
+from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
 def create_product(
@@ -61,19 +59,18 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
 def get_all_products(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
-    query = select(Product)
+    query = (
+        select(Product)
+        .options(joinedload(Product.categories, innerjoin=True))
+        .join(
+            category_product_association_table,
+            Product.id == category_product_association_table.c.product_id,
+        )
+        .join(Category, category_product_association_table.c.category_id == Category.id)
+    )
 
     if query_params:
-        products = Lookup(Product, query)
-        filter_params = filter_query_param_values_extractor(query_params)
-        if filter_params:
-            for param in filter_params:
-                products = products.perform_lookup(*param)
-
-        products = Sort(Product, products.inst)
-        products.set_sort_params(query_params)
-        products.get_sorted_instances()
-        query = products.inst
+        query = filter_and_sort_instances(query_params, query, Product)
 
     return paginate(
         query=query,

@@ -7,15 +7,11 @@ from sqlalchemy.orm import Session
 
 from src.apps.user.schemas import UserOutputSchema, UserRegisterSchema
 from src.apps.user.services import register_user_base
-from src.core.factories import generate_user_register_schema
+from src.core.factories import UserRegisterSchemaFactory
 
-DB_USER_SCHEMA = generate_user_register_schema(
-    password="vgo39845n", password_repeat="vgo39845n"
-)
+DB_USER_SCHEMA = UserRegisterSchemaFactory().generate()
 
-DB_STAFF_USER_SCHEMA = generate_user_register_schema(
-    password="v9845go3n", password_repeat="v9845go3n"
-)
+DB_STAFF_USER_SCHEMA = UserRegisterSchemaFactory().generate()
 
 
 def register_user_without_activation(

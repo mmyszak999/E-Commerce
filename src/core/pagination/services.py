@@ -12,11 +12,15 @@ def paginate(
     page_params: PageParams,
     session: Session,
 ) -> PagedResponseSchema[T]:
-    instances = session.scalars(
-        query.offset((page_params.page - 1) * page_params.size).limit(
-            page_params.size + 1
+    instances = (
+        session.scalars(
+            query.offset((page_params.page - 1) * page_params.size).limit(
+                page_params.size + 1
+            )
         )
-    ).all()
+        .unique()
+        .all()
+    )
     total_amount = len(instances)
     next_page_check = (
         total_amount - ((page_params.page - 1) * page_params.size)

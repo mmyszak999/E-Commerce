@@ -4,12 +4,10 @@ from sqlalchemy.orm import Session
 from src.apps.products.models import Category
 from src.apps.products.schemas import CategoryInputSchema, CategoryOutputSchema
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
-from src.core.filters import Lookup
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.sort import Sort
-from src.core.utils import filter_query_param_values_extractor, if_exists
+from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
 def create_category(
@@ -43,18 +41,8 @@ def get_all_categories(
 ) -> PagedResponseSchema[CategoryOutputSchema]:
     query = select(Category)
 
-    print(query_params)
     if query_params:
-        categories = Lookup(Category, query)
-        filter_params = filter_query_param_values_extractor(query_params)
-        if filter_params:
-            for param in filter_params:
-                categories = categories.perform_lookup(*param)
-
-        categories = Sort(Category, categories.inst)
-        categories.set_sort_params(query_params)
-        categories.get_sorted_instances()
-        query = categories.inst
+        query = filter_and_sort_instances(query_params, query, Category)
 
     return paginate(
         query=query,
