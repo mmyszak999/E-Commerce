@@ -4,7 +4,7 @@ from fastapi_jwt_auth import AuthJWT
 
 from src.apps.user.schemas import UserOutputSchema
 from src.core.factories import EmailUpdateSchemaFactory, UserRegisterSchemaFactory
-from src.core.utils import generate_confirm_token
+from src.core.utils.utils import generate_confirm_token
 from tests.test_users.conftest import (
     auth_headers,
     db_staff_user,

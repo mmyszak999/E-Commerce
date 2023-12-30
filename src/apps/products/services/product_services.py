@@ -16,7 +16,7 @@ from src.core.exceptions import (
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
-from src.core.utils import filter_and_sort_instances, if_exists
+from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
 def create_product(

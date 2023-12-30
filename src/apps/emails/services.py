@@ -8,7 +8,7 @@ from src.apps.emails.schemas import EmailSchema, EmailUpdateSchema
 from src.apps.jwt.schemas import ConfirmationTokenSchema
 from src.apps.user.models import User
 from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
-from src.core.utils import (
+from src.core.utils.utils import (
     check_field_values,
     confirm_token,
     generate_confirm_token,

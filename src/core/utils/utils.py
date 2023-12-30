@@ -14,10 +14,10 @@ from sqlalchemy.orm.properties import RelationshipProperty
 
 from src.core.exceptions import ServiceException
 from src.core.filters import Lookup
+from src.core.utils.constants import PAGINATION_PARAMS_HEADERS, PARAM_HEADERS_WITHOUT_FILTERS, SORT_PARAMS_HEADER
 from src.core.sort import Sort
 from src.database.db_connection import Base
 from src.settings.general import settings
-
 
 
 def if_exists(model_class: Table, field: str, value: Any, session: Session):
@@ -64,7 +64,7 @@ def check_field_values(
 
 def filter_query_param_values_extractor(params_list):
     desired_params_list = [
-        param for param in params_list if param[0] not in ["sort", "page", "size"]
+        param for param in params_list if param[0] not in PARAM_HEADERS_WITHOUT_FILTERS
     ]
     for param in desired_params_list:
         key, value = param
@@ -79,7 +79,7 @@ def filter_query_param_values_extractor(params_list):
 def sort_query_param_values_extractor(
     params_list: list[tuple], model_class: Table
 ) -> dict[Any, str]:
-    params = [param for param in params_list if param[0] == "sort"]
+    params = [param for param in params_list if param[0] == SORT_PARAMS_HEADER]
     criteria = dict()
     if params:
         for criterion in params[0][1].split(","):
@@ -104,13 +104,13 @@ def sort_instances(query_params: list[tuple], instances, model):
 
 def filter_and_sort_instances(query_params: list[tuple], instances, model):
     params_keys = [param[0] for param in query_params]
-    pagination_keys = [param for param in params_keys if param in ["page", "size"]]
+    pagination_keys = [param for param in params_keys if param in PAGINATION_PARAMS_HEADERS]
     if pagination_keys == params_keys:
         return instances
 
     [params_keys.remove(value) for value in pagination_keys]
-    check_if_sort_key = "sort" in params_keys
-    filter_keys = [param for param in params_keys if param != "sort"]
+    check_if_sort_key = SORT_PARAMS_HEADER in params_keys
+    filter_keys = [param for param in params_keys if param != SORT_PARAMS_HEADER]
     if filter_keys:
         instances = filter_instances(query_params, instances, model)
 
@@ -120,7 +120,7 @@ def filter_and_sort_instances(query_params: list[tuple], instances, model):
     return instances
 
 
-def check_relationships(model, relationship_key: str):
+def get_model_from_key_name(model, relationship_key: str):
     mapper = class_mapper(model)
     for property in mapper.iterate_properties:
         if isinstance(property, RelationshipProperty) and property.key == relationship_key:

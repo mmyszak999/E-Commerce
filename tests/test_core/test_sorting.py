@@ -5,7 +5,7 @@ from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
 from src.apps.products.models import Category
 from src.apps.user.schemas import UserOutputSchema
 from src.core.factories import UserRegisterSchemaFactory, CategoryInputSchemaFactory, ProductInputSchemaFactory
-from src.core.utils import if_exists
+from src.core.utils.utils import if_exists
 from tests.test_core.conftest import db_categories, db_products, db_staff_user, db_user
 
 
@@ -29,7 +29,7 @@ def test_users_can_be_sorted_by_their_attributes(
     assert response.json()["results"][1]["email"] == new_user_1.email
     
     response = sync_client.get(
-        f"users/?sort=username__asc", headers=staff_auth_headers
+        "users/?sort=username__asc", headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["results"][0]["username"] == new_user_1.username
@@ -82,6 +82,4 @@ def test_products_can_be_sorted_by_their_attributes(
     
     response = sync_client.get("products/?sort=price__asc")
     assert response.json()["results"][0]["price"] == float(new_product_2.price)
-    
-
     

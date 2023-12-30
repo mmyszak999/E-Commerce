@@ -9,7 +9,7 @@ from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.orders.schemas import OrderInputSchema
 from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
 from src.apps.user.schemas import UserRegisterSchema
-from src.core.utils import initialize_faker
+from src.core.utils.utils import initialize_faker
 
 
 class SchemaFactory:
@@ -37,8 +37,8 @@ class UserRegisterSchemaFactory(SchemaFactory):
         password_repeat: str = "password",
     ):
         return self.schema_class(
-            first_name=self.faker.first_name(),
-            last_name=self.faker.last_name(),
+            first_name=first_name or self.faker.first_name(),
+            last_name=last_name or self.faker.last_name(),
             email=email or self.faker.ascii_email(),
             birth_date=birth_date or self.faker.date_of_birth(),
             username=username or self.faker.user_name(),

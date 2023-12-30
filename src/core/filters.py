@@ -1,4 +1,3 @@
-from ast import literal_eval
 import operator
 
 from sqlalchemy.sql.expression import Select
@@ -40,19 +39,19 @@ class Lookup(Select):
         super().__setattr__(key, value)
 
     def set_filter_params(self, query_params: list[tuple]) -> None:
-        from src.core.utils import filter_query_param_values_extractor
+        from src.core.utils.utils import filter_query_param_values_extractor
 
         self.filter_params = filter_query_param_values_extractor(query_params)
 
     def perform_lookup(self, field, operation, value):
-        from src.core.utils import check_relationships
+        from src.core.utils.utils import get_model_from_key_name
         
         if len(field.split("__")) == 1:
             self.field = field
             self.current_model = self.main_model
         else:
             key, self.field = field.split("__")
-            self.current_model = check_relationships(self.main_model, key)
+            self.current_model = get_model_from_key_name(self.main_model, key)
               
         res = getattr(operator, operation)(self, value)
         return Lookup(self.main_model, res, self.current_model)
