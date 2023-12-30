@@ -14,8 +14,12 @@ from sqlalchemy.orm.properties import RelationshipProperty
 
 from src.core.exceptions import ServiceException
 from src.core.filters import Lookup
-from src.core.utils.constants import PAGINATION_PARAMS_HEADERS, PARAM_HEADERS_WITHOUT_FILTERS, SORT_PARAMS_HEADER
 from src.core.sort import Sort
+from src.core.utils.constants import (
+    PAGINATION_PARAMS_HEADERS,
+    PARAM_HEADERS_WITHOUT_FILTERS,
+    SORT_PARAMS_HEADER,
+)
 from src.database.db_connection import Base
 from src.settings.general import settings
 
@@ -104,7 +108,9 @@ def sort_instances(query_params: list[tuple], instances, model):
 
 def filter_and_sort_instances(query_params: list[tuple], instances, model):
     params_keys = [param[0] for param in query_params]
-    pagination_keys = [param for param in params_keys if param in PAGINATION_PARAMS_HEADERS]
+    pagination_keys = [
+        param for param in params_keys if param in PAGINATION_PARAMS_HEADERS
+    ]
     if pagination_keys == params_keys:
         return instances
 
@@ -123,11 +129,14 @@ def filter_and_sort_instances(query_params: list[tuple], instances, model):
 def get_model_from_key_name(model, relationship_key: str):
     mapper = class_mapper(model)
     for property in mapper.iterate_properties:
-        if isinstance(property, RelationshipProperty) and property.key == relationship_key:
+        if (
+            isinstance(property, RelationshipProperty)
+            and property.key == relationship_key
+        ):
             for klass in Base.__subclasses__():
                 if klass.__tablename__ == property.target.name:
                     return klass
-    
+
 
 def send_email(
     schema: BaseModel,

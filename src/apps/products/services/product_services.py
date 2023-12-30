@@ -59,10 +59,16 @@ def get_single_product(session: Session, product_id: int) -> ProductOutputSchema
 def get_all_products(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
-    query = select(Product).options(joinedload(Product.categories, innerjoin=True)
-        ).join(category_product_association_table, Product.id == category_product_association_table.c.product_id
-        ).join(Category, category_product_association_table.c.category_id == Category.id)
-    
+    query = (
+        select(Product)
+        .options(joinedload(Product.categories, innerjoin=True))
+        .join(
+            category_product_association_table,
+            Product.id == category_product_association_table.c.product_id,
+        )
+        .join(Category, category_product_association_table.c.category_id == Category.id)
+    )
+
     if query_params:
         query = filter_and_sort_instances(query_params, query, Product)
 

@@ -7,15 +7,17 @@ class Sort:
         self.inst = inst
         self.current_model = current_model
         self.sort_params = None
-        
+
     def set_sort_params(self, query_params: list[tuple]) -> None:
         from src.core.utils.utils import sort_query_param_values_extractor
 
-        self.sort_params = sort_query_param_values_extractor(query_params, self.current_model)
+        self.sort_params = sort_query_param_values_extractor(
+            query_params, self.current_model
+        )
 
     def get_sorted_instances(self):
         from src.core.utils.utils import get_model_from_key_name
-        
+
         if self.sort_params:
             for field, sort_order in self.sort_params.items():
                 if len(field.split("__")) == 1:

@@ -1,7 +1,7 @@
 import operator
 
-from sqlalchemy.sql.expression import Select
 from sqlalchemy import select
+from sqlalchemy.sql.expression import Select
 
 from src.apps.products.models import Product
 
@@ -34,7 +34,7 @@ class Lookup(Select):
 
     def __ne__(self, other):
         return self.inst.filter(getattr(self.current_model, self.field) != other)
-    
+
     def __setattr__(self, key, value):
         super().__setattr__(key, value)
 
@@ -45,14 +45,14 @@ class Lookup(Select):
 
     def perform_lookup(self, field, operation, value):
         from src.core.utils.utils import get_model_from_key_name
-        
+
         if len(field.split("__")) == 1:
             self.field = field
             self.current_model = self.main_model
         else:
             key, self.field = field.split("__")
             self.current_model = get_model_from_key_name(self.main_model, key)
-              
+
         res = getattr(operator, operation)(self, value)
         return Lookup(self.main_model, res, self.current_model)
 
