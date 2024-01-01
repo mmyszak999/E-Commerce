@@ -89,7 +89,9 @@ def test_raise_exception_while_updating_nonexistent_user(
 ):
     with pytest.raises(DoesNotExist):
         update_data = {"first_name": "name"}
-        update_single_user(sync_session, UserUpdateSchema(**update_data), generate_uuid())
+        update_single_user(
+            sync_session, UserUpdateSchema(**update_data), generate_uuid()
+        )
 
 
 def test_if_user_can_update_their_username_to_occupied_one(

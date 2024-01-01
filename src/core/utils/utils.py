@@ -156,8 +156,7 @@ def send_email(
     background_tasks.add_task(
         fast_mail.send_message, email_message, template_name=schema.template_name
     )
-    
+
 
 def generate_uuid():
     return str(uuid.uuid4())
-

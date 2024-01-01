@@ -1,6 +1,6 @@
 import datetime
-from uuid import UUID
 from typing import Any, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field, validator
 

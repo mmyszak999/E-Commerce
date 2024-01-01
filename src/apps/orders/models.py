@@ -1,7 +1,7 @@
 import uuid
 
+from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, ForeignKey, Integer, Table, String
 from sqlalchemy.orm import relationship
 
 from src.core.utils.utils import generate_uuid
@@ -25,7 +25,9 @@ order_product_association_table = Table(
 
 class Order(Base):
     __tablename__ = "order"
-    id = Column(String, primary_key=True, unique=True, nullable=False, default=generate_uuid)
+    id = Column(
+        String, primary_key=True, unique=True, nullable=False, default=generate_uuid
+    )
     products = relationship(
         "Product", secondary=order_product_association_table, back_populates="orders"
     )
@@ -33,6 +35,6 @@ class Order(Base):
         String,
         ForeignKey("user.id", ondelete="cascade", onupdate="cascade"),
         nullable=False,
-        default=generate_uuid
+        default=generate_uuid,
     )
     user = relationship("User", back_populates="orders")
