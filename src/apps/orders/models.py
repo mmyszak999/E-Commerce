@@ -1,5 +1,3 @@
-import uuid
-
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship

@@ -19,7 +19,6 @@ try:
         port="${POSTGRES_PORT}",
     )
 
-    new_uuid = str(uuid.uuid4())
     cursor = connection.cursor()
     postgres_insert_query = f"""INSERT INTO "user"
     (ID, FIRST_NAME, LAST_NAME, EMAIL, USERNAME, PASSWORD, BIRTH_DATE, IS_SUPERUSER, IS_STAFF, IS_ACTIVE)
