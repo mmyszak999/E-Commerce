@@ -76,7 +76,7 @@ def get_logged_user_orders(
     status_code=status.HTTP_200_OK,
 )
 def get_order(
-    order_id: int,
+    order_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
@@ -91,7 +91,7 @@ def get_order(
     status_code=status.HTTP_200_OK,
 )
 def update_order(
-    order_id: int,
+    order_id: str,
     order: OrderUpdateSchema,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
@@ -106,7 +106,7 @@ def update_order(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_order(
-    order_id: int,
+    order_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> Response:

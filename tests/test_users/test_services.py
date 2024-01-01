@@ -17,6 +17,7 @@ from src.core.exceptions import (
 )
 from src.core.factories import UserRegisterSchemaFactory
 from src.core.pagination.models import PageParams
+from src.core.utils.utils import generate_uuid
 from tests.test_users.conftest import DB_USER_SCHEMA, register_user_without_activation
 
 
@@ -73,7 +74,7 @@ def test_raise_exception_while_getting_nonexistent_user(
     sync_session: Session, db_user: UserOutputSchema
 ):
     with pytest.raises(DoesNotExist):
-        get_single_user(sync_session, db_user.id + 2222222222)
+        get_single_user(sync_session, generate_uuid())
 
 
 def test_if_multiple_users_were_returned(
@@ -88,7 +89,7 @@ def test_raise_exception_while_updating_nonexistent_user(
 ):
     with pytest.raises(DoesNotExist):
         update_data = {"first_name": "name"}
-        update_single_user(sync_session, UserUpdateSchema(**update_data), 888888888)
+        update_single_user(sync_session, UserUpdateSchema(**update_data), generate_uuid())
 
 
 def test_if_user_can_update_their_username_to_occupied_one(
@@ -110,4 +111,4 @@ def test_raise_exception_while_deleting_nonexistent_user(
     sync_session: Session, db_user: UserOutputSchema
 ):
     with pytest.raises(DoesNotExist):
-        delete_single_user(sync_session, db_user.id + 2222222222)
+        delete_single_user(sync_session, generate_uuid())

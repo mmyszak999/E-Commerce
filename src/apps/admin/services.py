@@ -11,7 +11,7 @@ from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
 def modify_staff_permissions(
-    session: Session, user_id: int, set_as_staff: bool
+    session: Session, user_id: str, set_as_staff: bool
 ) -> dict[str, str]:
     if not (if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, user_id)
@@ -26,11 +26,11 @@ def modify_staff_permissions(
     }
 
 
-def grant_staff_permissions(session: Session, user_id: int) -> dict[str, str]:
+def grant_staff_permissions(session: Session, user_id: str) -> dict[str, str]:
     return modify_staff_permissions(session, user_id, set_as_staff=True)
 
 
-def revoke_staff_permissions(session: Session, user_id: int) -> dict[str, str]:
+def revoke_staff_permissions(session: Session, user_id: str) -> dict[str, str]:
     return modify_staff_permissions(session, user_id, set_as_staff=False)
 
 
