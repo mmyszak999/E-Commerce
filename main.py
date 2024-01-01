@@ -2,21 +2,20 @@ from fastapi import APIRouter, FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth.exceptions import AuthJWTException
 
+from src.apps.admin.routers import admin_router
+from src.apps.emails.routers import email_router
 from src.apps.jwt.routers import jwt_router
 from src.apps.orders.routers import order_router
 from src.apps.products.routers import category_router, product_router
-from src.apps.orders.routers import order_router
-from src.apps.emails.routers import email_router
 from src.apps.user.routers import user_router
-from src.apps.admin.routers import admin_router
 from src.core.exceptions import (
+    AccountNotActivatedException,
     AlreadyExists,
     AuthenticationException,
     AuthorizationException,
     DoesNotExist,
     IsOccupied,
     ServiceException,
-    AccountNotActivatedException
 )
 
 app = FastAPI()

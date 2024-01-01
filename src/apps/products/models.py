@@ -1,7 +1,9 @@
 from sqlalchemy import Column, ForeignKey, Integer, Numeric, String, Table
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from src.apps.orders.models import order_product_association_table
+from src.core.utils.utils import generate_uuid
 from src.database.db_connection import Base
 
 category_product_association_table = Table(
@@ -22,7 +24,9 @@ category_product_association_table = Table(
 
 class Category(Base):
     __tablename__ = "category"
-    id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    id = Column(
+        String, primary_key=True, unique=True, nullable=False, default=generate_uuid
+    )
     name = Column(String(length=75), nullable=False, unique=True)
     products = relationship(
         "Product",
@@ -33,7 +37,9 @@ class Category(Base):
 
 class Product(Base):
     __tablename__ = "product"
-    id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    id = Column(
+        String, primary_key=True, unique=True, nullable=False, default=generate_uuid
+    )
     name = Column(String(length=75), nullable=False, unique=True)
     price = Column(Numeric, nullable=False)
     categories = relationship(

@@ -1,5 +1,6 @@
 import datetime
 from typing import Any, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field, validator
 
@@ -48,7 +49,7 @@ class UserUpdateSchema(BaseModel):
 
 
 class UserInfoOutputSchema(UserBaseSchema):
-    id: int
+    id: str
     is_active: bool
 
     class Config:
@@ -56,7 +57,7 @@ class UserInfoOutputSchema(UserBaseSchema):
 
 
 class UserOutputSchema(UserBaseSchema):
-    id: int
+    id: str
     is_active: bool
     is_superuser: bool
     is_staff: bool

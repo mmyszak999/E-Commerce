@@ -12,6 +12,7 @@ from src.apps.products.services.product_services import (
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
 from src.core.factories import ProductInputSchemaFactory
 from src.core.pagination.models import PageParams
+from src.core.utils.utils import generate_uuid
 from tests.test_products.conftest import DB_PRODUCT_SCHEMAS
 
 
@@ -34,7 +35,7 @@ def test_raise_exception_while_getting_nonexistent_product(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
     with pytest.raises(DoesNotExist):
-        get_single_product(sync_session, len(db_products) + 2)
+        get_single_product(sync_session, generate_uuid())
 
 
 def test_if_multiple_products_were_returned(
@@ -49,7 +50,7 @@ def test_raise_exception_while_updating_nonexistent_product(
 ):
     update_data = ProductInputSchemaFactory().generate()
     with pytest.raises(DoesNotExist):
-        update_single_product(sync_session, update_data, len(db_products) + 2)
+        update_single_product(sync_session, update_data, generate_uuid())
 
 
 def test_if_product_can_have_occupied_name(
@@ -64,4 +65,4 @@ def test_raise_exception_while_deleting_nonexistent_product(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
     with pytest.raises(DoesNotExist):
-        delete_single_product(sync_session, len(db_products) + 2)
+        delete_single_product(sync_session, generate_uuid())

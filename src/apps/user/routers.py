@@ -86,7 +86,7 @@ def get_users(
     status_code=status.HTTP_200_OK,
 )
 def get_user(
-    user_id: int,
+    user_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> UserOutputSchema:
@@ -101,7 +101,7 @@ def get_user(
 )
 def get_user_orders(
     request: Request,
-    user_id: int,
+    user_id: str,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
@@ -118,7 +118,7 @@ def get_user_orders(
     status_code=status.HTTP_200_OK,
 )
 def update_user(
-    user_id: int,
+    user_id: str,
     user: UserUpdateSchema,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
@@ -132,7 +132,7 @@ def update_user(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_user(
-    user_id: int,
+    user_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> Response:

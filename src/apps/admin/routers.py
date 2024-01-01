@@ -53,7 +53,7 @@ def get_staff_users(
     "/grant-staff-permissions/{user_id}", status_code=status.HTTP_200_OK
 )
 def grant_staff_status(
-    user_id: int,
+    user_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ):
@@ -65,7 +65,7 @@ def grant_staff_status(
     "/revoke-staff-permissions/{user_id}", status_code=status.HTTP_200_OK
 )
 def revoke_staff_status(
-    user_id: int,
+    user_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ):

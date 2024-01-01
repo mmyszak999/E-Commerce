@@ -6,7 +6,7 @@ from src.apps.products.schemas import ProductOutputSchema
 
 
 class OrderBaseSchema(BaseModel):
-    product_ids: list[int]
+    product_ids: list[str]
 
 
 class OrderInputSchema(OrderBaseSchema):
@@ -14,11 +14,11 @@ class OrderInputSchema(OrderBaseSchema):
 
 
 class OrderUpdateSchema(BaseModel):
-    product_ids: Optional[list[int]]
+    product_ids: Optional[list[str]]
 
 
 class OrderOutputSchema(BaseModel):
-    id: int
+    id: str
     products: list[ProductOutputSchema]
 
     class Config:

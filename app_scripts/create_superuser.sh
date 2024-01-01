@@ -7,6 +7,7 @@ set -o nounset
 create_superuser() {
 python << END
 import sys
+import uuid
 
 import psycopg2
 try:
@@ -19,9 +20,9 @@ try:
     )
 
     cursor = connection.cursor()
-    postgres_insert_query = """INSERT INTO "user"
-    (FIRST_NAME, LAST_NAME, EMAIL, USERNAME, PASSWORD, BIRTH_DATE, IS_SUPERUSER, IS_STAFF, IS_ACTIVE)
-    VALUES ('${SUPERUSER_FIRST_NAME}', '${SUPERUSER_LAST_NAME}', '${SUPERUSER_EMAIL}',
+    postgres_insert_query = f"""INSERT INTO "user"
+    (ID, FIRST_NAME, LAST_NAME, EMAIL, USERNAME, PASSWORD, BIRTH_DATE, IS_SUPERUSER, IS_STAFF, IS_ACTIVE)
+    VALUES ('{uuid.uuid4()}', '${SUPERUSER_FIRST_NAME}', '${SUPERUSER_LAST_NAME}', '${SUPERUSER_EMAIL}',
     '${SUPERUSER_USERNAME}', '${SUPERUSER_PASSWORD}', '${SUPERUSER_BIRTHDATE}', TRUE, TRUE, TRUE)
     """
     cursor.execute(postgres_insert_query)

@@ -12,6 +12,7 @@ from src.apps.products.services.category_services import (
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
 from src.core.factories import CategoryInputSchemaFactory
 from src.core.pagination.models import PageParams
+from src.core.utils.utils import generate_uuid
 from tests.test_products.conftest import DB_CATEGORY_SCHEMAS
 
 
@@ -34,7 +35,7 @@ def test_raise_exception_while_getting_nonexistent_category(
     sync_session: Session, db_categories: list[CategoryOutputSchema]
 ):
     with pytest.raises(DoesNotExist):
-        get_single_category(sync_session, len(db_categories) + 2)
+        get_single_category(sync_session, generate_uuid())
 
 
 def test_if_multiple_categories_were_returned(
@@ -49,7 +50,7 @@ def test_raise_exception_while_updating_nonexistent_category(
 ):
     update_data = CategoryInputSchemaFactory().generate()
     with pytest.raises(DoesNotExist):
-        update_single_category(sync_session, update_data, len(db_categories) + 2)
+        update_single_category(sync_session, update_data, generate_uuid())
 
 
 def test_if_category_can_have_occupied_name(
@@ -66,4 +67,4 @@ def test_raise_exception_while_deleting_nonexistent_category(
     sync_session: Session, db_categories: list[CategoryOutputSchema]
 ):
     with pytest.raises(DoesNotExist):
-        delete_single_category(sync_session, len(db_categories) + 2)
+        delete_single_category(sync_session, generate_uuid())

@@ -17,7 +17,7 @@ class CategoryUpdateSchema(BaseModel):
 
 
 class CategoryOutputSchema(CategoryBaseSchema):
-    id: int
+    id: str
 
     class Config:
         orm_mode = True
@@ -29,11 +29,11 @@ class ProductBaseSchema(BaseModel):
 
 
 class ProductInputSchema(ProductBaseSchema):
-    category_ids: Optional[list[int]] = []
+    category_ids: Optional[list[str]] = []
 
 
 class ProductOutputSchema(ProductBaseSchema):
-    id: int
+    id: str
     categories: list[CategoryOutputSchema] = []
 
     class Config:
