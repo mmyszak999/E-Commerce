@@ -42,7 +42,7 @@ def test_staff_can_get_users(
     sync_client: TestClient, staff_auth_headers: dict[str, str]
 ):
     response = sync_client.get("users/", headers=staff_auth_headers)
-
+    
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["total"] == 2
 
@@ -53,6 +53,7 @@ def test_staff_can_get_single_user(
     db_user: UserOutputSchema,
 ):
     response = sync_client.get(f"users/{db_user.id}", headers=staff_auth_headers)
+    print(response.json())
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
 

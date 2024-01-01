@@ -57,6 +57,7 @@ def test_superuser_can_grant_staff_permissions(
         f"admin/grant-staff-permissions/{db_user.id}",
         headers=superuser_auth_headers,
     )
+    print(response.json(), db_user)
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["message"] == "Staff status has been granted successfully"
 

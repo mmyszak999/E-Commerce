@@ -106,7 +106,7 @@ def get_access_token_schema(
     return AccessTokenOutputSchema(access_token=access_token)
 
 
-def get_single_user(session: Session, user_id: int) -> UserOutputSchema:
+def get_single_user(session: Session, user_id: str) -> UserOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, "id", user_id)
 
