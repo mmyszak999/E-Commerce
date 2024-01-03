@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.apps.user.schemas import UserOutputSchema, UserUpdateSchema
-from src.apps.user.services import (
+from src.apps.user.services.user_services import (
     activate_account,
     delete_single_user,
     get_all_users,

@@ -6,7 +6,7 @@ from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
 from src.apps.user.schemas import UserOutputSchema, UserRegisterSchema
-from src.apps.user.services import register_user_base
+from src.apps.user.services.user_services import register_user_base
 from src.core.factories import UserRegisterSchemaFactory
 
 DB_USER_SCHEMA = UserRegisterSchemaFactory().generate()

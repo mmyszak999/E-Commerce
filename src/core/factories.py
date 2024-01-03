@@ -3,7 +3,7 @@ from datetime import datetime
 
 from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.orders.schemas import OrderInputSchema
-from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
+from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema, InventoryInputSchema
 from src.apps.user.schemas import UserRegisterSchema, AddressInputSchema
 from src.core.utils.utils import initialize_faker
 
@@ -68,8 +68,6 @@ class AddressInputSchemaFactory(SchemaFactory):
         )
 
 
-
-
 class CategoryInputSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=CategoryInputSchema):
         super().__init__(schema_class)
@@ -80,16 +78,35 @@ class CategoryInputSchemaFactory(SchemaFactory):
         )
 
 
+class InventoryInputSchemaFactory(SchemaFactory):
+    def __init__(self, schema_class=InventoryInputSchema):
+        super().__init__(schema_class)
+
+    def generate(
+        self, quantity: int = None,
+    ):
+        return self.schema_class(
+            quantity=quantity or self.faker.random_int(min=1)
+        )
+
+
 class ProductInputSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=ProductInputSchema):
         super().__init__(schema_class)
 
     def generate(
-        self, name: str = None, price: str = None, category_ids: list[str] = []
+        self,
+        inventory_id: str,
+        name: str = None,
+        price: str = None,
+        description: str = None,
+        category_ids: list[str] = [],
     ):
         return self.schema_class(
+            inventory_id=inventory_id
             name=name or self.faker.ecommerce_name(),
             price=price or self.faker.ecommerce_price(),
+            description=description or self.faker.sentence(),
             category_ids=category_ids,
         )
 

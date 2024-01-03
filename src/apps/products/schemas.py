@@ -23,18 +23,37 @@ class CategoryOutputSchema(CategoryBaseSchema):
         orm_mode = True
 
 
+class InventoryBaseSchema(BaseModel):
+    quantity: int
+
+
+class InventoryInputSchema(InventoryBaseSchema):
+    pass
+
+
+class InventoryOutputSchema(InventoryBaseSchema):
+    id: str
+    sold: int
+    
+    class Config:
+        orm_mode = True
+
+
 class ProductBaseSchema(BaseModel):
     name: str = Field(max_length=75)
     price: Decimal
+    description: str
 
 
 class ProductInputSchema(ProductBaseSchema):
     category_ids: Optional[list[str]] = []
+    inventory_id: str
 
 
 class ProductOutputSchema(ProductBaseSchema):
     id: str
     categories: list[CategoryOutputSchema] = []
+    inventory: InventoryOutputSchema
 
     class Config:
         orm_mode = True

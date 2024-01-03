@@ -14,7 +14,7 @@ from src.apps.user.schemas import (
     UserRegisterSchema,
     UserUpdateSchema,
 )
-from src.apps.user.services import (
+from src.apps.user.services.user_services import (
     delete_single_user,
     get_access_token_schema,
     get_all_users,

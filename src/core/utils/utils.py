@@ -3,7 +3,7 @@ from random import randint
 from typing import Any
 
 from faker import Faker
-from faker.providers import date_time, internet, misc, person
+from faker.providers import date_time, internet, misc, person, address, lorem
 from faker_commerce import Provider as commerce_provider
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema
@@ -40,6 +40,7 @@ def initialize_faker():
     faker.add_provider(misc)
     faker.add_provider(commerce_provider)
     faker.add_provider(address)
+    faker.add_provider(lorem)
 
     return faker
 

@@ -42,6 +42,7 @@ class Product(Base):
     )
     name = Column(String(length=75), nullable=False, unique=True)
     price = Column(Numeric, nullable=False)
+    description = Column(String(length=300), nullable=True)
     inventory_id = Column(
         String,
         ForeignKey("product_inventory.id", ondelete="cascade", onupdate="cascade"),

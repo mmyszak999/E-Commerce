@@ -66,7 +66,7 @@ class UserOutputSchema(UserBaseSchema):
         orm_mode = True
 
 
-class AddressInputSchema(BaseModel):
+class AddressBaseSchema(BaseModel):
     country: str
     state: str
     city: str
@@ -76,5 +76,15 @@ class AddressInputSchema(BaseModel):
     apartment_number: str
 
 
-class AddressOutputSchema(AddressInputSchema):
+class AddressInputSchema(AddressBaseSchema):
+    pass
+
+    class Config:
+        orm_mode = True
+
+
+class AddressOutputSchema(AddressBaseSchema):
     id: str
+    
+    class Config:
+        orm_mode = True
