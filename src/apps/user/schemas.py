@@ -64,3 +64,17 @@ class UserOutputSchema(UserBaseSchema):
 
     class Config:
         orm_mode = True
+
+
+class AddressInputSchema(BaseModel):
+    country: str
+    state: str
+    city: str
+    postal_code: str
+    street: str
+    house_number: str
+    apartment_number: str
+
+
+class AddressOutputSchema(AddressInputSchema):
+    id: str

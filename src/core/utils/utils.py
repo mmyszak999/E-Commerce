@@ -39,6 +39,7 @@ def initialize_faker():
     faker.add_provider(date_time)
     faker.add_provider(misc)
     faker.add_provider(commerce_provider)
+    faker.add_provider(address)
 
     return faker
 

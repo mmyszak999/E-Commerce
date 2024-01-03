@@ -4,7 +4,7 @@ from datetime import datetime
 from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.orders.schemas import OrderInputSchema
 from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema
-from src.apps.user.schemas import UserRegisterSchema
+from src.apps.user.schemas import UserRegisterSchema, AddressInputSchema
 from src.core.utils.utils import initialize_faker
 
 
@@ -43,6 +43,33 @@ class UserRegisterSchemaFactory(SchemaFactory):
         )
 
 
+class AddressInputSchemaFactory(SchemaFactory):
+    def __init__(self, schema_class=AddressInputSchema):
+        super().__init__(schema_class)
+
+    def generate(
+        self,
+        country: str = None,
+        state: str = None,
+        city: str = None,
+        postal_code: str = None,
+        street: str = None,
+        house_number: str = None,
+        apartment_number: str = None,
+    ):
+        return self.schema_class(
+            country=country or self.faker.country(),
+            state=state or self.faker.state(),
+            city=city or self.faker.city(),
+            postal_code=postal_code or self.faker.postcode(),
+            street=street or self.faker.street_name(),
+            house_number=house_number or self.faker.building_number(),
+            apartment_number=apartment_number or self.faker.self.faker.building_number(),
+        )
+
+
+
+
 class CategoryInputSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=CategoryInputSchema):
         super().__init__(schema_class)
@@ -58,7 +85,7 @@ class ProductInputSchemaFactory(SchemaFactory):
         super().__init__(schema_class)
 
     def generate(
-        self, name: str = None, price: str = None, category_ids: list[int] = []
+        self, name: str = None, price: str = None, category_ids: list[str] = []
     ):
         return self.schema_class(
             name=name or self.faker.ecommerce_name(),
@@ -71,7 +98,7 @@ class OrderInputSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=OrderInputSchema):
         super().__init__(schema_class)
 
-    def generate(self, product_ids: list[int] = []):
+    def generate(self, product_ids: list[str] = []):
         return self.schema_class(product_ids=product_ids)
 
 
@@ -86,3 +113,4 @@ class EmailUpdateSchemaFactory(SchemaFactory):
             email=email,
             new_email=new_email,
         )
+
