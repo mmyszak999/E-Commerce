@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session, joinedload
 from src.apps.products.models import (
     Category,
     Product,
+    ProductInventory,
     category_product_association_table,
 )
 from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema
@@ -24,28 +25,35 @@ def create_product(
 ) -> ProductOutputSchema:
     product_data = product.dict()
 
-    if product_data:
-        if product_data.get("name"):
-            name_check = session.scalar(
-                select(Product).filter(Product.name == product_data["name"]).limit(1)
-            )
-            if name_check:
-                raise AlreadyExists(Product.__name__, "name", product.name)
+    if product_data.get("name"):
+        name_check = session.scalar(
+            select(Product).filter(Product.name == product_data["name"]).limit(1)
+        )
+        if name_check:
+            raise AlreadyExists(Product.__name__, "name", product.name)
 
-        if product_data.get("category_ids"):
-            category_ids = product_data.pop("category_ids")
-            categories = session.scalars(
-                select(Category).where(Category.id.in_(category_ids))
-            ).all()
-            if not len(set(category_ids)) == len(categories):
-                raise ServiceException("Wrong categories!")
+    if category_ids := product_data.pop("category_ids"):
+        categories = session.scalars(
+            select(Category).where(Category.id.in_(category_ids))
+        ).all()
+        if not len(set(category_ids)) == len(categories):
+            raise ServiceException("Wrong categories!")
 
-            product_data["categories"] = categories
-
-        new_product = Product(**product_data)
-        session.add(new_product)
+        product_data["categories"] = categories
+    
+    if product_data.get("inventory"):
+        inventory_data = product_data.pop("inventory")
+        new_inventory = ProductInventory(quantity=inventory_data["quantity"])
+        session.add(new_inventory)
         session.commit()
+        product_data["inventory_id"] = new_inventory.id
+        
 
+    new_product = Product(**product_data)
+    session.add(new_product)
+    session.commit()
+    session.refresh(new_product)
+    
     return ProductOutputSchema.from_orm(new_product)
 
 

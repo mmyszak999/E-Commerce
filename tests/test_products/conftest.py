@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 
 from src.apps.products.services.category_services import create_category
 from src.apps.products.services.product_services import create_product
-from src.core.factories import CategoryInputSchemaFactory, ProductInputSchemaFactory
+from src.core.utils.utils import if_exists
+from src.core.factories import CategoryInputSchemaFactory, ProductInputSchemaFactory, InventoryInputSchemaFactory
 from tests.test_users.conftest import (
     auth_headers,
     create_superuser,
@@ -15,11 +16,9 @@ from tests.test_users.conftest import (
 
 DB_CATEGORY_SCHEMAS = [CategoryInputSchemaFactory().generate() for _ in range(3)]
 
-EXISTING_CATEGORY_DATA = DB_CATEGORY_SCHEMAS[0]
+DB_INVENTORY_SCHEMAS = [InventoryInputSchemaFactory().generate() for _ in range(3)]
 
 DB_PRODUCT_SCHEMAS = [ProductInputSchemaFactory().generate() for _ in range(3)]
-
-EXISTING_PRODUCT_DATA = DB_PRODUCT_SCHEMAS[0]
 
 
 @pytest.fixture

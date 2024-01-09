@@ -103,7 +103,7 @@ class ProductInputSchemaFactory(SchemaFactory):
         category_ids: list[str] = [],
     ):
         return self.schema_class(
-            inventory_id=inventory_id
+            inventory_id=inventory_id,
             name=name or self.faker.ecommerce_name(),
             price=price or self.faker.ecommerce_price(),
             description=description or self.faker.sentence(),
