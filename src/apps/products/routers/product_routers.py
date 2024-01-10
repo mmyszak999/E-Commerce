@@ -5,13 +5,17 @@ from sqlalchemy.orm import Session
 from src.apps.products.schemas import (
     ProductInputSchema,
     ProductOutputSchema,
+    InventoryOutputSchema
 )
 from src.apps.products.services.product_services import (
     create_product,
     delete_single_product,
     get_all_products,
-    get_single_product,
+    get_single_product_or_inventory,
     update_single_product,
+)
+from src.apps.products.services.inventory_services import (
+    get_single_inventory
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -55,7 +59,20 @@ def get_products(
     status_code=status.HTTP_200_OK,
 )
 def get_product(product_id: str, db: Session = Depends(get_db)) -> ProductOutputSchema:
-    return get_single_product(db, product_id)
+    return get_single_product_or_inventory(db, product_id)
+
+@product_router.get(
+    "/{product_id}/inventory",
+    response_model=InventoryOutputSchema,
+    status_code=status.HTTP_200_OK,
+)
+def get_product_inventory(
+    product_id: str,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> InventoryOutputSchema:
+    check_if_staff(request_user)
+    return get_single_product_or_inventory(db, product_id, get_inventory=True)
 
 
 @product_router.patch(

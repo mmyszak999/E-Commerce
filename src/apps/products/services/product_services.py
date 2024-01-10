@@ -1,3 +1,5 @@
+from typing import Union
+
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload
 
@@ -7,7 +9,7 @@ from src.apps.products.models import (
     ProductInventory,
     category_product_association_table,
 )
-from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema
+from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema, InventoryOutputSchema
 from src.core.exceptions import (
     AlreadyExists,
     DoesNotExist,
@@ -57,11 +59,15 @@ def create_product(
     return ProductOutputSchema.from_orm(new_product)
 
 
-def get_single_product(session: Session, product_id: int) -> ProductOutputSchema:
+def get_single_product_or_inventory(
+    session: Session, product_id: int, get_inventory=False
+    ) -> Union[ProductOutputSchema, InventoryOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
 
-    return ProductOutputSchema.from_orm(product_object)
+    if not get_inventory:  
+        return ProductOutputSchema.from_orm(product_object)
+    return InventoryOutputSchema.from_orm(product_object.inventory)
 
 
 def get_all_products(
