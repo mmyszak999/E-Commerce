@@ -7,6 +7,7 @@ from src.core.factories import (
     CategoryInputSchemaFactory,
     ProductInputSchemaFactory,
     UserRegisterSchemaFactory,
+    InventoryInputSchemaFactory
 )
 from tests.test_core.conftest import db_categories, db_products, db_staff_user, db_user
 
@@ -74,11 +75,15 @@ def test_products_can_be_filtered_by_their_attributes(
     db_products: list[ProductOutputSchema],
     db_categories: list[CategoryOutputSchema],
 ):
+    
+    new_inventory_1 = InventoryInputSchemaFactory().generate()
     new_product_1 = ProductInputSchemaFactory().generate(
-        category_ids=[db_categories[0].id]
+        category_ids=[db_categories[0].id], inventory=new_inventory_1
     )
+    
+    new_inventory_2 = InventoryInputSchemaFactory().generate()
     new_product_2 = ProductInputSchemaFactory().generate(
-        category_ids=[db_categories[1].id, db_categories[2].id], price=0.09
+        category_ids=[db_categories[1].id, db_categories[2].id], price=0.09, inventory=new_inventory_2
     )
     response = sync_client.post(
         "products/", data=new_product_1.json(), headers=staff_auth_headers

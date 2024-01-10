@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from src.apps.products.schemas import (
     ProductInputSchema,
     ProductOutputSchema,
-    InventoryOutputSchema
+    InventoryOutputSchema,
+    ProductUpdateSchema
 )
 from src.apps.products.services.product_services import (
     create_product,
@@ -82,7 +83,7 @@ def get_product_inventory(
 )
 def update_product(
     product_id: str,
-    product: ProductInputSchema,
+    product: ProductUpdateSchema,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> ProductOutputSchema:

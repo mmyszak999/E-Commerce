@@ -78,3 +78,16 @@ def update_category(
 ) -> CategoryOutputSchema:
     check_if_staff(request_user)
     return update_single_category(db, category, category_id)
+
+@category_router.delete(
+    "/{category_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_category(
+    category_id: str,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> Response:
+    check_if_staff(request_user)
+    delete_single_category(db, category_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

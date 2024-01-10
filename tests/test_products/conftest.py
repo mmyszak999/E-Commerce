@@ -18,7 +18,7 @@ DB_CATEGORY_SCHEMAS = [CategoryInputSchemaFactory().generate() for _ in range(3)
 
 DB_INVENTORY_SCHEMAS = [InventoryInputSchemaFactory().generate() for _ in range(3)]
 
-DB_PRODUCT_SCHEMAS = [ProductInputSchemaFactory().generate() for _ in range(3)]
+DB_PRODUCT_SCHEMAS = [ProductInputSchemaFactory().generate(inventory=DB_INVENTORY_SCHEMAS[index]) for index in range(3)]
 
 
 @pytest.fixture
@@ -28,9 +28,9 @@ def db_categories(sync_session: Session):
 
 @pytest.fixture
 def db_products(sync_session: Session, db_categories):
-    for product in DB_PRODUCT_SCHEMAS:
+    for index, product in enumerate(DB_PRODUCT_SCHEMAS):
         category_id = db_categories[
-            DB_PRODUCT_SCHEMAS.index(product)
+            index
         ].id  # gets a category with the same id as the schema list index
         product.category_ids = [
             category_id

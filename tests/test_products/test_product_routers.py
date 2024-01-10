@@ -1,8 +1,8 @@
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
-from src.core.factories import ProductInputSchemaFactory
+from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema, InventoryOutputSchema
+from src.core.factories import ProductInputSchemaFactory, InventoryInputSchemaFactory, ProductUpdateSchemaFactory
 
 
 def test_staff_can_create_product(
@@ -10,8 +10,9 @@ def test_staff_can_create_product(
     staff_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
 ):
+    inventory_data = InventoryInputSchemaFactory().generate()
     product_data = ProductInputSchemaFactory().generate(
-        category_ids=[db_categories[0].id]
+        category_ids=[db_categories[0].id], inventory=inventory_data
     )
     response = sync_client.post(
         "products/", data=product_data.json(), headers=staff_auth_headers
@@ -54,20 +55,22 @@ def test_staff_can_update_product(
     sync_client: TestClient,
     staff_auth_headers: dict[str, str],
     db_products: list[ProductOutputSchema],
-    db_categories: list[CategoryOutputSchema],
+    db_categories: list[CategoryOutputSchema]
 ):
-    update_data = ProductInputSchemaFactory().generate(
+    
+    update_data = ProductUpdateSchemaFactory().generate(
         category_ids=[db_categories[0].id]
     )
+    
     response = sync_client.patch(
         f"products/{db_products[0].id}",
         data=update_data.json(),
         headers=staff_auth_headers,
     )
+    print(response.json())
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["name"] == update_data.name
-    assert response.json()["price"] == float(update_data.price)
+    assert response.json()["categories"][0]["id"] == update_data.category_ids[0]
 
 
 def test_staff_can_delete_product(
@@ -86,7 +89,7 @@ def test_authenticated_user_cannot_update_product(
     auth_headers: dict[str, str],
     db_products: list[CategoryOutputSchema],
 ):
-    update_data = ProductInputSchemaFactory().generate()
+    update_data = ProductUpdateSchemaFactory().generate()
     response = sync_client.patch(
         f"products/{db_products[0].id}", headers=auth_headers, data=update_data.json()
     )
@@ -96,7 +99,7 @@ def test_authenticated_user_cannot_update_product(
 def test_anonymous_user_cannot_update_product(
     sync_client: TestClient,
 ):
-    update_data = ProductInputSchemaFactory().generate()
+    update_data = ProductUpdateSchemaFactory().generate()
     response = sync_client.patch("products/1", data=update_data.json())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"

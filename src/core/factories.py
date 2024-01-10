@@ -1,9 +1,10 @@
 from abc import abstractmethod
 from datetime import datetime
+from typing import Optional
 
 from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.orders.schemas import OrderInputSchema
-from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema, InventoryInputSchema
+from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema, InventoryInputSchema, ProductUpdateSchema
 from src.apps.user.schemas import UserRegisterSchema, AddressInputSchema
 from src.core.utils.utils import initialize_faker
 
@@ -96,18 +97,38 @@ class ProductInputSchemaFactory(SchemaFactory):
 
     def generate(
         self,
-        inventory_id: str,
+        inventory: InventoryInputSchema,
+        category_ids: list[str] = [],
         name: str = None,
         price: str = None,
         description: str = None,
-        category_ids: list[str] = [],
     ):
         return self.schema_class(
-            inventory_id=inventory_id,
+            inventory=inventory,
+            category_ids=category_ids,
             name=name or self.faker.ecommerce_name(),
             price=price or self.faker.ecommerce_price(),
             description=description or self.faker.sentence(),
+        )
+
+class ProductUpdateSchemaFactory(SchemaFactory):
+    def __init__(self, schema_class=ProductUpdateSchema):
+        super().__init__(schema_class)
+
+    def generate(
+        self,
+        inventory: Optional[InventoryInputSchema] = None,
+        category_ids: Optional[list[str]] = None,
+        name: Optional[str] = None,
+        price: Optional[str] = None ,
+        description: Optional[str] = None,
+    ):
+        return self.schema_class(
+            inventory=inventory,
             category_ids=category_ids,
+            name=name,
+            price=price,
+            description=description,
         )
 
 

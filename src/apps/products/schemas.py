@@ -37,6 +37,16 @@ class InventoryInputSchema(InventoryBaseSchema):
     pass
 
 
+class InventoryUpdateSchema(BaseModel):
+    quantity: Optional[int]
+    
+    @validator("quantity")
+    def validate_quantity(cls, quantity: int) -> str:
+        if quantity < 0:
+            raise ValueError("Quantity of a product must be a positive integer!")
+        return quantity
+
+
 class InventoryOutputSchema(InventoryBaseSchema):
     id: str
     sold: int
@@ -54,6 +64,14 @@ class ProductBaseSchema(BaseModel):
 class ProductInputSchema(ProductBaseSchema):
     category_ids: Optional[list[str]]
     inventory: InventoryInputSchema
+
+
+class ProductUpdateSchema(ProductBaseSchema):
+    name: Optional[str]
+    price: Optional[Decimal]
+    description: Optional[str]
+    category_ids: Optional[list[str]]
+    inventory: Optional[InventoryInputSchema]
 
 
 class ProductOutputSchema(ProductBaseSchema):

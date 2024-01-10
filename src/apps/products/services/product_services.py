@@ -9,7 +9,9 @@ from src.apps.products.models import (
     ProductInventory,
     category_product_association_table,
 )
-from src.apps.products.schemas import ProductInputSchema, ProductOutputSchema, InventoryOutputSchema
+from src.apps.products.schemas import (ProductInputSchema, ProductOutputSchema,
+        InventoryOutputSchema, ProductUpdateSchema
+        )
 from src.core.exceptions import (
     AlreadyExists,
     DoesNotExist,
@@ -96,52 +98,53 @@ def get_all_products(
 
 
 def update_single_product(
-    session: Session, product_input: ProductInputSchema, product_id: int
+    session: Session, product_input: ProductUpdateSchema, product_id: int
 ) -> ProductOutputSchema:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
 
-    product_data = product_input.dict(exclude_unset=True)
+    product_data = product_input.dict(exclude_unset=True, exclude_none=True)
 
-    if product_data:
-        if product_data.get("name"):
-            product_name_check = session.scalar(
-                select(Product).filter(Product.name == product_input.name).limit(1)
-            )
-            if product_name_check and (product_name_check.id != product_id):
-                raise IsOccupied(Product.__name__, "name", product_input.name)
+    if product_data.get("name"):
+        product_name_check = session.scalar(
+            select(Product).filter(Product.name == product_input.name).limit(1)
+        )
+        if product_name_check and (product_name_check.id != product_id):
+            raise IsOccupied(Product.__name__, "name", product_input.name)
 
-        if product_data.get("category_ids"):
-            incoming_categories = set(product_data["category_ids"])
-            current_categories = set(
-                category.id for category in product_object.categories
-            )
-
-            if to_delete := current_categories - incoming_categories:
-                session.execute(
-                    delete(category_product_association_table).where(
-                        Category.id.in_(to_delete)
-                    )
-                )
-
-            if to_insert := incoming_categories - current_categories:
-                rows = [
-                    {"product_id": product_id, "category_id": category_id}
-                    for category_id in to_insert
-                ]
-                session.execute(insert(category_product_association_table).values(rows))
-
-            product_data.pop("category_ids")
-
-        statement = (
-            update(Product).filter(Product.id == product_id).values(**product_data)
+    if product_data.get("category_ids"):
+        incoming_categories = set(product_data["category_ids"])
+        current_categories = set(
+            category.id for category in product_object.categories
         )
 
-        session.execute(statement)
-        session.commit()
-        session.refresh(product_object)
+        if to_delete := current_categories - incoming_categories:
+            session.execute(
+                delete(category_product_association_table).where(
+                    Category.id.in_(to_delete)
+                )
+            )
 
-    return get_single_product(session, product_id=product_id)
+        if to_insert := incoming_categories - current_categories:
+            rows = [
+                {"product_id": product_id, "category_id": category_id}
+                for category_id in to_insert
+            ]
+            session.execute(insert(category_product_association_table).values(rows))
+            
+        
+        product_data.pop("category_ids")
+        
+        if product_data:
+            statement = (
+                update(Product).filter(Product.id == product_id).values(**product_data)
+            )
+
+            session.execute(statement)
+            session.commit()
+            session.refresh(product_object)
+
+    return get_single_product_or_inventory(session, product_id=product_id)
 
 
 def delete_single_product(session: Session, product_id: int):
