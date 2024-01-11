@@ -51,6 +51,30 @@ def test_anonymous_user_get_single_product(
     assert response.json()["id"] == db_products[1].id
 
 
+def test_staff_can_get_product_inventory(
+    sync_client: TestClient,
+    staff_auth_headers: dict[str, str],
+    db_categories: list[CategoryOutputSchema],
+):
+    inventory_data = InventoryInputSchemaFactory().generate()
+    product_data = ProductInputSchemaFactory().generate(
+        category_ids=[db_categories[1].id], inventory=inventory_data
+    )
+    response = sync_client.post(
+        "products/", data=product_data.json(), headers=staff_auth_headers
+    )
+    inventory_id = response.json()["inventory"]["id"]
+    product_id = response.json()["id"]
+    
+    assert response.status_code == status.HTTP_201_CREATED
+    
+    response = sync_client.get(
+        f"products/{product_id}/inventory", headers=staff_auth_headers
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["id"] == inventory_id
+    
+
 def test_staff_can_update_product(
     sync_client: TestClient,
     staff_auth_headers: dict[str, str],
@@ -67,7 +91,6 @@ def test_staff_can_update_product(
         data=update_data.json(),
         headers=staff_auth_headers,
     )
-    print(response.json())
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["categories"][0]["id"] == update_data.category_ids[0]

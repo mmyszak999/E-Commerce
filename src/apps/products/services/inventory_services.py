@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from src.apps.products.models import ProductInventory
 from src.apps.products.schemas import InventoryInputSchema, InventoryOutputSchema
 
-from src.core.exceptions import NegativeQuantityException
+from src.core.exceptions import NegativeQuantityException, DoesNotExist
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate

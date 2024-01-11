@@ -31,7 +31,7 @@ product_router = APIRouter(prefix="/products", tags=["product"])
 
 @product_router.post(
     "/",
-    response_model=ProductInputSchema,
+    response_model=ProductOutputSchema,
     status_code=status.HTTP_201_CREATED,
 )
 def post_product(

@@ -18,7 +18,7 @@ from src.core.permissions import check_if_staff
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
-inventory_router = APIRouter(prefix="/inventory", tags=["inventory"])
+inventory_router = APIRouter(prefix="/inventories", tags=["inventory"])
 
 
 @inventory_router.get(

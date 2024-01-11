@@ -62,7 +62,7 @@ class ProductBaseSchema(BaseModel):
 
 
 class ProductInputSchema(ProductBaseSchema):
-    category_ids: Optional[list[str]]
+    category_ids: list[str]
     inventory: InventoryInputSchema
 
 

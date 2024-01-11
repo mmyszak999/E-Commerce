@@ -1,8 +1,10 @@
 import pytest
 from sqlalchemy.orm import Session
 
+from src.core.pagination.models import PageParams
 from src.apps.products.services.category_services import create_category
 from src.apps.products.services.product_services import create_product
+from src.apps.products.services.inventory_services import get_all_inventories
 from src.core.utils.utils import if_exists
 from src.core.factories import CategoryInputSchemaFactory, ProductInputSchemaFactory, InventoryInputSchemaFactory
 from tests.test_users.conftest import (
@@ -25,7 +27,6 @@ DB_PRODUCT_SCHEMAS = [ProductInputSchemaFactory().generate(inventory=DB_INVENTOR
 def db_categories(sync_session: Session):
     return [create_category(sync_session, category) for category in DB_CATEGORY_SCHEMAS]
 
-
 @pytest.fixture
 def db_products(sync_session: Session, db_categories):
     for index, product in enumerate(DB_PRODUCT_SCHEMAS):
@@ -36,3 +37,8 @@ def db_products(sync_session: Session, db_categories):
             category_id
         ]  # assign the category to the product input schema, one category per product as default
     return [create_product(sync_session, product) for product in DB_PRODUCT_SCHEMAS]
+
+
+@pytest.fixture
+def db_inventories(sync_session):
+    return get_all_inventories(sync_session, PageParams())

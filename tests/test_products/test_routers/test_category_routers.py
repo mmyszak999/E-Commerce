@@ -50,7 +50,7 @@ def test_staff_can_update_category(
         data=update_data.json(),
         headers=staff_auth_headers,
     )
-
+    print(response.json())
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["name"] == update_data.name
 
