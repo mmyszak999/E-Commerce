@@ -83,6 +83,16 @@ class AddressInputSchema(AddressBaseSchema):
         orm_mode = True
 
 
+class AddressUpdateSchema(BaseModel):
+    country: Optional[str]
+    state: Optional[str]
+    city: Optional[str]
+    postal_code: Optional[str]
+    street: Optional[str]
+    house_number: Optional[str]
+    apartment_number: Optional[str]
+
+
 class AddressOutputSchema(AddressBaseSchema):
     id: str
     
