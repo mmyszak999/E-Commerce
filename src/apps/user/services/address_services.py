@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from src.apps.user.models import UserAddress
 from src.apps.user.schemas import AddressInputSchema, AddressOutputSchema
 
-from src.core.exceptions import NegativeQuantityException, DoesNotExist
+from src.core.exceptions import DoesNotExist
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate

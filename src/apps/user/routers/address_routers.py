@@ -2,11 +2,11 @@ from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import (
+from src.apps.user.schemas import (
     AddressInputSchema,
     AddressOutputSchema
 )
-from src.apps.products.services.address_services import (
+from src.apps.user.services.address_services import (
     get_all_addresses,
     get_single_address,
     update_single_address
