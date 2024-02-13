@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Table, Boolean
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -29,7 +29,7 @@ class Cart(Base):
     user_id = Column(
         String,
         ForeignKey("user.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False
+        nullable=False,
     )
     user = relationship("User", back_populates="carts")
     cart_items = relationship("CartItem", back_populates="cart")
@@ -43,18 +43,18 @@ class CartItem(Base):
     cart_id = Column(
         String,
         ForeignKey("cart.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False
+        nullable=False,
     )
     cart = relationship("Cart", back_populates="cart_items")
     product_id = Column(
         String,
         ForeignKey("product.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False
+        nullable=False,
     )
     product = relationship("Product", back_populates="cart_items")
     quantity = Column(Integer, nullable=False, default=1)
-    
-    
+
+
 class Order(Base):
     __tablename__ = "order"
     id = Column(
@@ -63,7 +63,7 @@ class Order(Base):
     user_id = Column(
         String,
         ForeignKey("user.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False
+        nullable=False,
     )
     user = relationship("User", back_populates="orders")
     products = relationship(
@@ -84,14 +84,13 @@ class OrderItem(Base):
     order_id = Column(
         String,
         ForeignKey("order.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False
+        nullable=False,
     )
     order = relationship("Order", back_populates="order_items")
     product_id = Column(
         String,
         ForeignKey("product.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False
+        nullable=False,
     )
     product = relationship("Product", back_populates="order_items")
     quantity = Column(Integer, nullable=False, default=1)
-    

@@ -85,6 +85,6 @@ class AddressInputSchema(AddressBaseSchema):
 
 class AddressOutputSchema(AddressBaseSchema):
     id: str
-    
+
     class Config:
         orm_mode = True
