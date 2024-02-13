@@ -46,9 +46,11 @@ class Product(Base):
     inventory_id = Column(
         String,
         ForeignKey("product_inventory.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False
+        nullable=False,
     )
-    inventory = relationship("ProductInventory", uselist=False, back_populates='product')
+    inventory = relationship(
+        "ProductInventory", uselist=False, back_populates="product"
+    )
     categories = relationship(
         "Category",
         secondary=category_product_association_table,
@@ -59,7 +61,7 @@ class Product(Base):
     )
     cart_items = relationship("CartItem", back_populates="product")
     order_items = relationship("OrderItem", back_populates="product")
-    
+
 
 class ProductInventory(Base):
     __tablename__ = "product_inventory"
@@ -68,4 +70,4 @@ class ProductInventory(Base):
     )
     quantity = Column(Integer, nullable=False)
     sold = Column(Integer, nullable=False, default=0)
-    product = relationship("Product", back_populates='inventory')
+    product = relationship("Product", back_populates="inventory")

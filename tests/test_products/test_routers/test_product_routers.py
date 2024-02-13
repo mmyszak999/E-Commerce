@@ -1,8 +1,16 @@
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema, InventoryOutputSchema
-from src.core.factories import ProductInputSchemaFactory, InventoryInputSchemaFactory, ProductUpdateSchemaFactory
+from src.apps.products.schemas import (
+    CategoryOutputSchema,
+    InventoryOutputSchema,
+    ProductOutputSchema,
+)
+from src.core.factories import (
+    InventoryInputSchemaFactory,
+    ProductInputSchemaFactory,
+    ProductUpdateSchemaFactory,
+)
 
 
 def test_staff_can_create_product(
@@ -65,27 +73,26 @@ def test_staff_can_get_product_inventory(
     )
     inventory_id = response.json()["inventory"]["id"]
     product_id = response.json()["id"]
-    
+
     assert response.status_code == status.HTTP_201_CREATED
-    
+
     response = sync_client.get(
         f"products/{product_id}/inventory", headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["id"] == inventory_id
-    
+
 
 def test_staff_can_update_product(
     sync_client: TestClient,
     staff_auth_headers: dict[str, str],
     db_products: list[ProductOutputSchema],
-    db_categories: list[CategoryOutputSchema]
+    db_categories: list[CategoryOutputSchema],
 ):
-    
     update_data = ProductUpdateSchemaFactory().generate(
         category_ids=[db_categories[0].id]
     )
-    
+
     response = sync_client.patch(
         f"products/{db_products[0].id}",
         data=update_data.json(),

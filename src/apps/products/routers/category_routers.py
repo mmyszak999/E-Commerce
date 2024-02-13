@@ -2,10 +2,7 @@ from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import (
-    CategoryInputSchema,
-    CategoryOutputSchema
-)
+from src.apps.products.schemas import CategoryInputSchema, CategoryOutputSchema
 from src.apps.products.services.category_services import (
     create_category,
     delete_single_category,
@@ -13,7 +10,6 @@ from src.apps.products.services.category_services import (
     get_single_category,
     update_single_category,
 )
-
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -22,6 +18,7 @@ from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
 category_router = APIRouter(prefix="/categories", tags=["category"])
+
 
 @category_router.post(
     "/",
@@ -78,6 +75,7 @@ def update_category(
 ) -> CategoryOutputSchema:
     check_if_staff(request_user)
     return update_single_category(db, category, category_id)
+
 
 @category_router.delete(
     "/{category_id}",

@@ -37,6 +37,7 @@ class AccountNotActivatedException(ServiceException):
             "Please check your mailbox to find the message with activation link!"
         )
 
+
 class NegativeQuantityException(ServiceException):
     def __init__(self, value: Any) -> None:
         super().__init__(

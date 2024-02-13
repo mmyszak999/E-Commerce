@@ -10,7 +10,7 @@ from src.apps.products.services.product_services import (
     update_single_product,
 )
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
-from src.core.factories import ProductInputSchemaFactory, InventoryInputSchemaFactory
+from src.core.factories import InventoryInputSchemaFactory, ProductInputSchemaFactory
 from src.core.pagination.models import PageParams
 from src.core.utils.utils import generate_uuid
 from tests.test_products.conftest import DB_PRODUCT_SCHEMAS
@@ -58,7 +58,9 @@ def test_if_product_can_have_occupied_name(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
     inventory_data = InventoryInputSchemaFactory().generate()
-    product_data = ProductInputSchemaFactory().generate(name=DB_PRODUCT_SCHEMAS[0].name, inventory=inventory_data)
+    product_data = ProductInputSchemaFactory().generate(
+        name=DB_PRODUCT_SCHEMAS[0].name, inventory=inventory_data
+    )
     with pytest.raises(IsOccupied):
         update_single_product(sync_session, product_data, db_products[1].id)
 

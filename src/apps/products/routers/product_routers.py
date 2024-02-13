@@ -3,11 +3,12 @@ from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
 from src.apps.products.schemas import (
+    InventoryOutputSchema,
     ProductInputSchema,
     ProductOutputSchema,
-    InventoryOutputSchema,
-    ProductUpdateSchema
+    ProductUpdateSchema,
 )
+from src.apps.products.services.inventory_services import get_single_inventory
 from src.apps.products.services.product_services import (
     create_product,
     delete_single_product,
@@ -15,16 +16,12 @@ from src.apps.products.services.product_services import (
     get_single_product_or_inventory,
     update_single_product,
 )
-from src.apps.products.services.inventory_services import (
-    get_single_inventory
-)
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.permissions import check_if_staff
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
-
 
 product_router = APIRouter(prefix="/products", tags=["product"])
 
@@ -61,6 +58,7 @@ def get_products(
 )
 def get_product(product_id: str, db: Session = Depends(get_db)) -> ProductOutputSchema:
     return get_single_product_or_inventory(db, product_id)
+
 
 @product_router.get(
     "/{product_id}/inventory",

@@ -25,7 +25,7 @@ class CategoryOutputSchema(CategoryBaseSchema):
 
 class InventoryBaseSchema(BaseModel):
     quantity: int
-    
+
     @validator("quantity")
     def validate_quantity(cls, quantity: int) -> str:
         if quantity < 0:
@@ -39,7 +39,7 @@ class InventoryInputSchema(InventoryBaseSchema):
 
 class InventoryUpdateSchema(BaseModel):
     quantity: Optional[int]
-    
+
     @validator("quantity")
     def validate_quantity(cls, quantity: int) -> str:
         if quantity < 0:
@@ -50,7 +50,7 @@ class InventoryUpdateSchema(BaseModel):
 class InventoryOutputSchema(InventoryBaseSchema):
     id: str
     sold: int
-    
+
     class Config:
         orm_mode = True
 

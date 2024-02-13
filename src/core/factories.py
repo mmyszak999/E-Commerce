@@ -4,8 +4,13 @@ from typing import Optional
 
 from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.orders.schemas import OrderInputSchema
-from src.apps.products.schemas import CategoryInputSchema, ProductInputSchema, InventoryInputSchema, ProductUpdateSchema
-from src.apps.user.schemas import UserRegisterSchema, AddressInputSchema
+from src.apps.products.schemas import (
+    CategoryInputSchema,
+    InventoryInputSchema,
+    ProductInputSchema,
+    ProductUpdateSchema,
+)
+from src.apps.user.schemas import AddressInputSchema, UserRegisterSchema
 from src.core.utils.utils import initialize_faker
 
 
@@ -65,7 +70,8 @@ class AddressInputSchemaFactory(SchemaFactory):
             postal_code=postal_code or self.faker.postcode(),
             street=street or self.faker.street_name(),
             house_number=house_number or self.faker.building_number(),
-            apartment_number=apartment_number or self.faker.self.faker.building_number(),
+            apartment_number=apartment_number
+            or self.faker.self.faker.building_number(),
         )
 
 
@@ -84,11 +90,10 @@ class InventoryInputSchemaFactory(SchemaFactory):
         super().__init__(schema_class)
 
     def generate(
-        self, quantity: int = None,
+        self,
+        quantity: int = None,
     ):
-        return self.schema_class(
-            quantity=quantity or self.faker.random_int(min=1)
-        )
+        return self.schema_class(quantity=quantity or self.faker.random_int(min=1))
 
 
 class ProductInputSchemaFactory(SchemaFactory):
@@ -111,6 +116,7 @@ class ProductInputSchemaFactory(SchemaFactory):
             description=description or self.faker.sentence(),
         )
 
+
 class ProductUpdateSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=ProductUpdateSchema):
         super().__init__(schema_class)
@@ -120,7 +126,7 @@ class ProductUpdateSchemaFactory(SchemaFactory):
         inventory: Optional[InventoryInputSchema] = None,
         category_ids: Optional[list[str]] = None,
         name: Optional[str] = None,
-        price: Optional[str] = None ,
+        price: Optional[str] = None,
         description: Optional[str] = None,
     ):
         return self.schema_class(
@@ -151,4 +157,3 @@ class EmailUpdateSchemaFactory(SchemaFactory):
             email=email,
             new_email=new_email,
         )
-

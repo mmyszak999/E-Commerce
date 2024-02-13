@@ -9,9 +9,12 @@ from src.apps.products.models import (
     ProductInventory,
     category_product_association_table,
 )
-from src.apps.products.schemas import (ProductInputSchema, ProductOutputSchema,
-        InventoryOutputSchema, ProductUpdateSchema
-        )
+from src.apps.products.schemas import (
+    InventoryOutputSchema,
+    ProductInputSchema,
+    ProductOutputSchema,
+    ProductUpdateSchema,
+)
 from src.core.exceptions import (
     AlreadyExists,
     DoesNotExist,
@@ -44,30 +47,29 @@ def create_product(
             raise ServiceException("Wrong categories!")
 
         product_data["categories"] = categories
-    
+
     if product_data.get("inventory"):
         inventory_data = product_data.pop("inventory")
         new_inventory = ProductInventory(quantity=inventory_data["quantity"])
         session.add(new_inventory)
         session.commit()
         product_data["inventory_id"] = new_inventory.id
-        
 
     new_product = Product(**product_data)
     session.add(new_product)
     session.commit()
     session.refresh(new_product)
-    
+
     return ProductOutputSchema.from_orm(new_product)
 
 
 def get_single_product_or_inventory(
     session: Session, product_id: int, get_inventory=False
-    ) -> Union[ProductOutputSchema, InventoryOutputSchema]:
+) -> Union[ProductOutputSchema, InventoryOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
 
-    if not get_inventory:  
+    if not get_inventory:
         return ProductOutputSchema.from_orm(product_object)
     return InventoryOutputSchema.from_orm(product_object.inventory)
 
@@ -114,9 +116,7 @@ def update_single_product(
 
     if product_data.get("category_ids"):
         incoming_categories = set(product_data["category_ids"])
-        current_categories = set(
-            category.id for category in product_object.categories
-        )
+        current_categories = set(category.id for category in product_object.categories)
 
         if to_delete := current_categories - incoming_categories:
             session.execute(
@@ -131,10 +131,9 @@ def update_single_product(
                 for category_id in to_insert
             ]
             session.execute(insert(category_product_association_table).values(rows))
-            
-        
+
         product_data.pop("category_ids")
-        
+
         if product_data:
             statement = (
                 update(Product).filter(Product.id == product_id).values(**product_data)

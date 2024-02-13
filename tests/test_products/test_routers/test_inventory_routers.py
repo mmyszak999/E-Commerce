@@ -12,7 +12,6 @@ def test_staff_can_get_all_inventories(
     staff_auth_headers: dict[str, str],
 ):
     response = sync_client.get("inventories/", headers=staff_auth_headers)
-    print(db_inventories)
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["total"] == db_inventories.total
 
@@ -64,7 +63,6 @@ def test_authenticated_user_cannot_get_single_inventory(
     response = sync_client.get(
         f"inventories/{db_inventories.results[0].id}", headers=auth_headers
     )
-    print(response.json())
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -86,7 +84,7 @@ def test_authenticated_user_cannot_update_inventory(
 def test_anonymous_user_cannot_update_inventory(
     sync_client: TestClient,
     db_products: list[ProductOutputSchema],
-    db_inventories: list[InventoryOutputSchema]
+    db_inventories: list[InventoryOutputSchema],
 ):
     update_data = InventoryInputSchemaFactory().generate()
     response = sync_client.patch(

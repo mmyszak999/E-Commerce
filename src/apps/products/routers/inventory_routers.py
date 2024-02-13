@@ -2,14 +2,11 @@ from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import (
-    InventoryInputSchema,
-    InventoryOutputSchema
-)
+from src.apps.products.schemas import InventoryInputSchema, InventoryOutputSchema
 from src.apps.products.services.inventory_services import (
     get_all_inventories,
     get_single_inventory,
-    update_single_inventory
+    update_single_inventory,
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
