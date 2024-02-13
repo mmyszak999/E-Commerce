@@ -36,3 +36,10 @@ class AccountNotActivatedException(ServiceException):
             f"The account of the user with {field}={value} has not been activated! "
             "Please check your mailbox to find the message with activation link!"
         )
+
+
+class NegativeQuantityException(ServiceException):
+    def __init__(self, value: Any) -> None:
+        super().__init__(
+            f"The quantity of the product can't be negative (You entered quantity = {value})! "
+        )

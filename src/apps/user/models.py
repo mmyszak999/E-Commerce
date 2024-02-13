@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Date, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -23,7 +23,7 @@ class User(Base):
     is_staff = Column(Boolean, nullable=False, server_default="false")
     orders = relationship("Order", back_populates="user")
     carts = relationship("Cart", back_populates="user")
-    address = relationship('UserAddress', uselist=False, back_populates='user')
+    address = relationship("UserAddress", uselist=False, back_populates="user")
 
 
 class UserAddress(Base):
@@ -41,6 +41,6 @@ class UserAddress(Base):
     user_id = Column(
         String,
         ForeignKey("user.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False
+        nullable=False,
     )
-    user = relationship('User', back_populates='address')
+    user = relationship("User", back_populates="address")

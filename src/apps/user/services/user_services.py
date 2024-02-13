@@ -135,7 +135,7 @@ def update_single_user(
     if not if_exists(User, "id", user_id, session):
         raise DoesNotExist(User.__name__, "id", user_id)
 
-    user_data = user.dict(exclude_unset=True)
+    user_data = user.dict(exclude_unset=True, exclude_none=True)
     if user_data.get("username"):
         username_check = session.scalar(
             select(User).filter(User.username == user.username).limit(1)

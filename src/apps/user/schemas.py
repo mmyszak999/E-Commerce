@@ -95,6 +95,6 @@ class AddressUpdateSchema(BaseModel):
 
 class AddressOutputSchema(AddressBaseSchema):
     id: str
-    
+
     class Config:
         orm_mode = True

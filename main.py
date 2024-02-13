@@ -6,9 +6,10 @@ from src.apps.admin.routers import admin_router
 from src.apps.emails.routers import email_router
 from src.apps.jwt.routers import jwt_router
 from src.apps.orders.routers import order_router
-from src.apps.products.routers import category_router, product_router
-from src.apps.user.routers.user_routers import user_router
-from src.apps.user.routers.address_routers import address_router
+from src.apps.products.routers.category_routers import category_router
+from src.apps.products.routers.product_routers import product_router
+from src.apps.products.routers.inventory_routers import inventory_router
+from src.apps.user.routers import user_router
 from src.core.exceptions import (
     AccountNotActivatedException,
     AlreadyExists,
@@ -17,6 +18,7 @@ from src.core.exceptions import (
     DoesNotExist,
     IsOccupied,
     ServiceException,
+    NegativeQuantityException
 )
 
 app = FastAPI()
@@ -28,6 +30,7 @@ root_router.include_router(address_router)
 root_router.include_router(jwt_router)
 root_router.include_router(category_router)
 root_router.include_router(product_router)
+root_router.include_router(inventory_router)
 root_router.include_router(order_router)
 root_router.include_router(email_router)
 root_router.include_router(admin_router)
@@ -95,6 +98,14 @@ def handle_authorization_exception(
 @app.exception_handler(AccountNotActivatedException)
 def handle_account_not_activated_exception(
     request: Request, exception: AccountNotActivatedException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+@app.exception_handler(NegativeQuantityException)
+def handle_negative_quantity_exception(
+    request: Request, exception: NegativeQuantityException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
