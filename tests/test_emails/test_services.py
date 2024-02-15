@@ -10,7 +10,7 @@ from src.apps.emails.services import (
 )
 from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
-from src.core.factories import EmailUpdateSchemaFactory, UserRegisterSchemaFactory
+from src.core.factories import EmailUpdateSchemaFactory, UserRegisterSchemaFactory, AddressInputSchemaFactory
 from src.core.utils.utils import generate_confirm_token
 from tests.test_users.conftest import DB_USER_SCHEMA, register_user_without_activation
 
@@ -32,7 +32,8 @@ def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_equal
 def test_if_user_cannot_send_email_change_confirmation_mail_when_new_email_is_occupied(
     sync_session: Session, db_user: UserOutputSchema
 ):
-    user_data = UserRegisterSchemaFactory().generate()
+    new_address = AddressInputSchemaFactory().generate()
+    user_data = UserRegisterSchemaFactory().generate(address=new_address)
     new_user = register_user_without_activation(sync_session, user_data)
 
     token = AuthJWT().create_access_token(new_user.email)

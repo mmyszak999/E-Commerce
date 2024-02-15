@@ -5,13 +5,17 @@ from fastapi import BackgroundTasks
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
 
-from src.apps.user.schemas import UserOutputSchema, UserRegisterSchema
+from src.apps.user.schemas import UserOutputSchema, UserRegisterSchema, AddressOutputSchema
 from src.apps.user.services.user_services import register_user_base
-from src.core.factories import UserRegisterSchemaFactory
+from src.apps.user.services.address_services import get_all_addresses
+from src.core.factories import UserRegisterSchemaFactory, AddressInputSchemaFactory
+from src.core.pagination.models import PageParams
 
-DB_USER_SCHEMA = UserRegisterSchemaFactory().generate()
+DB_ADDRESS_SCHEMAS = [AddressInputSchemaFactory().generate() for _ in range(2)]
 
-DB_STAFF_USER_SCHEMA = UserRegisterSchemaFactory().generate()
+DB_USER_SCHEMA = UserRegisterSchemaFactory().generate(address=DB_ADDRESS_SCHEMAS[0])
+
+DB_STAFF_USER_SCHEMA = UserRegisterSchemaFactory().generate(address=DB_ADDRESS_SCHEMAS[1])
 
 
 def register_user_without_activation(
@@ -24,9 +28,11 @@ def register_user_without_activation(
     new_user.is_active = is_active
     new_user.is_staff = is_staff
     sync_session.add(new_user)
-    sync_session.add(new_address)
     sync_session.commit()
 
+    new_address.user_id = new_user.id
+    sync_session.add(new_address)
+    
     return UserOutputSchema.from_orm(new_user)
 
 
@@ -45,6 +51,10 @@ def db_staff_user(sync_session: Session) -> UserOutputSchema:
     return register_user_without_activation(
         sync_session, DB_STAFF_USER_SCHEMA, is_staff=True
     )
+
+@pytest.fixture
+def db_addresses(sync_session: Session) -> list[AddressOutputSchema]:
+    return get_all_addresses(sync_session, PageParams())
 
 
 @pytest.fixture

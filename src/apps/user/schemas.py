@@ -84,8 +84,8 @@ class UserUpdateSchema(BaseModel):
         orm_mode = True
 
 
-class UserInfoOutputSchema(UserBaseSchema):
-    id: str
+class UserInfoOutputSchema(BaseModel):
+    username: str
     is_active: bool
 
     class Config:
@@ -97,6 +97,7 @@ class UserOutputSchema(UserBaseSchema):
     is_active: bool
     is_superuser: bool
     is_staff: bool
+    address: AddressOutputSchema
 
     class Config:
         orm_mode = True

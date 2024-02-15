@@ -47,17 +47,18 @@ def create_product(
             raise ServiceException("Wrong categories!")
 
         product_data["categories"] = categories
-
-    new_product = Product(**product_data)
-    session.add(new_product)
-    session.commit()
     
     if product_data.get("inventory"):
         inventory_data = product_data.pop("inventory")
-        inventory_data["product_id"] = new_product.id
-        new_inventory = ProductInventory(quantity=inventory_data["quantity"])
-        session.add(new_inventory)
-        session.commit()
+    
+    new_product = Product(**product_data)
+        
+    session.add(new_product)
+    session.commit()
+    
+    new_inventory = ProductInventory(quantity=inventory_data["quantity"], product_id=new_product.id)
+    session.add(new_inventory)
+    session.commit()
 
     return ProductOutputSchema.from_orm(new_product)
 

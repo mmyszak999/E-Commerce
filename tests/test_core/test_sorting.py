@@ -9,6 +9,7 @@ from src.core.factories import (
     InventoryInputSchemaFactory,
     ProductInputSchemaFactory,
     UserRegisterSchemaFactory,
+    AddressInputSchemaFactory
 )
 from tests.test_core.conftest import db_categories, db_products, db_staff_user, db_user
 
@@ -18,11 +19,13 @@ def test_users_can_be_sorted_by_their_attributes(
     staff_auth_headers: dict[str, str],
     db_user: UserOutputSchema,
 ):
+    new_address_1 = AddressInputSchemaFactory().generate()
+    new_address_2 = AddressInputSchemaFactory().generate()
     new_user_1 = UserRegisterSchemaFactory().generate(
-        email="zoomer1@mail.com", last_name="zimmermann", username="aabc-guy1123"
+        email="zoomer1@mail.com", last_name="zimmermann", username="aabc-guy1123", address=new_address_1
     )
     new_user_2 = UserRegisterSchemaFactory().generate(
-        email="zoomer2@mail.com", last_name="zimmermann"
+        email="zoomer2@mail.com", last_name="zimmermann", address=new_address_2
     )
     response = sync_client.post("users/register", data=new_user_1.json())
     assert response.status_code == status.HTTP_201_CREATED

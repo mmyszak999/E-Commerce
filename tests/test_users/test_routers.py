@@ -3,13 +3,14 @@ from fastapi.testclient import TestClient
 from fastapi_jwt_auth import AuthJWT
 
 from src.apps.user.schemas import UserLoginInputSchema, UserOutputSchema
-from src.core.factories import UserRegisterSchemaFactory
+from src.core.factories import UserRegisterSchemaFactory, AddressInputSchemaFactory
 from tests.test_products.conftest import db_categories, db_products
 from tests.test_users.conftest import DB_USER_SCHEMA
 
 
 def test_if_user_was_created_successfully(sync_client: TestClient):
-    register_data = UserRegisterSchemaFactory().generate()
+    new_address = AddressInputSchemaFactory().generate()
+    register_data = UserRegisterSchemaFactory().generate(address=new_address)
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -26,7 +27,8 @@ def test_if_user_was_logged_correctly(
 
 
 def test_user_cannot_be_logged_without_activated_account(sync_client: TestClient):
-    register_data = UserRegisterSchemaFactory().generate()
+    new_address = AddressInputSchemaFactory().generate()
+    register_data = UserRegisterSchemaFactory().generate(address=new_address)
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["is_active"] == False
@@ -56,6 +58,15 @@ def test_staff_can_get_single_user(
     print(response.json())
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
+    
+
+def test_authenticated_user_can_get_single_user(
+    sync_client: TestClient,
+    auth_headers: dict[str, str],
+    db_user: UserOutputSchema,
+):
+    response = sync_client.get(f"users/{db_user.id}", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK
 
 
 def test_authenticated_user_can_get_their_account_info_page(
@@ -74,7 +85,8 @@ def test_authenticated_user_cannot_get_their_account_info_page_with_inactive_acc
     in this case we assume the user obtained token in the other way
     than by login to the account
     """
-    register_data = UserRegisterSchemaFactory().generate()
+    new_address = AddressInputSchemaFactory().generate()
+    register_data = UserRegisterSchemaFactory().generate(address=new_address)
     response = sync_client.post("users/register", data=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["is_active"] == False
@@ -131,15 +143,6 @@ def test_anonymous_user_cannot_get_users(
     response = sync_client.get("users/")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
-
-
-def test_authenticated_user_cannot_get_single_user(
-    sync_client: TestClient,
-    auth_headers: dict[str, str],
-    db_user: UserOutputSchema,
-):
-    response = sync_client.get(f"users/{db_user.id}", headers=auth_headers)
-    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_anonymous_user_cannot_get_single_user(
