@@ -9,7 +9,9 @@ from src.apps.orders.routers import order_router
 from src.apps.products.routers.category_routers import category_router
 from src.apps.products.routers.product_routers import product_router
 from src.apps.products.routers.inventory_routers import inventory_router
-from src.apps.user.routers import user_router
+from src.apps.user.routers.user_routers import user_router
+from src.apps.user.routers.address_routers import address_router
+
 from src.core.exceptions import (
     AccountNotActivatedException,
     AlreadyExists,

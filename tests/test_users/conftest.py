@@ -20,10 +20,11 @@ def register_user_without_activation(
     is_active: bool = True,
     is_staff: bool = False,
 ):
-    new_user = register_user_base(sync_session, user_schema)
+    new_user, new_address = register_user_base(sync_session, user_schema)
     new_user.is_active = is_active
     new_user.is_staff = is_staff
     sync_session.add(new_user)
+    sync_session.add(new_address)
     sync_session.commit()
 
     return UserOutputSchema.from_orm(new_user)

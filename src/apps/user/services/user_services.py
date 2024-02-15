@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import BackgroundTasks
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy import delete, select, update
@@ -5,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from src.apps.emails.services import send_activation_email
 from src.apps.jwt.schemas import AccessTokenOutputSchema
-from src.apps.user.models import User
+from src.apps.user.models import User, UserAddress
 from src.apps.user.schemas import (
     UserLoginInputSchema,
     UserOutputSchema,
@@ -31,7 +33,7 @@ def hash_user_password(password: str) -> str:
     return passwd_context.hash(password)
 
 
-def register_user_base(session: Session, user: UserRegisterSchema) -> User:
+def register_user_base(session: Session, user: UserRegisterSchema) -> tuple[Any]:
     user_data = user.dict()
     if user_data.pop("password_repeat"):
         user_data["password"] = hash_user_password(password=user_data.pop("password"))
@@ -47,18 +49,28 @@ def register_user_base(session: Session, user: UserRegisterSchema) -> User:
         raise AlreadyExists(User.__name__, "username", user.username)
     if email_check:
         raise AlreadyExists(User.__name__, "email", user.email)
-
+    
+    if user_data.get("address"):
+        address_data = user_data.pop("address")
+    
     new_user = User(**user_data)
-    return new_user
+    new_address = UserAddress(**address_data)
+        
+    return new_user, new_address
 
 
 def register_user(
     session: Session, user: UserRegisterSchema, background_tasks: BackgroundTasks
 ) -> UserOutputSchema:
-    new_user = register_user_base(session, user)
+    new_user, new_address = register_user_base(session, user)
 
     session.add(new_user)
     session.commit()
+    
+    new_address.user_id = new_user.id
+    session.add(new_address)
+    session.commit()
+    
     send_activation_email(new_user.email, session, background_tasks)
 
     return UserOutputSchema.from_orm(new_user)
@@ -144,6 +156,13 @@ def update_single_user(
         if username_check:
             raise IsOccupied(User.__name__, "username", user.username)
 
+    if user_data.get("address"):
+        address_data = user_data.pop("address")
+        statement = update(UserAddress).filter(UserAddress.user_id == user_id).values(**address_data)
+
+        session.execute(statement)
+        session.commit()
+    
     if user_data:
         statement = update(User).filter(User.id == user_id).values(**user_data)
 

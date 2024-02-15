@@ -5,6 +5,40 @@ from uuid import UUID
 from pydantic import BaseModel, Field, validator
 
 
+class AddressBaseSchema(BaseModel):
+    country: str
+    state: str
+    city: str
+    postal_code: str
+    street: str = ""
+    house_number: str
+    apartment_number: str = ""
+
+
+class AddressInputSchema(AddressBaseSchema):
+    pass
+
+    class Config:
+        orm_mode = True
+
+
+class AddressUpdateSchema(BaseModel):
+    country: Optional[str]
+    state: Optional[str]
+    city: Optional[str]
+    postal_code: Optional[str]
+    street: Optional[str]
+    house_number: Optional[str]
+    apartment_number: Optional[str]
+
+
+class AddressOutputSchema(AddressBaseSchema):
+    id: str
+
+    class Config:
+        orm_mode = True
+
+
 class UserLoginInputSchema(BaseModel):
     email: str = Field(max_length=50)
     password: str = Field(min_length=8, max_length=40)
@@ -16,6 +50,7 @@ class UserBaseSchema(BaseModel):
     email: str = Field(max_length=50)
     birth_date: datetime.date
     username: str = Field(max_length=50)
+    address: AddressInputSchema
 
     class Config:
         orm_mode = True
@@ -39,10 +74,11 @@ class UserRegisterSchema(UserBaseSchema):
 
 
 class UserUpdateSchema(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    birth_date: Optional[datetime.date] = None
-    username: Optional[str] = None
+    first_name: Optional[str]
+    last_name: Optional[str]
+    birth_date: Optional[datetime.date]
+    username: Optional[str]
+    address: Optional[AddressUpdateSchema]
 
     class Config:
         orm_mode = True
@@ -61,40 +97,6 @@ class UserOutputSchema(UserBaseSchema):
     is_active: bool
     is_superuser: bool
     is_staff: bool
-
-    class Config:
-        orm_mode = True
-
-
-class AddressBaseSchema(BaseModel):
-    country: str
-    state: str
-    city: str
-    postal_code: str
-    street: str
-    house_number: str
-    apartment_number: str
-
-
-class AddressInputSchema(AddressBaseSchema):
-    pass
-
-    class Config:
-        orm_mode = True
-
-
-class AddressUpdateSchema(BaseModel):
-    country: Optional[str]
-    state: Optional[str]
-    city: Optional[str]
-    postal_code: Optional[str]
-    street: Optional[str]
-    house_number: Optional[str]
-    apartment_number: Optional[str]
-
-
-class AddressOutputSchema(AddressBaseSchema):
-    id: str
 
     class Config:
         orm_mode = True

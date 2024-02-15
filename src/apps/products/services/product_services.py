@@ -48,17 +48,16 @@ def create_product(
 
         product_data["categories"] = categories
 
-    if product_data.get("inventory"):
-        inventory_data = product_data.pop("inventory")
-        new_inventory = ProductInventory(quantity=inventory_data["quantity"])
-        session.add(new_inventory)
-        session.commit()
-        product_data["inventory_id"] = new_inventory.id
-
     new_product = Product(**product_data)
     session.add(new_product)
     session.commit()
-    session.refresh(new_product)
+    
+    if product_data.get("inventory"):
+        inventory_data = product_data.pop("inventory")
+        inventory_data["product_id"] = new_product.id
+        new_inventory = ProductInventory(quantity=inventory_data["quantity"])
+        session.add(new_inventory)
+        session.commit()
 
     return ProductOutputSchema.from_orm(new_product)
 
