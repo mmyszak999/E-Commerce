@@ -71,7 +71,7 @@ class ProductUpdateSchema(ProductBaseSchema):
     price: Optional[Decimal]
     description: Optional[str]
     category_ids: Optional[list[str]]
-    inventory: Optional[InventoryInputSchema]
+    inventory: Optional[InventoryUpdateSchema]
 
 
 class ProductOutputSchema(ProductBaseSchema):

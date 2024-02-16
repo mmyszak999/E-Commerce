@@ -50,15 +50,17 @@ def create_product(
 
     if product_data.get("inventory"):
         inventory_data = product_data.pop("inventory")
-        new_inventory = ProductInventory(quantity=inventory_data["quantity"])
-        session.add(new_inventory)
-        session.commit()
-        product_data["inventory_id"] = new_inventory.id
 
     new_product = Product(**product_data)
+
     session.add(new_product)
     session.commit()
-    session.refresh(new_product)
+
+    new_inventory = ProductInventory(
+        quantity=inventory_data["quantity"], product_id=new_product.id
+    )
+    session.add(new_inventory)
+    session.commit()
 
     return ProductOutputSchema.from_orm(new_product)
 
@@ -134,14 +136,29 @@ def update_single_product(
 
         product_data.pop("category_ids")
 
-        if product_data:
+    if "inventory" in product_data.keys():
+        if product_data.get("inventory"):
+            inventory_data = product_data.pop("inventory")
             statement = (
-                update(Product).filter(Product.id == product_id).values(**product_data)
+                update(ProductInventory)
+                .filter(ProductInventory.product_id == product_id)
+                .values(**inventory_data)
             )
 
             session.execute(statement)
             session.commit()
-            session.refresh(product_object)
+
+        else:
+            product_data.pop("inventory")
+
+    if product_data:
+        statement = (
+            update(Product).filter(Product.id == product_id).values(**product_data)
+        )
+
+        session.execute(statement)
+        session.commit()
+        session.refresh(product_object)
 
     return get_single_product_or_inventory(session, product_id=product_id)
 

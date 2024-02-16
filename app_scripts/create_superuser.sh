@@ -18,16 +18,25 @@ try:
         host="${POSTGRES_HOST}",
         port="${POSTGRES_PORT}",
     )
-
+    user_id = uuid.uuid4()
     cursor = connection.cursor()
-    postgres_insert_query = f"""INSERT INTO "user"
+    user_insert_query = f"""INSERT INTO "user"
     (ID, FIRST_NAME, LAST_NAME, EMAIL, USERNAME, PASSWORD, BIRTH_DATE, IS_SUPERUSER, IS_STAFF, IS_ACTIVE)
-    VALUES ('{uuid.uuid4()}', '${SUPERUSER_FIRST_NAME}', '${SUPERUSER_LAST_NAME}', '${SUPERUSER_EMAIL}',
+    VALUES ('{user_id}', '${SUPERUSER_FIRST_NAME}', '${SUPERUSER_LAST_NAME}', '${SUPERUSER_EMAIL}',
     '${SUPERUSER_USERNAME}', '${SUPERUSER_PASSWORD}', '${SUPERUSER_BIRTHDATE}', TRUE, TRUE, TRUE)
     """
-    cursor.execute(postgres_insert_query)
+    cursor.execute(user_insert_query)
+
+
+    address_insert_query = f"""INSERT INTO "user_address"
+    (ID, COUNTRY, STATE, CITY, POSTAL_CODE, STREET, HOUSE_NUMBER, APARTMENT_NUMBER, USER_ID)
+    VALUES ('{uuid.uuid4()}', 'USA', 'Texas', 'Houston',
+    '34567', 'Walker Avenue', '35', '2', '{user_id}')
+    """
+    cursor.execute(address_insert_query)
     connection.commit()
     print("successfully created superuser")
+    
     connection.close()
 
 

@@ -43,11 +43,6 @@ class Product(Base):
     name = Column(String(length=75), nullable=False, unique=True)
     price = Column(Numeric, nullable=False)
     description = Column(String(length=300), nullable=True)
-    inventory_id = Column(
-        String,
-        ForeignKey("product_inventory.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False,
-    )
     inventory = relationship(
         "ProductInventory", uselist=False, back_populates="product"
     )
@@ -70,4 +65,9 @@ class ProductInventory(Base):
     )
     quantity = Column(Integer, nullable=False)
     sold = Column(Integer, nullable=False, default=0)
+    product_id = Column(
+        String,
+        ForeignKey("product.id", ondelete="cascade", onupdate="cascade"),
+        nullable=False,
+    )
     product = relationship("Product", back_populates="inventory")

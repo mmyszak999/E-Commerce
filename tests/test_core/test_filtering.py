@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
 from src.apps.user.schemas import UserOutputSchema
 from src.core.factories import (
+    AddressInputSchemaFactory,
     CategoryInputSchemaFactory,
     InventoryInputSchemaFactory,
     ProductInputSchemaFactory,
@@ -17,7 +18,10 @@ def test_users_can_be_filtered_by_their_attributes(
     staff_auth_headers: dict[str, str],
     db_user: UserOutputSchema,
 ):
-    new_user = UserRegisterSchemaFactory().generate(email="supertest@mail.com")
+    new_address = AddressInputSchemaFactory().generate()
+    new_user = UserRegisterSchemaFactory().generate(
+        email="supertest@mail.com", address=new_address
+    )
     response = sync_client.post("users/register", data=new_user.json())
     assert response.status_code == status.HTTP_201_CREATED
 

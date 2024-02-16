@@ -15,7 +15,7 @@ from src.core.exceptions import (
     IsOccupied,
     ServiceException,
 )
-from src.core.factories import UserRegisterSchemaFactory
+from src.core.factories import AddressInputSchemaFactory, UserRegisterSchemaFactory
 from src.core.pagination.models import PageParams
 from src.core.utils.utils import generate_uuid
 from tests.test_users.conftest import DB_USER_SCHEMA, register_user_without_activation
@@ -31,8 +31,12 @@ def test_register_user_that_already_exists(
 def test_create_user_with_occupied_email(
     sync_session: Session, db_user: UserOutputSchema
 ):
+    new_address = AddressInputSchemaFactory().generate()
     user_data = UserRegisterSchemaFactory().generate(
-        email=db_user.email, password="testtest", password_repeat="testtest"
+        email=db_user.email,
+        password="testtest",
+        password_repeat="testtest",
+        address=new_address,
     )
     with pytest.raises(AlreadyExists):
         register_user_without_activation(sync_session, user_data)
@@ -41,8 +45,12 @@ def test_create_user_with_occupied_email(
 def test_create_user_with_occupied_username(
     sync_session: Session, db_user: UserOutputSchema
 ):
+    new_address = AddressInputSchemaFactory().generate()
     user_data = UserRegisterSchemaFactory().generate(
-        username=db_user.username, password="testtest", password_repeat="testtest"
+        username=db_user.username,
+        password="testtest",
+        password_repeat="testtest",
+        address=new_address,
     )
     with pytest.raises(AlreadyExists):
         register_user_without_activation(sync_session, user_data)
@@ -97,10 +105,11 @@ def test_raise_exception_while_updating_nonexistent_user(
 def test_if_user_can_update_their_username_to_occupied_one(
     sync_session: Session, db_user: UserOutputSchema
 ):
+    new_address = AddressInputSchemaFactory().generate()
     user = register_user_without_activation(
         sync_session,
         UserRegisterSchemaFactory().generate(
-            password="testtestx", password_repeat="testtestx"
+            password="testtestx", password_repeat="testtestx", address=new_address
         ),
     )
     update_data = {"username": db_user.username}

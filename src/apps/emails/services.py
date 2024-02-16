@@ -1,6 +1,6 @@
 from fastapi import BackgroundTasks
 from fastapi_mail import ConnectionConfig
-from pydantic import BaseSettings
+from pydantic import BaseSettings, EmailStr
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
@@ -23,7 +23,7 @@ def email_config(settings: BaseSettings = EmailSettings):
 
 
 def send_activation_email(
-    email: str, session: Session, background_tasks: BackgroundTasks
+    email: EmailStr, session: Session, background_tasks: BackgroundTasks
 ) -> None:
     email_schema = EmailSchema(
         email_subject="Activate your account",
@@ -62,7 +62,7 @@ def send_email_change_confirmation_mail(
 
 def change_email_service(
     email_update_schema: EmailUpdateSchema,
-    request_user_email: str,
+    request_user_email: EmailStr,
     background_tasks: BackgroundTasks,
     session: Session,
 ) -> None:
@@ -82,7 +82,9 @@ def change_email_service(
     )
 
 
-def update_email(session: Session, new_email: str, current_email: str) -> None:
+def update_email(
+    session: Session, new_email: EmailStr, current_email: EmailStr
+) -> None:
     user = if_exists(User, "email", current_email, session)
 
     if user is None:
@@ -99,7 +101,7 @@ def update_email(session: Session, new_email: str, current_email: str) -> None:
 
 
 def confirm_email_change_service(
-    db: Session, token: str, request_user_email: str
+    db: Session, token: str, request_user_email: EmailStr
 ) -> None:
     emails = confirm_token(token)
     current_email, new_email = emails[0], emails[1]

@@ -30,6 +30,7 @@ class UserRegisterSchemaFactory(SchemaFactory):
 
     def generate(
         self,
+        address: AddressInputSchema,
         email: str = None,
         first_name: str = None,
         last_name: str = None,
@@ -39,6 +40,7 @@ class UserRegisterSchemaFactory(SchemaFactory):
         password_repeat: str = "password",
     ):
         return self.schema_class(
+            address=address,
             first_name=first_name or self.faker.first_name(),
             last_name=last_name or self.faker.last_name(),
             email=email or self.faker.ascii_email(),
@@ -70,8 +72,7 @@ class AddressInputSchemaFactory(SchemaFactory):
             postal_code=postal_code or self.faker.postcode(),
             street=street or self.faker.street_name(),
             house_number=house_number or self.faker.building_number(),
-            apartment_number=apartment_number
-            or self.faker.self.faker.building_number(),
+            apartment_number=apartment_number or self.faker.building_number(),
         )
 
 
