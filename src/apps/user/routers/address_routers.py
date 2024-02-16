@@ -3,7 +3,7 @@ from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
 from src.apps.user.schemas import (
-    AddressInputSchema,
+    AddressUpdateSchema,
     AddressOutputSchema
 )
 from src.apps.user.services.address_services import (
@@ -56,7 +56,7 @@ def get_address(
 )
 def update_address(
     address_id: str,
-    address: AddressInputSchema,
+    address: AddressUpdateSchema,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> AddressOutputSchema:
