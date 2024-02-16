@@ -157,20 +157,19 @@ def update_single_user(
         if username_check:
             raise IsOccupied(User.__name__, "username", user.username)
         
-    if user_data.get("address"):
-        address_data = user_data.pop("address")
-        print(user_data)
-        statement = update(UserAddress).filter(UserAddress.user_id == user_id).values(**address_data)
-
-        session.execute(statement)
-        session.commit()
-    
     if "address" in user_data.keys():
-        user_data.pop("address")
+        if user_data.get("address"):
+            address_data = user_data.pop("address")
+            print(user_data)
+            statement = update(UserAddress).filter(UserAddress.user_id == user_id).values(**address_data)
+
+            session.execute(statement)
+            session.commit()
+    
+        else:
+            user_data.pop("address")
             
     if user_data:
-        print(user_data, "wow")
-        
         statement = update(User).filter(User.id == user_id).values(**user_data)
 
         session.execute(statement)

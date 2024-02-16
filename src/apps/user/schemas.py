@@ -2,7 +2,7 @@ import datetime
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, EmailStr
 
 
 class AddressBaseSchema(BaseModel):
@@ -40,14 +40,14 @@ class AddressOutputSchema(AddressBaseSchema):
 
 
 class UserLoginInputSchema(BaseModel):
-    email: str = Field(max_length=50)
+    email: EmailStr = Field()
     password: str = Field(min_length=8, max_length=40)
 
 
 class UserBaseSchema(BaseModel):
     first_name: str = Field(max_length=50)
     last_name: str = Field(max_length=75)
-    email: str = Field(max_length=50)
+    email: EmailStr = Field()
     birth_date: datetime.date
     username: str = Field(max_length=50)
     address: AddressInputSchema

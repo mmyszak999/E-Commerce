@@ -26,8 +26,7 @@ try:
     '${SUPERUSER_USERNAME}', '${SUPERUSER_PASSWORD}', '${SUPERUSER_BIRTHDATE}', TRUE, TRUE, TRUE)
     """
     cursor.execute(user_insert_query)
-    connection.commit()
-    print("successfully created superuser")
+
 
     address_insert_query = f"""INSERT INTO "user_address"
     (ID, COUNTRY, STATE, CITY, POSTAL_CODE, STREET, HOUSE_NUMBER, APARTMENT_NUMBER, USER_ID)
@@ -36,6 +35,7 @@ try:
     """
     cursor.execute(address_insert_query)
     connection.commit()
+    print("successfully created superuser")
     
     connection.close()
 
