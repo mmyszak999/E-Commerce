@@ -10,7 +10,11 @@ from src.apps.emails.services import (
 )
 from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
-from src.core.factories import EmailUpdateSchemaFactory, UserRegisterSchemaFactory, AddressInputSchemaFactory
+from src.core.factories import (
+    AddressInputSchemaFactory,
+    EmailUpdateSchemaFactory,
+    UserRegisterSchemaFactory,
+)
 from src.core.utils.utils import generate_confirm_token
 from tests.test_users.conftest import DB_USER_SCHEMA, register_user_without_activation
 

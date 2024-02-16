@@ -5,17 +5,10 @@ from src.apps.user.schemas import AddressOutputSchema, UserOutputSchema
 from src.apps.user.services.address_services import (
     get_all_addresses,
     get_single_address,
-    update_single_address
+    update_single_address,
 )
-from src.apps.user.services.user_services import (
-    get_all_users
-)
-from src.core.exceptions import (
-    AlreadyExists,
-    DoesNotExist,
-    IsOccupied,
-    ServiceException,
-)
+from src.apps.user.services.user_services import get_all_users
+from src.core.exceptions import DoesNotExist
 from src.core.factories import AddressInputSchemaFactory
 from src.core.pagination.models import PageParams
 from src.core.utils.utils import generate_uuid
@@ -46,7 +39,7 @@ def test_if_multiple_addresses_were_returned(
     db_addresses: list[AddressOutputSchema],
 ):
     addresses = get_all_addresses(sync_session, PageParams())
-    
+
     assert addresses.total == get_all_users(sync_session, PageParams()).total
 
 

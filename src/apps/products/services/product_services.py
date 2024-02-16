@@ -47,16 +47,18 @@ def create_product(
             raise ServiceException("Wrong categories!")
 
         product_data["categories"] = categories
-    
+
     if product_data.get("inventory"):
         inventory_data = product_data.pop("inventory")
-    
+
     new_product = Product(**product_data)
-        
+
     session.add(new_product)
     session.commit()
-    
-    new_inventory = ProductInventory(quantity=inventory_data["quantity"], product_id=new_product.id)
+
+    new_inventory = ProductInventory(
+        quantity=inventory_data["quantity"], product_id=new_product.id
+    )
     session.add(new_inventory)
     session.commit()
 
@@ -133,18 +135,22 @@ def update_single_product(
             session.execute(insert(category_product_association_table).values(rows))
 
         product_data.pop("category_ids")
-        
+
     if "inventory" in product_data.keys():
         if product_data.get("inventory"):
             inventory_data = product_data.pop("inventory")
-            statement = update(ProductInventory).filter(ProductInventory.product_id == product_id).values(**inventory_data)
+            statement = (
+                update(ProductInventory)
+                .filter(ProductInventory.product_id == product_id)
+                .values(**inventory_data)
+            )
 
             session.execute(statement)
             session.commit()
-        
+
         else:
-            product_data.pop("inventory")   
-            
+            product_data.pop("inventory")
+
     if product_data:
         statement = (
             update(Product).filter(Product.id == product_id).values(**product_data)

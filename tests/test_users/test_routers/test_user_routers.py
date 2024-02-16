@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from fastapi_jwt_auth import AuthJWT
 
 from src.apps.user.schemas import UserLoginInputSchema, UserOutputSchema
-from src.core.factories import UserRegisterSchemaFactory, AddressInputSchemaFactory
+from src.core.factories import AddressInputSchemaFactory, UserRegisterSchemaFactory
 from tests.test_products.conftest import db_categories, db_products
 from tests.test_users.conftest import DB_USER_SCHEMA
 
@@ -55,10 +55,10 @@ def test_staff_can_get_single_user(
     db_user: UserOutputSchema,
 ):
     response = sync_client.get(f"users/{db_user.id}", headers=staff_auth_headers)
-    
+
     assert response.json()["id"] == db_user.id
     assert response.status_code == status.HTTP_200_OK
-    
+
 
 def test_authenticated_user_can_get_single_user(
     sync_client: TestClient,

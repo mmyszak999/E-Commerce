@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 
 from src.apps.user.models import UserAddress
 from src.apps.user.schemas import AddressOutputSchema, AddressUpdateSchema
-
 from src.core.exceptions import DoesNotExist
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -34,6 +33,7 @@ def get_all_addresses(
         session=session,
     )
 
+
 def update_single_address(
     session: Session, address_input: AddressUpdateSchema, address_id: int
 ) -> AddressOutputSchema:
@@ -44,7 +44,9 @@ def update_single_address(
 
     if address_data:
         statement = (
-            update(UserAddress).filter(UserAddress.id == address_id).values(**address_data)
+            update(UserAddress)
+            .filter(UserAddress.id == address_id)
+            .values(**address_data)
         )
 
         session.execute(statement)

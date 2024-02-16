@@ -2,16 +2,13 @@ from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.user.schemas import (
-    AddressUpdateSchema,
-    AddressOutputSchema
-)
+from src.apps.user.models import User
+from src.apps.user.schemas import AddressOutputSchema, AddressUpdateSchema
 from src.apps.user.services.address_services import (
     get_all_addresses,
     get_single_address,
-    update_single_address
+    update_single_address,
 )
-from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.permissions import check_if_staff
@@ -32,6 +29,7 @@ def get_addresses(
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
 ) -> PagedResponseSchema[AddressOutputSchema]:
+    check_if_staff(request_user)
     return get_all_addresses(db, page_params, request.query_params.multi_items())
 
 

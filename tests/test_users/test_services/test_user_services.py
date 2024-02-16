@@ -15,7 +15,7 @@ from src.core.exceptions import (
     IsOccupied,
     ServiceException,
 )
-from src.core.factories import UserRegisterSchemaFactory, AddressInputSchemaFactory
+from src.core.factories import AddressInputSchemaFactory, UserRegisterSchemaFactory
 from src.core.pagination.models import PageParams
 from src.core.utils.utils import generate_uuid
 from tests.test_users.conftest import DB_USER_SCHEMA, register_user_without_activation
@@ -33,7 +33,10 @@ def test_create_user_with_occupied_email(
 ):
     new_address = AddressInputSchemaFactory().generate()
     user_data = UserRegisterSchemaFactory().generate(
-        email=db_user.email, password="testtest", password_repeat="testtest", address=new_address
+        email=db_user.email,
+        password="testtest",
+        password_repeat="testtest",
+        address=new_address,
     )
     with pytest.raises(AlreadyExists):
         register_user_without_activation(sync_session, user_data)
@@ -44,7 +47,10 @@ def test_create_user_with_occupied_username(
 ):
     new_address = AddressInputSchemaFactory().generate()
     user_data = UserRegisterSchemaFactory().generate(
-        username=db_user.username, password="testtest", password_repeat="testtest", address=new_address
+        username=db_user.username,
+        password="testtest",
+        password_repeat="testtest",
+        address=new_address,
     )
     with pytest.raises(AlreadyExists):
         register_user_without_activation(sync_session, user_data)

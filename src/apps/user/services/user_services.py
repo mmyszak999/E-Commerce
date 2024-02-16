@@ -50,13 +50,13 @@ def register_user_base(session: Session, user: UserRegisterSchema) -> tuple[Any]
         raise AlreadyExists(User.__name__, "username", user.username)
     if email_check:
         raise AlreadyExists(User.__name__, "email", user.email)
-    
+
     if user_data.get("address"):
         address_data = user_data.pop("address")
-    
+
     new_user = User(**user_data)
     new_address = UserAddress(**address_data)
-        
+
     return new_user, new_address
 
 
@@ -67,11 +67,11 @@ def register_user(
 
     session.add(new_user)
     session.commit()
-    
+
     new_address.user_id = new_user.id
     session.add(new_address)
     session.commit()
-    
+
     send_activation_email(new_user.email, session, background_tasks)
 
     return UserOutputSchema.from_orm(new_user)
@@ -119,7 +119,9 @@ def get_access_token_schema(
     return AccessTokenOutputSchema(access_token=access_token)
 
 
-def get_single_user(session: Session, user_id: str, output_schema: BaseModel = UserOutputSchema) -> BaseModel:
+def get_single_user(
+    session: Session, user_id: str, output_schema: BaseModel = UserOutputSchema
+) -> BaseModel:
     if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, "id", user_id)
 
@@ -156,19 +158,23 @@ def update_single_user(
 
         if username_check:
             raise IsOccupied(User.__name__, "username", user.username)
-        
+
     if "address" in user_data.keys():
         if user_data.get("address"):
             address_data = user_data.pop("address")
             print(user_data)
-            statement = update(UserAddress).filter(UserAddress.user_id == user_id).values(**address_data)
+            statement = (
+                update(UserAddress)
+                .filter(UserAddress.user_id == user_id)
+                .values(**address_data)
+            )
 
             session.execute(statement)
             session.commit()
-    
+
         else:
             user_data.pop("address")
-            
+
     if user_data:
         statement = update(User).filter(User.id == user_id).values(**user_data)
 

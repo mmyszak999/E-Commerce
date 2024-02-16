@@ -2,9 +2,13 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from fastapi_jwt_auth import AuthJWT
 
-from src.apps.user.schemas import UserOutputSchema, AddressOutputSchema, AddressUpdateSchema
+from src.apps.user.schemas import (
+    AddressOutputSchema,
+    AddressUpdateSchema,
+    UserOutputSchema,
+)
 from src.core.factories import AddressInputSchemaFactory
-from tests.test_users.conftest import DB_ADDRESS_SCHEMAS, db_user, db_addresses
+from tests.test_users.conftest import DB_ADDRESS_SCHEMAS, db_addresses, db_user
 
 
 def test_staff_can_get_all_addresses(
@@ -17,23 +21,29 @@ def test_staff_can_get_all_addresses(
 
 
 def test_staff_can_get_single_address(
-    sync_client: TestClient, staff_auth_headers: dict[str, str], 
-    db_addresses: list[AddressOutputSchema]
+    sync_client: TestClient,
+    staff_auth_headers: dict[str, str],
+    db_addresses: list[AddressOutputSchema],
 ):
-    response = sync_client.get(f"addresses/{db_addresses.results[0].id}", headers=staff_auth_headers)
+    response = sync_client.get(
+        f"addresses/{db_addresses.results[0].id}", headers=staff_auth_headers
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["id"] == db_addresses.results[0].id
 
 
 def test_staff_can_update_single_address(
-    sync_client: TestClient, staff_auth_headers: dict[str, str], 
-    db_addresses: list[AddressOutputSchema]
+    sync_client: TestClient,
+    staff_auth_headers: dict[str, str],
+    db_addresses: list[AddressOutputSchema],
 ):
     update_data = AddressInputSchemaFactory().generate()
     response = sync_client.patch(
-        f"addresses/{db_addresses.results[0].id}", headers=staff_auth_headers, data=update_data.json()
-        )
+        f"addresses/{db_addresses.results[0].id}",
+        headers=staff_auth_headers,
+        data=update_data.json(),
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["city"] == update_data.city
@@ -82,4 +92,3 @@ def test_anonymous_user_cannot_update_address(
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
-

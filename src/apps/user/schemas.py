@@ -2,7 +2,7 @@ import datetime
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, validator, EmailStr
+from pydantic import BaseModel, EmailStr, Field, validator
 
 
 class AddressBaseSchema(BaseModel):

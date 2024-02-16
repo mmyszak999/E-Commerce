@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pytest
 from pydantic.error_wrappers import ValidationError
 
-from src.core.factories import UserRegisterSchemaFactory, AddressInputSchemaFactory
+from src.core.factories import AddressInputSchemaFactory, UserRegisterSchemaFactory
 
 
 @pytest.mark.parametrize(
@@ -19,8 +19,9 @@ def test_user_register_schema_raises_validation_error_when_passwords_are_not_ide
 ):
     with result:
         UserRegisterSchemaFactory().generate(
-            password=password1, password_repeat=password2,
-            address=AddressInputSchemaFactory().generate()
+            password=password1,
+            password_repeat=password2,
+            address=AddressInputSchemaFactory().generate(),
         )
 
 
@@ -36,6 +37,8 @@ def test_user_register_schema_raises_validation_error_when_birth_date_is_from_fu
 ):
     with result:
         UserRegisterSchemaFactory().generate(
-            birth_date=future_date, password="password", password_repeat="password",
-            address=AddressInputSchemaFactory().generate()
+            birth_date=future_date,
+            password="password",
+            password_repeat="password",
+            address=AddressInputSchemaFactory().generate(),
         )

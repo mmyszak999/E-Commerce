@@ -82,7 +82,9 @@ def change_email_service(
     )
 
 
-def update_email(session: Session, new_email: EmailStr, current_email: EmailStr) -> None:
+def update_email(
+    session: Session, new_email: EmailStr, current_email: EmailStr
+) -> None:
     user = if_exists(User, "email", current_email, session)
 
     if user is None:

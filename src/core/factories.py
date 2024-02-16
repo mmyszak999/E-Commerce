@@ -37,7 +37,7 @@ class UserRegisterSchemaFactory(SchemaFactory):
         username: str = None,
         birth_date: datetime = None,
         password: str = "password",
-        password_repeat: str = "password"
+        password_repeat: str = "password",
     ):
         return self.schema_class(
             address=address,
@@ -72,8 +72,7 @@ class AddressInputSchemaFactory(SchemaFactory):
             postal_code=postal_code or self.faker.postcode(),
             street=street or self.faker.street_name(),
             house_number=house_number or self.faker.building_number(),
-            apartment_number=apartment_number
-            or self.faker.building_number(),
+            apartment_number=apartment_number or self.faker.building_number(),
         )
 
 
