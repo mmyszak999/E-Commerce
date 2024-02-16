@@ -133,15 +133,26 @@ def update_single_product(
             session.execute(insert(category_product_association_table).values(rows))
 
         product_data.pop("category_ids")
-
-        if product_data:
-            statement = (
-                update(Product).filter(Product.id == product_id).values(**product_data)
-            )
+        
+    if "inventory" in product_data.keys():
+        if product_data.get("inventory"):
+            inventory_data = product_data.pop("inventory")
+            statement = update(ProductInventory).filter(ProductInventory.product_id == product_id).values(**inventory_data)
 
             session.execute(statement)
             session.commit()
-            session.refresh(product_object)
+        
+        else:
+            product_data.pop("inventory")   
+            
+    if product_data:
+        statement = (
+            update(Product).filter(Product.id == product_id).values(**product_data)
+        )
+
+        session.execute(statement)
+        session.commit()
+        session.refresh(product_object)
 
     return get_single_product_or_inventory(session, product_id=product_id)
 
