@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.orders.schemas import OrderOutputSchema
-from src.apps.orders.services import get_all_user_orders
+from src.apps.orders.services.order_services import get_all_user_orders
 from src.apps.user.models import User
 from src.apps.user.schemas import (
     UserInfoOutputSchema,

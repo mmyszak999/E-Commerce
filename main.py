@@ -5,12 +5,13 @@ from fastapi_jwt_auth.exceptions import AuthJWTException
 from src.apps.admin.routers import admin_router
 from src.apps.emails.routers import email_router
 from src.apps.jwt.routers import jwt_router
-from src.apps.orders.routers import order_router
+from src.apps.orders.routers.order_routers import order_router
 from src.apps.products.routers.category_routers import category_router
 from src.apps.products.routers.product_routers import product_router
 from src.apps.products.routers.inventory_routers import inventory_router
 from src.apps.user.routers.user_routers import user_router
 from src.apps.user.routers.address_routers import address_router
+from src.apps.orders.routers.cart_routers import cart_router
 
 from src.core.exceptions import (
     AccountNotActivatedException,
@@ -36,6 +37,7 @@ root_router.include_router(inventory_router)
 root_router.include_router(order_router)
 root_router.include_router(email_router)
 root_router.include_router(admin_router)
+root_router.include_router(cart_router)
 
 app.include_router(root_router)
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Float
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -31,6 +31,7 @@ class Cart(Base):
         ForeignKey("user.id", ondelete="cascade", onupdate="cascade"),
         nullable=False,
     )
+    cart_total_price = Column(Float, nullable=False, default=0)
     user = relationship("User", back_populates="carts")
     cart_items = relationship("CartItem", back_populates="cart")
 
@@ -53,6 +54,7 @@ class CartItem(Base):
     )
     product = relationship("Product", back_populates="cart_items")
     quantity = Column(Integer, nullable=False, default=1)
+    cart_item_price = Column(Float, nullable=False)
 
 
 class Order(Base):
@@ -69,6 +71,7 @@ class Order(Base):
     products = relationship(
         "Product", secondary=order_product_association_table, back_populates="orders"
     )
+    waiting_for_payment = Column(Boolean, nullable=False, server_default="true")
     order_accepted = Column(Boolean, nullable=False, server_default="false")
     payment_accepted = Column(Boolean, nullable=False, server_default="false")
     being_delivered = Column(Boolean, nullable=False, server_default="false")
@@ -94,3 +97,4 @@ class OrderItem(Base):
     )
     product = relationship("Product", back_populates="order_items")
     quantity = Column(Integer, nullable=False, default=1)
+    order_item_price = Column(Float, nullable=False, default=0)
