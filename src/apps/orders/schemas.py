@@ -24,6 +24,10 @@ class CartItemOutputSchema(CartItemBaseSchema):
     cart_item_price: float
 
 
+class CartInputSchema(BaseModel):
+    user_id: str
+
+
 class CartOutputSchema(BaseModel):
     id: str
     user: UserInfoOutputSchema

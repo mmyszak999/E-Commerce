@@ -1,8 +1,9 @@
 from sqlalchemy import delete, insert, select, update
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, selectinload, joinedload
 
 from src.apps.orders.models import Cart, CartItem
-from src.apps.orders.schemas import CartItemInputSchema, CartItemOutputSchema, CartItemUpdateSchema, CartOutputSchema
+from src.apps.orders.schemas import (CartItemInputSchema, CartItemOutputSchema, CartItemUpdateSchema,
+                                    CartOutputSchema)
 from src.apps.products.models import Product
 from src.apps.user.models import User
 from src.core.exceptions import DoesNotExist, ServiceException
@@ -12,7 +13,7 @@ from src.core.pagination.services import paginate
 from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
-def create_cart(session: Session, user_id: int) -> CartOutputSchema:
+def create_cart(session: Session, user_id: str) -> CartOutputSchema:
     new_cart = Cart(user_id=user_id)
     session.add(new_cart)
     session.commit()
@@ -27,7 +28,6 @@ def get_single_cart(
     
     if not (user_object := if_exists(User, "id", cart_object.user_id, session)):
         raise DoesNotExist(User.__name__, "user_id", cart_object.user_id)
-    print(user_object.__dict__)
 
     return CartOutputSchema.from_orm(cart_object)
 
@@ -35,7 +35,7 @@ def get_single_cart(
 def get_all_carts(
     session: Session, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema:
-    query = select(Cart).options(selectinload(Cart.cart_items))
+    query = select(Cart).join(User, Cart.user_id == User.id)
 
     if query_params:
         query = filter_and_sort_instances(query_params, query, Cart)
@@ -52,7 +52,7 @@ def get_all_user_carts(
     session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema[CartOutputSchema]:
     query = (
-        select(Cart).filter(User.id == user_id).options(selectinload(Cart.cart_items))
+        select(Cart).join(User, Cart.user_id == User.id).filter(User.id == user_id)
     )
     if query_params:
         query = filter_and_sort_instances(query_params, query, Cart)

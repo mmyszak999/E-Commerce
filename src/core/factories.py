@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 from src.apps.emails.schemas import EmailUpdateSchema
-from src.apps.orders.schemas import OrderInputSchema
+from src.apps.orders.schemas import OrderInputSchema, CartInputSchema
 from src.apps.products.schemas import (
     CategoryInputSchema,
     InventoryInputSchema,
@@ -158,3 +158,11 @@ class EmailUpdateSchemaFactory(SchemaFactory):
             email=email,
             new_email=new_email,
         )
+
+
+class CartInputSchemaFactory(SchemaFactory):
+    def __init__(self, schema_class=CartInputSchema):
+        super().__init__(schema_class)
+
+    def generate(self, user_id: str):
+        return self.schema_class(user_id=user_id)

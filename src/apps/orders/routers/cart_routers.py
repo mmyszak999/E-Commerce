@@ -6,7 +6,8 @@ from src.apps.orders.schemas import (
     CartItemInputSchema,
     CartItemOutputSchema,
     CartItemUpdateSchema,
-    CartOutputSchema
+    CartOutputSchema,
+    CartInputSchema
 )
 from src.apps.orders.services.cart_services import (
     create_cart,
