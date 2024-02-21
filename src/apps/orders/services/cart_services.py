@@ -14,6 +14,9 @@ from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
 def create_cart(session: Session, user_id: str) -> CartOutputSchema:
+    if not (user_object := if_exists(User, "id", user_id, session)):
+        raise DoesNotExist(User.__name__, "id", user_id)
+    
     new_cart = Cart(user_id=user_id)
     session.add(new_cart)
     session.commit()
@@ -33,7 +36,7 @@ def get_single_cart(
 
 
 def get_all_carts(
-    session: Session, page_params: PageParams, query_params: list[tuple]
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
     query = select(Cart).join(User, Cart.user_id == User.id)
 
@@ -49,7 +52,7 @@ def get_all_carts(
     )
     
 def get_all_user_carts(
-    session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
+    session: Session, user_id: int, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema[CartOutputSchema]:
     query = (
         select(Cart).join(User, Cart.user_id == User.id).filter(User.id == user_id)
