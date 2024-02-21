@@ -162,3 +162,11 @@ def send_email(
 
 def generate_uuid():
     return str(uuid.uuid4())
+
+
+def calculate_item_price(quantity: int, product_price: float) -> float:
+    return quantity * product_price  
+
+  
+def validate_item_quantity(product_quantity: int, entered_quantity: int) -> bool:
+    return entered_quantity <= product_quantity

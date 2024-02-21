@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from src.apps.products.schemas import ProductOutputSchema
 from src.apps.user.schemas import UserInfoOutputSchema
@@ -8,6 +8,12 @@ from src.apps.user.schemas import UserInfoOutputSchema
 
 class CartItemBaseSchema(BaseModel):
     quantity: int
+    
+    @validator("quantity")
+    def validate_quantity(cls, quantity: int) -> str:
+        if quantity < 0:
+            raise ValueError("Quantity of a product must be a positive integer!")
+        return quantity
 
 
 class CartItemInputSchema(CartItemBaseSchema):
@@ -16,12 +22,22 @@ class CartItemInputSchema(CartItemBaseSchema):
 
 class CartItemUpdateSchema(BaseModel):
     quantity: Optional[int]
+    
+    @validator("quantity")
+    def validate_quantity(cls, quantity: int) -> str:
+        if quantity < 0:
+            raise ValueError("Quantity of a product must be a positive integer!")
+        return quantity
 
 
 class CartItemOutputSchema(CartItemBaseSchema):
     id: str
     product: ProductOutputSchema
+    cart_id: str
     cart_item_price: float
+    
+    class Config:
+        orm_mode = True
 
 
 class CartInputSchema(BaseModel):

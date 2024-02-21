@@ -50,3 +50,10 @@ class ActiveCartException(ServiceException):
             "Can't create another cart when other one is active! "
             "Please empty the active cart before creating a new cart! "
         )
+
+class ExceededItemQuantityException(ServiceException):
+    def __init__(self, product_quantity: int, entered_quantity: int) -> None:
+        super().__init__(
+            f"Requested quantity of the product({entered_quantity}) is bigger than the available one ({product_quantity})! "
+            "Please change the quantity you entered!"
+        )

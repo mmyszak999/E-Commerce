@@ -12,6 +12,7 @@ from src.apps.products.routers.inventory_routers import inventory_router
 from src.apps.user.routers.user_routers import user_router
 from src.apps.user.routers.address_routers import address_router
 from src.apps.orders.routers.cart_routers import cart_router
+from src.apps.orders.routers.cart_items_routers import cart_items_router
 
 from src.core.exceptions import (
     AccountNotActivatedException,
@@ -22,7 +23,8 @@ from src.core.exceptions import (
     DoesNotExist,
     IsOccupied,
     ServiceException,
-    NegativeQuantityException
+    NegativeQuantityException,
+    ExceededItemQuantityException
 )
 
 app = FastAPI()
@@ -39,6 +41,7 @@ root_router.include_router(order_router)
 root_router.include_router(email_router)
 root_router.include_router(admin_router)
 root_router.include_router(cart_router)
+root_router.include_router(cart_items_router)
 
 app.include_router(root_router)
 
@@ -119,6 +122,14 @@ def handle_negative_quantity_exception(
 @app.exception_handler(ActiveCartException)
 def handle_active_cart_exception(
     request: Request, exception: ActiveCartException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+@app.exception_handler(ExceededItemQuantityException)
+def handle_exceeded_item_quantity_exception(
+    request: Request, exception: ExceededItemQuantityException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
