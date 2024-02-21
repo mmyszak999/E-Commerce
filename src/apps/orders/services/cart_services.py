@@ -6,7 +6,7 @@ from src.apps.orders.schemas import (CartItemInputSchema, CartItemOutputSchema, 
                                     CartOutputSchema)
 from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.core.exceptions import DoesNotExist, ServiceException
+from src.core.exceptions import DoesNotExist, ServiceException, ActiveCartException
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -17,6 +17,9 @@ def create_cart(session: Session, user_id: str) -> CartOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, "id", user_id)
     
+    if user_object.carts:
+        raise ActiveCartException()
+        
     new_cart = Cart(user_id=user_id)
     session.add(new_cart)
     session.commit()

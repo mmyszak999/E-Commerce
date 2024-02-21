@@ -15,6 +15,7 @@ from src.apps.orders.routers.cart_routers import cart_router
 
 from src.core.exceptions import (
     AccountNotActivatedException,
+    ActiveCartException,
     AlreadyExists,
     AuthenticationException,
     AuthorizationException,
@@ -110,6 +111,14 @@ def handle_account_not_activated_exception(
 @app.exception_handler(NegativeQuantityException)
 def handle_negative_quantity_exception(
     request: Request, exception: NegativeQuantityException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+@app.exception_handler(ActiveCartException)
+def handle_active_cart_exception(
+    request: Request, exception: ActiveCartException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
