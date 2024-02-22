@@ -14,7 +14,8 @@ from src.apps.orders.services.cart_services import (
 )
 from src.apps.orders.services.cart_items_services import (
     create_cart_item,
-    get_single_cart_item
+    get_single_cart_item,
+    get_all_cart_items_for_single_cart
 )
 from src.apps.orders.routers.cart_routers import cart_router
 from src.apps.user.models import User
@@ -61,16 +62,22 @@ def get_cart_item(
     db_cart_item = get_single_cart_item(db, cart_item_id)
     return db_cart_item
 
+
 @cart_items_router.get(
-    "/ww",
+    "/",
+    response_model=PagedResponseSchema[CartItemOutputSchema],
     status_code=status.HTTP_200_OK,
 )
-def test(
+def get_cart_items_for_single_cart(
+    request: Request,
     cart_id: str,
     db: Session = Depends(get_db),
+    page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
-) -> CartOutputSchema:
-    return {"ww": 23}
+) -> PagedResponseSchema[CartItemOutputSchema]:
+    cart_check = get_single_cart(db, cart_id)
+    check_if_staff_or_owner(request_user, "id", cart_check.user_id)
+    return get_all_cart_items_for_single_cart(db, cart_id, page_params, request.query_params.multi_items())
 
 
 """@cart_router.get(
