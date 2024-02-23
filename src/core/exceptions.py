@@ -57,3 +57,16 @@ class ExceededItemQuantityException(ServiceException):
             f"Requested quantity of the product({entered_quantity}) is bigger than the available one ({product_quantity})! "
             "Please change the quantity you entered!"
         )
+
+
+class NonPositiveCartItemQuantityException(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(
+            f"Requested quantity of the product equals 0! Please change the item quantity to a positive integer!"
+        )
+
+class EmptyCartException(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(
+            f"You have no items in the cart!"
+        )

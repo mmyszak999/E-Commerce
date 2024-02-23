@@ -165,7 +165,7 @@ def generate_uuid():
 
 
 def calculate_item_price(quantity: int, product_price: float) -> float:
-    return quantity * product_price  
+    return float(quantity * product_price)
 
   
 def validate_item_quantity(product_quantity: int, entered_quantity: int) -> bool:

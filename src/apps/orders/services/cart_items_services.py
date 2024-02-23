@@ -5,7 +5,8 @@ from src.apps.orders.models import Cart, CartItem
 from src.apps.orders.schemas import (CartItemInputSchema, CartItemOutputSchema, CartItemUpdateSchema)
 from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.core.exceptions import DoesNotExist, ServiceException, ActiveCartException, ExceededItemQuantityException
+from src.core.exceptions import (DoesNotExist, ServiceException, ActiveCartException, ExceededItemQuantityException,
+                                 NonPositiveCartItemQuantityException, EmptyCartException)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -35,11 +36,26 @@ def create_cart_item(session: Session, cart_item: CartItemInputSchema, cart_id: 
         )
     
     if new_cart_item := item_in_cart_check:
+        if requested_quantity == 0:
+            print("nun")
+            statement = delete(CartItem).filter(CartItem.id == item_in_cart_check.id)
+            session.execute(statement)
+            session.commit()
+            
+            if not cart_object.cart_items:
+                print("go away")
+                statement = delete(Cart).filter(Cart.id == cart_id)
+                session.execute(statement)
+                session.commit()
+                raise EmptyCartException()
+            
+            raise NonPositiveCartItemQuantityException()
+            
         old_item_price = new_cart_item.cart_item_price
         new_item_price = calculate_item_price(requested_quantity, product_object.price)
         
         price_difference = old_item_price - new_item_price
-        cart_object.cart_total_price += price_difference
+        cart_object.cart_total_price -= price_difference
         session.add(cart_object)
         session.commit()
         
@@ -48,9 +64,11 @@ def create_cart_item(session: Session, cart_item: CartItemInputSchema, cart_id: 
         session.add(new_cart_item)
         session.commit()
         
-    else: 
-        cart_item_price = calculate_item_price(requested_quantity, product_object.price)
+    else:
+        if requested_quantity == 0:
+            raise NonPositiveCartItemQuantityException()
         
+        cart_item_price = calculate_item_price(requested_quantity, product_object.price)
         cart_object.cart_total_price += cart_item_price
         session.add(cart_object)
         session.commit()
