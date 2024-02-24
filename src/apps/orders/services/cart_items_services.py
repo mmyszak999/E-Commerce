@@ -6,7 +6,8 @@ from src.apps.orders.schemas import (CartItemInputSchema, CartItemOutputSchema, 
 from src.apps.products.models import Product
 from src.apps.user.models import User
 from src.core.exceptions import (DoesNotExist, ServiceException, ActiveCartException, ExceededItemQuantityException,
-                                 NonPositiveCartItemQuantityException, EmptyCartException)
+                                 NonPositiveCartItemQuantityException, EmptyCartException, NoSuchItemInCartException,
+                                 CartItemWithZeroQuantityException)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -36,33 +37,9 @@ def create_cart_item(session: Session, cart_item: CartItemInputSchema, cart_id: 
         )
     
     if new_cart_item := item_in_cart_check:
-        if requested_quantity == 0:
-            print("nun")
-            statement = delete(CartItem).filter(CartItem.id == item_in_cart_check.id)
-            session.execute(statement)
-            session.commit()
-            
-            if not cart_object.cart_items:
-                print("go away")
-                statement = delete(Cart).filter(Cart.id == cart_id)
-                session.execute(statement)
-                session.commit()
-                raise EmptyCartException()
-            
-            raise NonPositiveCartItemQuantityException()
-            
-        old_item_price = new_cart_item.cart_item_price
-        new_item_price = calculate_item_price(requested_quantity, product_object.price)
-        
-        price_difference = old_item_price - new_item_price
-        cart_object.cart_total_price -= price_difference
-        session.add(cart_object)
-        session.commit()
-        
-        new_cart_item.quantity = requested_quantity
-        new_cart_item.cart_item_price = new_item_price
-        session.add(new_cart_item)
-        session.commit()
+        update_single_cart_item(
+            session, new_cart_item, cart_object, product_object, requested_quantity
+        )
         
     else:
         if requested_quantity == 0:
@@ -80,6 +57,7 @@ def create_cart_item(session: Session, cart_item: CartItemInputSchema, cart_id: 
         session.commit()
     
     return CartItemOutputSchema.from_orm(new_cart_item)
+
 
 def get_single_cart_item(
     session: Session, cart_item_id: int
@@ -107,24 +85,72 @@ def get_all_cart_items_for_single_cart(
         page_params=page_params,
         session=session,
     )
+
+def update_single_cart_item(
+    session: Session, cart_item: CartItem, cart: Cart, product: Product, requested_quantity: int
+) -> None:
     
-"""def get_all_user_carts(
-    session: Session, user_id: int, page_params: PageParams, query_params: list[tuple] = None
-) -> PagedResponseSchema[CartOutputSchema]:
-    query = (
-        select(Cart).join(User, Cart.user_id == User.id).filter(User.id == user_id)
-    )
-    if query_params:
-        query = filter_and_sort_instances(query_params, query, Cart)
+    if requested_quantity == 0:
+        statement = delete(CartItem).filter(CartItem.id == cart_item.id)
+        session.execute(statement)
+        session.commit()
+                
+        if not cart.cart_items:
+            statement = delete(Cart).filter(Cart.id == cart.id)
+            session.execute(statement)
+            session.commit()
+            raise EmptyCartException()
+                
+        raise CartItemWithZeroQuantityException()
+                
+    old_item_price = cart_item.cart_item_price
+    new_item_price = calculate_item_price(requested_quantity, product.price)
+            
+    price_difference = old_item_price - new_item_price
+    cart.cart_total_price -= price_difference
+    session.add(cart)
+    session.commit()
+            
+    cart_item.quantity = requested_quantity
+    cart_item.cart_item_price = new_item_price
+    session.add(cart_item)
+    session.commit()
+    
+    
+def update_cart_item(
+    session: Session, cart_item_id: str, cart_item_input: CartItemUpdateSchema, cart_id: str
+):
+    if not (cart_item_object := if_exists(CartItem, "id", cart_item_id, session)):
+        raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
+    
+    if not (cart_object := if_exists(Cart, "id", cart_id, session)):
+        raise DoesNotExist(Cart.__name__, "id", cart_id)
+    
+    cart_item_data = cart_item_input.dict()
+    requested_quantity = cart_item_data.get("quantity")
+    
+    item_in_cart_check = cart_item_object.filter(CartItem.cart.id == cart_id).limit(1)
+    
+    if not (new_cart_item := item_in_cart_check):
+        raise NoSuchItemInCartException
+    
+    if not (product_object := if_exists(Product, "id", new_cart_item.product.id, session)):
+        raise DoesNotExist(Product.__name__, "id", new_cart_item.product.id)
+    
+    available_quantity = product_object.inventory.quantity
+        
+    if not validate_item_quantity(available_quantity, requested_quantity):
+        raise ExceededItemQuantityException(
+            available_quantity, requested_quantity
+        )
+            
+    update_single_cart_item(
+        session, cart_item_object, cart_object, product_object, requested_quantity)
+    
+    return get_single_cart_item(session, cart_item_id)
 
-    return paginate(
-        query=query,
-        response_schema=CartOutputSchema,
-        table=Cart,
-        page_params=page_params,
-        session=session,
-    )
 
+"""
 def delete_single_cart(session: Session, cart_id: int):
     if not if_exists(Cart, "id", cart_id, session):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
