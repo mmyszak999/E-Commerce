@@ -91,6 +91,9 @@ def update_single_cart_item(
 ) -> None:
     
     if requested_quantity == 0:
+        cart.cart_total_price -= cart_item.cart_item_price
+        session.add(cart)
+        
         statement = delete(CartItem).filter(CartItem.id == cart_item.id)
         session.execute(statement)
         session.commit()
@@ -129,8 +132,10 @@ def update_cart_item(
     cart_item_data = cart_item_input.dict()
     requested_quantity = cart_item_data.get("quantity")
     
-    item_in_cart_check = cart_item_object.filter(CartItem.cart.id == cart_id).limit(1)
-    
+    item_in_cart_check = session.scalar(
+        select(CartItem).filter(CartItem.id == cart_item_id, CartItem.cart_id == cart_id).limit(1)
+    )
+
     if not (new_cart_item := item_in_cart_check):
         raise NoSuchItemInCartException
     

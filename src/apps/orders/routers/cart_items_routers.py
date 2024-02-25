@@ -15,7 +15,8 @@ from src.apps.orders.services.cart_services import (
 from src.apps.orders.services.cart_items_services import (
     create_cart_item,
     get_single_cart_item,
-    get_all_cart_items_for_single_cart
+    get_all_cart_items_for_single_cart,
+    update_cart_item
 )
 from src.apps.orders.routers.cart_routers import cart_router
 from src.apps.user.models import User
@@ -79,38 +80,22 @@ def get_cart_items_for_single_cart(
     check_if_staff_or_owner(request_user, "id", cart_check.user_id)
     return get_all_cart_items_for_single_cart(db, cart_id, page_params, request.query_params.multi_items())
 
-
-"""@cart_router.get(
-    "/all",
-    response_model=PagedResponseSchema[CartOutputSchema],
+@cart_items_router.patch(
+    "/{cart_item_id}",
+    response_model=CartItemUpdateSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_carts(
-    request: Request,
+def update_single_cart_item(
+    cart_id: str,
+    cart_item_id: str,
+    cart_item_input: CartItemUpdateSchema,
     db: Session = Depends(get_db),
-    page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
-) -> PagedResponseSchema[CartOutputSchema]:
+) -> CartItemOutputSchema:
     check_if_staff(request_user)
-    return get_all_carts(db, page_params, request.query_params.multi_items())
+    return update_cart_item(db, cart_item_id, cart_item_input, cart_id)
 
-
-@cart_router.get(
-    "/",
-    response_model=PagedResponseSchema[CartOutputSchema],
-    status_code=status.HTTP_200_OK,
-)
-def get_logged_user_carts(
-    request: Request,
-    db: Session = Depends(get_db),
-    page_params: PageParams = Depends(),
-    request_user: User = Depends(authenticate_user),
-) -> PagedResponseSchema[CartOutputSchema]:
-    return get_all_user_carts(
-        db, request_user.id, page_params, request.query_params.multi_items()
-    )
-
-
+"""
 @cart_router.delete(
     "/{cart_id}",
     status_code=status.HTTP_204_NO_CONTENT,
