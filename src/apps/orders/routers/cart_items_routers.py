@@ -16,7 +16,8 @@ from src.apps.orders.services.cart_items_services import (
     create_cart_item,
     get_single_cart_item,
     get_all_cart_items_for_single_cart,
-    update_cart_item
+    update_cart_item,
+    delete_single_cart_item
 )
 from src.apps.orders.routers.cart_routers import cart_router
 from src.apps.user.models import User
@@ -44,6 +45,8 @@ def post_cart_item(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> CartOutputSchema:
+    cart_check = get_single_cart(db, cart_id)
+    check_if_staff_or_owner(request_user, "id", cart_check.user_id)
     return create_cart_item(db, cart_item, cart_id)
 
 
@@ -82,7 +85,7 @@ def get_cart_items_for_single_cart(
 
 @cart_items_router.patch(
     "/{cart_item_id}",
-    response_model=CartItemUpdateSchema,
+    response_model=CartItemOutputSchema,
     status_code=status.HTTP_200_OK,
 )
 def update_single_cart_item(
@@ -92,20 +95,22 @@ def update_single_cart_item(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> CartItemOutputSchema:
-    check_if_staff(request_user)
+    cart_check = get_single_cart(db, cart_id)
+    check_if_staff_or_owner(request_user, "id", cart_check.user_id)
     return update_cart_item(db, cart_item_id, cart_item_input, cart_id)
 
-"""
-@cart_router.delete(
-    "/{cart_id}",
+
+@cart_items_router.delete(
+    "/{cart_item_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_cart(
+def delete_cart_item(
     cart_id: str,
+    cart_item_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> Response:
-    check_if_staff(request_user)
-    delete_single_cart(db, cart_id)
+    cart_check = get_single_cart(db, cart_id)
+    check_if_staff_or_owner(request_user, "id", cart_check.user_id)
+    delete_single_cart_item(db, cart_id, cart_item_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-"""

@@ -155,13 +155,28 @@ def update_cart_item(
     return get_single_cart_item(session, cart_item_id)
 
 
-"""
-def delete_single_cart(session: Session, cart_id: int):
-    if not if_exists(Cart, "id", cart_id, session):
+
+def delete_single_cart_item(session: Session, cart_id: str, cart_item_id: str):
+    if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
+    
+    cart_item_object = session.scalar(
+        select(CartItem).filter(CartItem.id == cart_item_id, CartItem.cart_id == cart_id).limit(1)
+    )
 
-    statement = delete(Cart).filter(Cart.id == cart_id)
-    result = session.execute(statement)
-    session.commit()
-
-    return result"""
+    if cart_item_object:
+        cart_object.cart_total_price -= cart_item_object.cart_item_price
+        session.add(cart_object)
+        
+        statement = delete(CartItem).filter(CartItem.id == cart_item_id)
+        result = session.execute(statement)
+        session.commit()
+        
+        if not cart_object.cart_items:
+            statement = delete(Cart).filter(Cart.id == cart_object.id)
+            session.execute(statement)
+            session.commit()
+            raise EmptyCartException()
+        
+        return result
+    raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
