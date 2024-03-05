@@ -64,7 +64,6 @@ def get_single_cart_item(
 ) -> CartItemOutputSchema:
     if not (cart_item_object := if_exists(CartItem, "id", cart_item_id, session)):
         raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
-    print(cart_item_object.cart.user.username, "w0w")
     
     return CartItemOutputSchema.from_orm(cart_item_object)
 

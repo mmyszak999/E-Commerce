@@ -63,8 +63,7 @@ def get_cart_item(
 ) -> CartOutputSchema:
     cart_check = get_single_cart(db, cart_id)
     check_if_staff_or_owner(request_user, "id", cart_check.user_id)
-    db_cart_item = get_single_cart_item(db, cart_item_id)
-    return db_cart_item
+    return get_single_cart_item(db, cart_item_id)
 
 
 @cart_items_router.get(

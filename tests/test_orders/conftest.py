@@ -1,10 +1,12 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from src.apps.orders.services.cart_services import create_cart
+from src.apps.orders.services.cart_services import create_cart, get_all_carts
+from src.apps.orders.services.cart_items_services import create_cart_item
 from src.apps.orders.models import Cart
 from src.apps.orders.schemas import CartOutputSchema
 from src.apps.user.schemas import UserOutputSchema
+from src.core.factories import CartItemInputSchemaFactory, CartInputSchemaFactory
 from src.core.pagination.models import PageParams
 from src.core.utils.utils import if_exists
 from tests.test_users.conftest import (
@@ -16,7 +18,23 @@ from tests.test_users.conftest import (
     superuser_auth_headers,
 )
 
+from tests.test_products.conftest import db_products, db_categories
+
+DB_CART_ITEMS_SCHEMAS = [CartItemInputSchemaFactory().generate(product_id="") for _ in range(3)]
 
 @pytest.fixture
 def db_carts(sync_session: Session, db_user: UserOutputSchema, db_staff_user: UserOutputSchema) -> list[CartOutputSchema]:
-    return [create_cart(sync_session, user_id) for user_id in [db_user.id, db_staff_user.id]]
+    return get_all_carts(sync_session, PageParams())
+
+@pytest.fixture
+def db_cart_items(
+    sync_session: Session, db_categories, db_products, db_user: UserOutputSchema,
+    db_staff_user: UserOutputSchema
+    ):
+    carts = [create_cart(sync_session, user.id) for user in [db_user, db_staff_user]]
+    [setattr(cart_item_schema, "product_id", product.id)
+        for cart_item_schema, product in zip(DB_CART_ITEMS_SCHEMAS, db_products)]
+    return [
+        create_cart_item(sync_session, cart_item_schema, cart_id) for cart_item_schema, cart_id
+        in zip(DB_CART_ITEMS_SCHEMAS, [carts[0].id, carts[1].id, carts[0].id])
+        ]
