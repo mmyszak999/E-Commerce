@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 from src.apps.emails.schemas import EmailUpdateSchema
-from src.apps.orders.schemas import OrderInputSchema, CartInputSchema, CartItemInputSchema
+from src.apps.orders.schemas import OrderInputSchema, CartInputSchema, CartItemInputSchema, CartItemUpdateSchema
 from src.apps.products.schemas import (
     CategoryInputSchema,
     InventoryInputSchema,
@@ -176,4 +176,13 @@ class CartItemInputSchemaFactory(SchemaFactory):
         return self.schema_class(
             quantity=quantity or self.faker.random_int(min=1, max=20),
             product_id=product_id
+        )
+
+class CartItemUpdateSchemaFactory(SchemaFactory):
+    def __init__(self, schema_class=CartItemUpdateSchema):
+        super().__init__(schema_class)
+
+    def generate(self, quantity: Optional[int] = None):
+        return self.schema_class(
+            quantity=quantity
         )
