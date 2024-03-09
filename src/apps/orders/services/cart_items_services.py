@@ -35,12 +35,12 @@ def create_cart_item(session: Session, cart_item: CartItemInputSchema, cart_id: 
         raise ExceededItemQuantityException(
             available_quantity, requested_quantity
         )
-    
+        
     if new_cart_item := item_in_cart_check:
         update_single_cart_item(
             session, new_cart_item, cart_object, product_object, requested_quantity
         )
-        
+    
     else:
         if requested_quantity == 0:
             raise NonPositiveCartItemQuantityException()
