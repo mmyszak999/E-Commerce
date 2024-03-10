@@ -185,6 +185,7 @@ class CartItemUpdateSchemaFactory(SchemaFactory):
         super().__init__(schema_class)
 
     def generate(self, quantity: Optional[int] = None):
+        set_quantity = quantity if quantity is not None else self.faker.random_int(min=1, max=20)
         return self.schema_class(
-            quantity=quantity
+            quantity=set_quantity
         )

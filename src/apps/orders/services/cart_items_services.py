@@ -120,7 +120,7 @@ def update_single_cart_item(
     
     
 def update_cart_item(
-    session: Session, cart_item_id: str, cart_item_input: CartItemUpdateSchema, cart_id: str
+    session: Session, cart_item_input: CartItemUpdateSchema, cart_item_id: str, cart_id: str
 ):
     if not (cart_item_object := if_exists(CartItem, "id", cart_item_id, session)):
         raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
@@ -128,8 +128,6 @@ def update_cart_item(
     if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
     
-    cart_item_data = cart_item_input.dict()
-    requested_quantity = cart_item_data.get("quantity")
     
     item_in_cart_check = session.scalar(
         select(CartItem).filter(CartItem.id == cart_item_id, CartItem.cart_id == cart_id).limit(1)
@@ -140,6 +138,9 @@ def update_cart_item(
     
     if not (product_object := if_exists(Product, "id", new_cart_item.product.id, session)):
         raise DoesNotExist(Product.__name__, "id", new_cart_item.product.id)
+    
+    cart_item_data = cart_item_input.dict()
+    requested_quantity = cart_item_data.get("quantity")
     
     available_quantity = product_object.inventory.quantity
         

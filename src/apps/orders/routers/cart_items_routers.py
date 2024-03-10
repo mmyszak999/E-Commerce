@@ -96,7 +96,7 @@ def update_single_cart_item(
 ) -> CartItemOutputSchema:
     cart_check = get_single_cart(db, cart_id)
     check_if_staff_or_owner(request_user, "id", cart_check.user_id)
-    return update_cart_item(db, cart_item_id, cart_item_input, cart_id)
+    return update_cart_item(db, cart_item_input, cart_item_id, cart_id)
 
 
 @cart_items_router.delete(
