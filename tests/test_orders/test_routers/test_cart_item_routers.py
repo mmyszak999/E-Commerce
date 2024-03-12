@@ -100,6 +100,7 @@ def test_authenticated_user_can_get_single_cart_item(
     db_products: list[ProductOutputSchema], db_user: UserOutputSchema
 ):
     cart = [cart for cart in db_carts.results if cart.user_id == db_user.id][0]
+    print(db_cart_items)
     
     response = sync_client.get(f"carts/{cart.id}/items/{cart.cart_items[0].id}", headers=auth_headers)
     

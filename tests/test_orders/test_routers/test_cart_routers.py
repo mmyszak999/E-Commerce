@@ -35,7 +35,7 @@ def test_staff_user_can_get_single_cart(
     sync_client: TestClient, staff_auth_headers: dict[str, str],
     db_carts: list[CartOutputSchema], db_user: UserOutputSchema
 ):
-    response = sync_client.get(f"carts/{db_carts[0].id}", headers=staff_auth_headers)
+    response = sync_client.get(f"carts/{db_carts.results[1].id}", headers=staff_auth_headers)
     
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["user_id"] == db_user.id
@@ -53,7 +53,7 @@ def test_staff_can_delete_cart(
     sync_client: TestClient, staff_auth_headers: dict[str, str],
     db_carts: list[CartOutputSchema]
 ):
-    response = sync_client.delete(f"carts/{db_carts[0].id}", headers=staff_auth_headers)
+    response = sync_client.delete(f"carts/{db_carts.results[0].id}", headers=staff_auth_headers)
     
     assert response.status_code == status.HTTP_204_NO_CONTENT
     
@@ -78,7 +78,7 @@ def test_authenticated_user_cannot_get_all_carts(
 def test_anonymous_user_cannot_get_single_cart(
     sync_client: TestClient, db_carts: list[CartOutputSchema]
 ):
-    response = sync_client.get(f"carts/{db_carts[0].id}")
+    response = sync_client.get(f"carts/{db_carts.results[0].id}")
     
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -95,7 +95,7 @@ def test_authenticated_cannot_delete_cart(
     sync_client: TestClient, auth_headers: dict[str, str],
     db_carts: list[CartOutputSchema]
 ):
-    response = sync_client.delete(f"carts/{db_carts[0].id}", headers=auth_headers)
+    response = sync_client.delete(f"carts/{db_carts.results[0].id}", headers=auth_headers)
     
     assert response.status_code == status.HTTP_404_NOT_FOUND
 

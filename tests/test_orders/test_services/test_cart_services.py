@@ -28,8 +28,8 @@ def test_raise_exception_when_cart_created_with_nonexistent_user_id(
 def test_if_only_one_cart_was_returned(
     sync_session: Session, db_carts: list[CartOutputSchema]
 ):
-    cart = get_single_cart(sync_session, db_carts[1].id)
-    assert cart.id == db_carts[1].id
+    cart = get_single_cart(sync_session, db_carts.results[1].id)
+    assert cart.id == db_carts.results[1].id
 
 
 def test_raise_exception_while_getting_nonexistent_cart(
@@ -40,7 +40,7 @@ def test_raise_exception_while_getting_nonexistent_cart(
 
 
 def test_check_user_carts_ownership(
-    sync_session: Session, db_carts: list[CartOutputSchema], db_user: UserOutputSchema
+    sync_session: Session, db_user: UserOutputSchema
 ):
     create_cart(sync_session, db_user.id)
     carts = get_all_user_carts(sync_session, db_user.id, PageParams(page=1, size=25))
@@ -52,7 +52,7 @@ def test_if_multiple_carts_were_returned(
     sync_session: Session, db_carts: list[CartOutputSchema]
 ):
     carts = get_all_carts(sync_session, PageParams(page=1, size=5))
-    assert carts.total == len(db_carts)
+    assert carts.total == db_carts.total
 
 
 def test_raise_exception_while_deleting_nonexistent_cart(

@@ -67,6 +67,23 @@ def get_single_cart_item(
     
     return CartItemOutputSchema.from_orm(cart_item_object)
 
+def get_all_cart_items(
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
+) -> PagedResponseSchema:
+    query = select(CartItem)
+    #.join(User, Cart.user_id == User.id)
+
+    if query_params:
+        query = filter_and_sort_instances(query_params, query, Cart)
+
+    return paginate(
+        query=query,
+        response_schema=CartItemOutputSchema,
+        table=CartItem,
+        page_params=page_params,
+        session=session,
+    )
+
 
 def get_all_cart_items_for_single_cart(
     session: Session, cart_id: str, page_params: PageParams, query_params: list[tuple] = None
