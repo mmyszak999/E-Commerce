@@ -29,7 +29,10 @@ def create_cart_item(session: Session, cart_item: CartItemInputSchema, cart_id: 
         select(CartItem).filter(CartItem.cart_id == cart_id, CartItem.product_id == product_id).limit(1)
     )
     
-    available_quantity = product_object.inventory.quantity
+    available_quantity = product_object.inventory.quantity_for_cart_items
+    
+    if item_quantity_in_cart := getattr(item_in_cart_check, "quantity", False):
+        available_quantity += item_quantity_in_cart
     
     if not validate_item_quantity(available_quantity, requested_quantity):
         raise ExceededItemQuantityException(
@@ -48,7 +51,9 @@ def create_cart_item(session: Session, cart_item: CartItemInputSchema, cart_id: 
         cart_item_price = calculate_item_price(requested_quantity, product_object.price)
         cart_object.cart_total_price += cart_item_price
         session.add(cart_object)
-        session.commit()
+        
+        product_object.inventory.quantity_for_cart_items -= requested_quantity
+        session.add(product_object)
         
         cart_item_data['cart_item_price'] = cart_item_price
         cart_item_data["cart_id"] = cart_id
@@ -110,6 +115,9 @@ def update_single_cart_item(
         cart.cart_total_price -= cart_item.cart_item_price
         session.add(cart)
         
+        product.inventory.quantity_for_cart_items += cart_item.quantity
+        session.add(product)
+        
         statement = delete(CartItem).filter(CartItem.id == cart_item.id)
         session.execute(statement)
         session.commit()
@@ -128,7 +136,10 @@ def update_single_cart_item(
     price_difference = old_item_price - new_item_price
     cart.cart_total_price -= price_difference
     session.add(cart)
-    session.commit()
+    
+    quantity_difference = cart_item.quantity - requested_quantity
+    product.inventory.quantity_for_cart_items += quantity_difference
+    session.add(product)
             
     cart_item.quantity = requested_quantity
     cart_item.cart_item_price = new_item_price
@@ -159,7 +170,7 @@ def update_cart_item(
     cart_item_data = cart_item_input.dict()
     requested_quantity = cart_item_data.get("quantity")
     
-    available_quantity = product_object.inventory.quantity
+    available_quantity = product_object.inventory.quantity_for_cart_items
         
     if not validate_item_quantity(available_quantity, requested_quantity):
         raise ExceededItemQuantityException(
@@ -182,8 +193,14 @@ def delete_single_cart_item(session: Session, cart_id: str, cart_item_id: str):
     )
 
     if cart_item_object:
+        if not (product_object := if_exists(Product, "id", cart_item_object.product.id, session)):
+            raise DoesNotExist(Product.__name__, "id", cart_item_object.product.id)
+        
         cart_object.cart_total_price -= cart_item_object.cart_item_price
         session.add(cart_object)
+        
+        product_object.inventory.quantity_for_cart_items += cart_item_object.quantity
+        session.add(product_object)
         
         statement = delete(CartItem).filter(CartItem.id == cart_item_id)
         result = session.execute(statement)

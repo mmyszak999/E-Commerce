@@ -64,6 +64,7 @@ class ProductInventory(Base):
         String, primary_key=True, unique=True, nullable=False, default=generate_uuid
     )
     quantity = Column(Integer, nullable=False)
+    quantity_for_cart_items = Column(Integer, nullable=False, default=0)
     sold = Column(Integer, nullable=False, default=0)
     product_id = Column(
         String,

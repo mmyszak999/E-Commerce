@@ -1,8 +1,8 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Float
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Float, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from src.core.utils.utils import generate_uuid
+from src.core.utils.utils import generate_uuid, set_cart_item_validity
 from src.database.db_connection import Base
 
 order_product_association_table = Table(
@@ -55,6 +55,7 @@ class CartItem(Base):
     product = relationship("Product", back_populates="cart_items")
     quantity = Column(Integer, nullable=False, default=1)
     cart_item_price = Column(Float, nullable=False)
+    cart_item_validity = Column(Date, nullable=False, default=set_cart_item_validity)
 
 
 class Order(Base):

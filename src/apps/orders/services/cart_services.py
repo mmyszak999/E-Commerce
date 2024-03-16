@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session, selectinload, joinedload
 from src.apps.orders.models import Cart, CartItem
 from src.apps.orders.schemas import (CartItemInputSchema, CartItemOutputSchema, CartItemUpdateSchema,
                                     CartOutputSchema)
+from src.apps.orders.services.cart_items_services import delete_single_cart_item
 from src.apps.products.models import Product
 from src.apps.user.models import User
 from src.core.exceptions import DoesNotExist, ServiceException, ActiveCartException
@@ -72,9 +73,10 @@ def get_all_user_carts(
     )
 
 def delete_single_cart(session: Session, cart_id: int):
-    if not if_exists(Cart, "id", cart_id, session):
+    if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
-
+    
+    [delete_single_cart_item(session, cart_object.id, cart_item.id) for cart_item in cart_object.cart_items]
     statement = delete(Cart).filter(Cart.id == cart_id)
     result = session.execute(statement)
     session.commit()

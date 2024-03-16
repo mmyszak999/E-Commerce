@@ -173,18 +173,20 @@ def test_cart_will_be_deleted_when_there_are_no_cart_items_left_while_updating(
         get_single_cart(sync_session, cart.id)
 
 def test_updated_cart_item_will_be_deleted_when_quantity_equals_to_zero(
-    sync_session: Session, db_carts: list[CartOutputSchema],
-    db_cart_items: list[CartItemOutputSchema], db_products: list[ProductOutputSchema]
+    sync_session: Session, db_products: list[ProductOutputSchema], db_user: UserOutputSchema
 ):
+    cart = create_cart(sync_session, db_user.id)
+    cart_item_input_1 = CartItemInputSchemaFactory().generate(product_id=db_products[0].id)
+    cart_item_input_2 = CartItemInputSchemaFactory().generate(product_id=db_products[1].id)
+    cart_item_1 = create_cart_item(sync_session, cart_item_input_1, cart.id)
+    cart_item_2 = create_cart_item(sync_session, cart_item_input_2, cart.id)
+    
     with pytest.raises(CartItemWithZeroQuantityException):
-        cart = db_carts.results[1]
-        cart_item = db_cart_items.results[0]
-
         cart_item_input = CartItemUpdateSchemaFactory().generate(quantity=0)
-        update_cart_item(sync_session, cart_item_input, cart_item_id=cart_item.id, cart_id=cart.id)
+        update_cart_item(sync_session, cart_item_input, cart_item_id=cart_item_1.id, cart_id=cart.id)
     
     with pytest.raises(DoesNotExist):
-        get_single_cart_item(sync_session, cart_item.id)
+        get_single_cart_item(sync_session, cart_item_1.id)
 
 def test_raise_exception_when_cart_item_deleted_with_nonexistent_cart_id(
     sync_session: Session, db_carts: list[CartOutputSchema],

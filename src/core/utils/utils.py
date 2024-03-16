@@ -1,4 +1,5 @@
 import uuid
+import datetime
 from random import randint
 from typing import Any
 
@@ -170,3 +171,6 @@ def calculate_item_price(quantity: int, product_price: float) -> float:
   
 def validate_item_quantity(product_quantity: int, entered_quantity: int) -> bool:
     return entered_quantity <= product_quantity
+
+def set_cart_item_validity():
+    return datetime.datetime.now() + datetime.timedelta(minutes=25)

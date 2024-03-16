@@ -15,6 +15,7 @@ from src.apps.products.schemas import (
     ProductOutputSchema,
     ProductUpdateSchema,
 )
+from src.apps.products.services.inventory_services import update_single_inventory
 from src.core.exceptions import (
     AlreadyExists,
     DoesNotExist,
@@ -57,7 +58,9 @@ def create_product(
     session.commit()
 
     new_inventory = ProductInventory(
-        quantity=inventory_data["quantity"], product_id=new_product.id
+        quantity=inventory_data["quantity"],
+        quantity_for_cart_items=inventory_data["quantity"],
+        product_id=new_product.id
     )
     session.add(new_inventory)
     session.commit()
@@ -139,14 +142,7 @@ def update_single_product(
     if "inventory" in product_data.keys():
         if product_data.get("inventory"):
             inventory_data = product_data.pop("inventory")
-            statement = (
-                update(ProductInventory)
-                .filter(ProductInventory.product_id == product_id)
-                .values(**inventory_data)
-            )
-
-            session.execute(statement)
-            session.commit()
+            update_single_inventory(session, inventory_data, product_object.inventory.id)
 
         else:
             product_data.pop("inventory")

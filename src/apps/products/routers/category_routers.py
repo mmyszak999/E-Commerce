@@ -2,7 +2,7 @@ from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import CategoryInputSchema, CategoryOutputSchema
+from src.apps.products.schemas import CategoryInputSchema, CategoryOutputSchema, CategoryUpdateSchema
 from src.apps.products.services.category_services import (
     create_category,
     delete_single_category,
@@ -69,12 +69,12 @@ def get_category(
 )
 def update_category(
     category_id: str,
-    category: CategoryInputSchema,
+    category_input: CategoryUpdateSchema,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> CategoryOutputSchema:
     check_if_staff(request_user)
-    return update_single_category(db, category, category_id)
+    return update_single_category(db, category_input, category_id)
 
 
 @category_router.delete(
