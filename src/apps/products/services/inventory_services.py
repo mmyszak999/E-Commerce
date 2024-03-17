@@ -43,33 +43,22 @@ def update_single_inventory(
         raise DoesNotExist(ProductInventory.__name__, "id", inventory_id)
 
     inventory_data = inventory_input.dict(exclude_unset=True)
+    items_in_carts = inventory_object.quantity - inventory_object.quantity_for_cart_items
     
-    if inventory_object.quantity != inventory_data.get("quantity"): #50 != 70
-        quantity_difference = inventory_object.quantity - inventory_data.get("quantity") #50 - 30 = 20
-        inventory_data["quantity_for_cart_items"] = max(0, inventory_object.quantity_for_cart_items - quantity_difference)
-        """quantity = 50, quantity_for_cart_items=30, in carts = 20
-        new quantity = 10
-        quantity = 10, quantity_for_cart_items=30-40=-10=>0, in_carts=20
-        so we need to check if new quantity is bigger than product amount in carts
-        because in the case like the previous one we should not be able to delete the items
-        from the client's carts
-        so new quantity cant be lower than the amount if product items in carts
-        if new quantity is 40, and in cart are 20 items, so available ones drops from 30 to 20
-        and in-cart amount stays the same, always stays the same btw
-        if new quantity is 20, and in cart are 20 items, avaiable ones drops to 0 
-        and we leave only the ones in the carts
-        if new quantity is 10 and in cart are 20 items, we reject that update cuz new
-        quantity cant be lower than in-cart item amount, we cant remove some of the items
-        from the carts, to do tomorrow"""
-        
+    if inventory_data.get("quantity") < items_in_carts:
+        raise Exception
+    
+    if inventory_object.quantity != inventory_data.get("quantity"):
+        quantity_difference = inventory_object.quantity - inventory_data.get("quantity")
+        inventory_data["quantity_for_cart_items"] = inventory_object.quantity_for_cart_items - quantity_difference
 
-    statement = (
-        update(ProductInventory)
-        .filter(ProductInventory.id == inventory_id)
-        .values(**inventory_data)
-    )
+        statement = (
+            update(ProductInventory)
+            .filter(ProductInventory.id == inventory_id)
+            .values(**inventory_data)
+        )
 
-    session.execute(statement)
-    session.commit()
+        session.execute(statement)
+        session.commit()
 
     return get_single_inventory(session, inventory_id=inventory_id)

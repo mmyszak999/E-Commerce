@@ -14,6 +14,7 @@ from src.apps.products.schemas import (
     ProductInputSchema,
     ProductOutputSchema,
     ProductUpdateSchema,
+    InventoryUpdateSchema
 )
 from src.apps.products.services.inventory_services import update_single_inventory
 from src.core.exceptions import (
@@ -111,7 +112,7 @@ def update_single_product(
         raise DoesNotExist(Product.__name__, "id", product_id)
 
     product_data = product_input.dict(exclude_unset=True, exclude_none=True)
-
+    
     if product_data.get("name"):
         product_name_check = session.scalar(
             select(Product).filter(Product.name == product_input.name).limit(1)
@@ -142,7 +143,7 @@ def update_single_product(
     if "inventory" in product_data.keys():
         if product_data.get("inventory"):
             inventory_data = product_data.pop("inventory")
-            update_single_inventory(session, inventory_data, product_object.inventory.id)
+            update_single_inventory(session, InventoryUpdateSchema(**inventory_data), product_object.inventory.id)
 
         else:
             product_data.pop("inventory")
