@@ -3,6 +3,8 @@ from typing import Union
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload
 
+from src.apps.orders.models import CartItem
+#from src.apps.orders.services.cart_items_services import ...
 from src.apps.products.models import (
     Category,
     Product,
@@ -119,7 +121,18 @@ def update_single_product(
         )
         if product_name_check and (product_name_check.id != product_id):
             raise IsOccupied(Product.__name__, "name", product_input.name)
-
+    
+    if (new_product_price := product_data.get("price")) and (product_data.get("price") != product_object.price):
+        cart_items = session.scalars(
+            select(CartItem).filter(CartItem.product_id == product_object.id)
+        )
+        rows = [
+                {"id": cart_item.id, "cart_item_price": float(new_product_price) * cart_item.quantity}
+                for cart_item in cart_items
+            ]
+        
+        session.execute(update(CartItem), rows)
+        
     if product_data.get("category_ids"):
         incoming_categories = set(product_data["category_ids"])
         current_categories = set(category.id for category in product_object.categories)
