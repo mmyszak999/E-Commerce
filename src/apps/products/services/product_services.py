@@ -72,7 +72,7 @@ def create_product(
 
 
 def get_single_product_or_inventory(
-    session: Session, product_id: int, get_inventory=False
+    session: Session, product_id: str, get_inventory=False
 ) -> Union[ProductOutputSchema, InventoryOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
@@ -108,7 +108,7 @@ def get_all_products(
 
 
 def update_single_product(
-    session: Session, product_input: ProductUpdateSchema, product_id: int
+    session: Session, product_input: ProductUpdateSchema, product_id: str
 ) -> ProductOutputSchema:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
@@ -125,7 +125,7 @@ def update_single_product(
     if (new_product_price := product_data.get("price")) and (product_data.get("price") != product_object.price):
         cart_items = session.scalars(
             select(CartItem).filter(CartItem.product_id == product_object.id)
-        )
+        ) 
         rows = [
                 {"id": cart_item.id, "cart_item_price": float(new_product_price) * cart_item.quantity}
                 for cart_item in cart_items
@@ -173,7 +173,7 @@ def update_single_product(
     return get_single_product_or_inventory(session, product_id=product_id)
 
 
-def delete_single_product(session: Session, product_id: int):
+def delete_single_product(session: Session, product_id: str):
     if not if_exists(Product, "id", product_id, session):
         raise DoesNotExist(Product.__name__, "id", product_id)
 

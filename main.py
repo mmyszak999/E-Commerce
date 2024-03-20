@@ -27,7 +27,8 @@ from src.core.exceptions import (
     ExceededItemQuantityException,
     NonPositiveCartItemQuantityException,
     EmptyCartException,
-    NoSuchItemInCartException
+    NoSuchItemInCartException,
+    QuantityLowerThanItemInCartsAmountException
 )
 
 app = FastAPI()
@@ -158,6 +159,14 @@ def handle_empty_cart_exception(
 @app.exception_handler(NoSuchItemInCartException)
 def handle_no_such_item_in_cart_exception(
     request: Request, exception: NoSuchItemInCartException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    ) 
+    
+@app.exception_handler(QuantityLowerThanItemInCartsAmountException)
+def handle_quantity_lower_than_item_in_carts_amount_exception(
+    request: Request, exception: QuantityLowerThanItemInCartsAmountException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}

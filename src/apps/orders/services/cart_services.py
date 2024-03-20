@@ -76,7 +76,7 @@ def delete_single_cart(session: Session, cart_id: int):
     if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
     
-    [delete_single_cart_item(session, cart_object.id, cart_item.id) for cart_item in cart_object.cart_items]
+    [delete_single_cart_item(session, cart_object.id, cart_item.id, cart_removing=True) for cart_item in cart_object.cart_items]
     statement = delete(Cart).filter(Cart.id == cart_id)
     result = session.execute(statement)
     session.commit()

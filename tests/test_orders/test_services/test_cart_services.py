@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from src.apps.orders.schemas import CartOutputSchema
+from src.apps.orders.schemas import CartOutputSchema, CartItemOutputSchema
 from src.apps.orders.services.cart_services import (
     create_cart,
     delete_single_cart,
@@ -10,13 +10,23 @@ from src.apps.orders.services.cart_services import (
     get_all_user_carts
 )
 from src.apps.user.schemas import UserOutputSchema
-from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
+from src.apps.products.schemas import ProductOutputSchema
+from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied, ActiveCartException
 from src.core.factories import CartInputSchemaFactory
 from src.core.pagination.models import PageParams
 from src.core.utils.utils import generate_uuid
-from tests.test_orders.conftest import db_carts
+from tests.test_products.conftest import db_products
+from tests.test_orders.conftest import db_carts, db_cart_items
 from tests.test_users.conftest import db_user
 
+
+def test_raise_exception_when_user_create_more_than_one_cart(
+    sync_session: Session, db_carts: list[CartOutputSchema],
+    db_cart_items: list[CartItemOutputSchema], db_products: list[ProductOutputSchema],
+    db_user: UserOutputSchema
+):
+    with pytest.raises(ActiveCartException):
+        create_cart(sync_session, db_user.id)
 
 def test_raise_exception_when_cart_created_with_nonexistent_user_id(
     sync_session: Session, db_carts: list[CartOutputSchema]

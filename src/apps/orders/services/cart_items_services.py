@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, selectinload, joinedload
 from src.apps.orders.models import Cart, CartItem
 from src.apps.orders.schemas import (CartItemInputSchema, CartItemOutputSchema, CartItemUpdateSchema)
 from src.apps.products.models import Product
-from src.apps.user.models import User
+from src.apps.user.models import User 
 from src.core.exceptions import (DoesNotExist, ServiceException, ActiveCartException, ExceededItemQuantityException,
                                  NonPositiveCartItemQuantityException, EmptyCartException, NoSuchItemInCartException,
                                  CartItemWithZeroQuantityException)
@@ -53,6 +53,7 @@ def create_cart_item(session: Session, cart_item: CartItemInputSchema, cart_id: 
         session.add(cart_object)
         
         product_object.inventory.quantity_for_cart_items -= requested_quantity
+        
         session.add(product_object)
         
         cart_item_data['cart_item_price'] = cart_item_price
@@ -171,6 +172,9 @@ def update_cart_item(
     requested_quantity = cart_item_data.get("quantity")
     
     available_quantity = product_object.inventory.quantity_for_cart_items
+    
+    if item_quantity_in_cart := getattr(item_in_cart_check, "quantity", False):
+        available_quantity += item_quantity_in_cart
         
     if not validate_item_quantity(available_quantity, requested_quantity):
         raise ExceededItemQuantityException(
@@ -183,8 +187,7 @@ def update_cart_item(
     return get_single_cart_item(session, cart_item_id)
 
 
-
-def delete_single_cart_item(session: Session, cart_id: str, cart_item_id: str):
+def delete_single_cart_item(session: Session, cart_id: str, cart_item_id: str, cart_removing: bool = False):
     if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
     
@@ -210,6 +213,8 @@ def delete_single_cart_item(session: Session, cart_id: str, cart_item_id: str):
             statement = delete(Cart).filter(Cart.id == cart_object.id)
             session.execute(statement)
             session.commit()
+            if cart_removing:
+                return
             raise EmptyCartException()
         
         return result

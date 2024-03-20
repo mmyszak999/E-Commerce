@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from copy import deepcopy
 
 from src.apps.orders.schemas import CartOutputSchema, CartItemOutputSchema, CartItemInputSchema
-from src.apps.products.schemas import ProductOutputSchema
+from src.apps.products.schemas import ProductOutputSchema, CategoryOutputSchema
 from src.apps.user.schemas import UserOutputSchema
+from src.apps.products.services.product_services import update_single_product, create_product, get_single_product_or_inventory
 from src.apps.orders.services.cart_services import get_single_cart, create_cart
 from src.apps.orders.services.cart_items_services import (
     create_cart_item,
@@ -17,9 +18,14 @@ from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import (
     AlreadyExists, DoesNotExist, IsOccupied, ExceededItemQuantityException,
     NonPositiveCartItemQuantityException, NoSuchItemInCartException,
-    EmptyCartException, CartItemWithZeroQuantityException)
+    EmptyCartException, CartItemWithZeroQuantityException,
+    QuantityLowerThanItemInCartsAmountException, ActiveCartException)
 
-from src.core.factories import CartInputSchemaFactory, CartItemInputSchemaFactory, CartItemUpdateSchemaFactory
+from src.core.factories import (
+    CartInputSchemaFactory, CartItemInputSchemaFactory,
+    CartItemUpdateSchemaFactory, ProductUpdateSchemaFactory,
+    ProductInputSchemaFactory, InventoryInputSchemaFactory
+    )
 from src.core.pagination.models import PageParams
 from src.core.utils.utils import generate_uuid
 from tests.test_orders.conftest import db_carts
@@ -63,7 +69,7 @@ def test_cart_will_contain_correct_total_items_price_after_adding_cart_item(
     sync_session: Session, db_products: list[ProductOutputSchema], db_user: UserOutputSchema
 ):
     cart = create_cart(sync_session, db_user.id)
-    item_quantity, product = 5, db_products[2]
+    item_quantity, product = 1, db_products[2]
     
     current_cart_item_price = cart.cart_total_price
 
@@ -73,6 +79,30 @@ def test_cart_will_contain_correct_total_items_price_after_adding_cart_item(
     
     assert cart.cart_total_price == float(current_cart_item_price) + result.cart_item_price
 
+def test_quantity_cart_item_will_be_managed_correctly_when_re_adding_the_product_to_the_cart(
+    sync_session: Session, db_products: list[ProductOutputSchema], db_user: UserOutputSchema
+):  
+    product = db_products[0]
+    cart = create_cart(sync_session, db_user.id)
+    cart_item_input = CartItemInputSchemaFactory().generate(quantity=10, product_id=product.id)
+    cart_item = create_cart_item(sync_session, cart_item_input, cart.id)
+    
+    product = get_single_product_or_inventory(sync_session, product.id)
+    assert product.inventory.quantity_for_cart_items == product.inventory.quantity - cart_item.quantity
+    
+    cart_item_input = CartItemInputSchemaFactory().generate(quantity=20, product_id=product.id)
+    cart_item = create_cart_item(sync_session, cart_item_input, cart.id)
+    
+    product = get_single_product_or_inventory(sync_session, product.id)
+    assert product.inventory.quantity_for_cart_items == product.inventory.quantity - cart_item.quantity
+    
+    cart_item_input = CartItemInputSchemaFactory().generate(quantity=5, product_id=product.id)
+    cart_item = create_cart_item(sync_session, cart_item_input, cart.id)
+    
+    product = get_single_product_or_inventory(sync_session, product.id)
+    assert product.inventory.quantity_for_cart_items == product.inventory.quantity - cart_item.quantity
+    
+    
 def test_if_only_one_cart_item_was_returned(
     sync_session: Session, db_carts: list[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema], db_products: list[ProductOutputSchema]
@@ -157,6 +187,40 @@ def test_cart_will_contain_correct_total_items_price_after_updating_cart_item(
     
     assert cart_item.cart_item_price == item_quantity * cart_item.product.price
     assert cart_item.cart_item_price == cart.cart_total_price 
+    
+def test_cart_item_price_will_be_updated_when_product_price_changed(
+    sync_session: Session, db_products: list[ProductOutputSchema], db_user: UserOutputSchema
+):
+    cart = create_cart(sync_session, db_user.id)
+    cart_item_input = CartItemInputSchemaFactory().generate(product_id=db_products[0].id)
+    cart_item = create_cart_item(sync_session, cart_item_input, cart.id)
+    
+    product_input = ProductUpdateSchemaFactory().generate(price=5.00)
+    update_single_product(sync_session, product_input, db_products[0].id)
+    
+    current_cart_item_price = cart_item.quantity * cart_item.product.price
+
+    assert cart_item.cart_item_price == current_cart_item_price
+
+def test_quantity_for_cart_items_will_change_when_cart_item_quantity_being_updated(
+    sync_session: Session, db_products: list[ProductOutputSchema], db_user: UserOutputSchema
+):
+    product, quantity = db_products[0], 10
+    cart = create_cart(sync_session, db_user.id)
+    cart_item_input = CartItemInputSchemaFactory().generate(quantity=quantity, product_id=product.id)
+    cart_item = create_cart_item(sync_session, cart_item_input, cart.id)
+    
+    product = get_single_product_or_inventory(sync_session, product.id)
+    product_quantity_for_cart_items = product.inventory.quantity_for_cart_items
+    
+    quantity = 5
+    cart_item_input = CartItemInputSchemaFactory().generate(quantity=quantity, product_id=product.id)
+    cart_item = create_cart_item(sync_session, cart_item_input, cart.id)
+    
+    product = get_single_product_or_inventory(sync_session, product.id)
+    
+    assert product.inventory.quantity_for_cart_items == product_quantity_for_cart_items + quantity
+    
 
 def test_cart_will_be_deleted_when_there_are_no_cart_items_left_while_updating(
     sync_session: Session, db_products: list[ProductOutputSchema], db_user: UserOutputSchema
@@ -215,4 +279,29 @@ def test_raise_exception_when_cart_item_deleted_with_nonexistent_cart_item_id(
     with pytest.raises(DoesNotExist):
         delete_single_cart_item(sync_session, cart_id=db_carts.results[0].id, cart_item_id=generate_uuid())
 
-
+def test_if_cart_price_and_quantity_are_managed_correctly_when_cart_item_was_deleted(
+    sync_session: Session, db_products: list[ProductOutputSchema],
+    db_user: UserOutputSchema
+):
+    product_1, product_2 = db_products[0], db_products[1]
+    quantity_1, quantity_2 = 10, 20
+    
+    cart_1 = create_cart(sync_session, db_user.id)
+    cart_item_input_1 = CartItemInputSchemaFactory().generate(quantity=quantity_1, product_id=db_products[0].id)
+    cart_item_1 = create_cart_item(sync_session, cart_item_input_1, cart_1.id)
+    
+    cart_item_input_2 = CartItemInputSchemaFactory().generate(quantity=quantity_2, product_id=db_products[1].id)
+    cart_item_2 = create_cart_item(sync_session, cart_item_input_2, cart_1.id)
+    
+    cart_1 = get_single_cart(sync_session, cart_1.id)
+    cart_1_price = cart_1.cart_total_price
+    product_1 = get_single_product_or_inventory(sync_session, product_1.id)
+    product_1_quantity_for_cart_items = product_1.inventory.quantity_for_cart_items
+    
+    delete_single_cart_item(sync_session, cart_id=cart_1.id, cart_item_id=cart_item_1.id)
+    
+    product_1 = get_single_product_or_inventory(sync_session, product_1.id)
+    cart_1 = get_single_cart(sync_session, cart_1.id)
+    
+    assert product_1.inventory.quantity_for_cart_items == product_1_quantity_for_cart_items + quantity_1
+    assert cart_1.cart_total_price == cart_1_price - float(quantity_1 * product_1.price)

@@ -83,3 +83,9 @@ class CartItemWithZeroQuantityException(ServiceException):
         super().__init__(
             f"The requested product quantity of cart item is equal to 0, so the item will be removed from the cart!"
         )
+
+class QuantityLowerThanItemInCartsAmountException(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(
+            f"The requested product quantity is lower than the current product item amount in the carts! Please change the value!"
+        )

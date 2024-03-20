@@ -9,6 +9,8 @@ from src.apps.products.schemas import (
     InventoryInputSchema,
     ProductInputSchema,
     ProductUpdateSchema,
+    CategoryUpdateSchema,
+    InventoryUpdateSchema
 )
 from src.apps.user.schemas import AddressInputSchema, UserRegisterSchema
 from src.core.utils.utils import initialize_faker
@@ -84,6 +86,15 @@ class CategoryInputSchemaFactory(SchemaFactory):
         return self.schema_class(
             name=name or self.faker.ecommerce_category(),
         )
+        
+class CategoryUpdateSchemaFactory(SchemaFactory):
+    def __init__(self, schema_class=CategoryUpdateSchema):
+        super().__init__(schema_class)
+
+    def generate(self, name: Optional[str] = None):
+        return self.schema_class(
+            name=name
+        )
 
 
 class InventoryInputSchemaFactory(SchemaFactory):
@@ -95,6 +106,16 @@ class InventoryInputSchemaFactory(SchemaFactory):
         quantity: int = None,
     ):
         return self.schema_class(quantity=quantity or self.faker.random_int(min=1))
+
+class InventoryUpdateSchemaFactory(SchemaFactory):
+    def __init__(self, schema_class=InventoryUpdateSchema):
+        super().__init__(schema_class)
+
+    def generate(
+        self,
+        quantity: Optional[int] = None,
+    ):
+        return self.schema_class(quantity=quantity)
 
 
 class ProductInputSchemaFactory(SchemaFactory):
@@ -124,7 +145,7 @@ class ProductUpdateSchemaFactory(SchemaFactory):
 
     def generate(
         self,
-        inventory: Optional[InventoryInputSchema] = None,
+        inventory: Optional[InventoryUpdateSchema] = None,
         category_ids: Optional[list[str]] = None,
         name: Optional[str] = None,
         price: Optional[str] = None,

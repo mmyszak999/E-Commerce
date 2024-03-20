@@ -2,8 +2,8 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from src.apps.products.models import ProductInventory
-from src.apps.products.schemas import InventoryInputSchema, InventoryOutputSchema
-from src.core.exceptions import DoesNotExist, NegativeQuantityException
+from src.apps.products.schemas import InventoryInputSchema, InventoryOutputSchema, InventoryUpdateSchema
+from src.core.exceptions import DoesNotExist, NegativeQuantityException, QuantityLowerThanItemInCartsAmountException
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -37,7 +37,7 @@ def get_all_inventories(
 
 
 def update_single_inventory(
-    session: Session, inventory_input: InventoryInputSchema, inventory_id: int
+    session: Session, inventory_input: InventoryUpdateSchema, inventory_id: int
 ) -> InventoryOutputSchema:
     if not (inventory_object := if_exists(ProductInventory, "id", inventory_id, session)):
         raise DoesNotExist(ProductInventory.__name__, "id", inventory_id)
@@ -46,7 +46,7 @@ def update_single_inventory(
     items_in_carts = inventory_object.quantity - inventory_object.quantity_for_cart_items
     
     if inventory_data.get("quantity") < items_in_carts:
-        raise Exception
+        raise QuantityLowerThanItemInCartsAmountException
     
     if inventory_object.quantity != inventory_data.get("quantity"):
         quantity_difference = inventory_object.quantity - inventory_data.get("quantity")
