@@ -1,4 +1,6 @@
+import datetime
 import uuid
+from decimal import Decimal
 from random import randint
 from typing import Any
 
@@ -162,3 +164,15 @@ def send_email(
 
 def generate_uuid():
     return str(uuid.uuid4())
+
+
+def calculate_item_price(quantity: int, product_price: Decimal) -> Decimal:
+    return quantity * product_price
+
+
+def validate_item_quantity(product_quantity: int, entered_quantity: int) -> bool:
+    return entered_quantity <= product_quantity
+
+
+def set_cart_item_validity():
+    return datetime.datetime.now() + datetime.timedelta(minutes=25)

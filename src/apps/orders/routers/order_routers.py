@@ -7,7 +7,7 @@ from src.apps.orders.schemas import (
     OrderOutputSchema,
     OrderUpdateSchema,
 )
-from src.apps.orders.services import (
+from src.apps.orders.services.order_services import (
     create_order,
     delete_single_order,
     get_all_orders,

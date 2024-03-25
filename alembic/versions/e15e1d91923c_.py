@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 36f10ac5713e
+Revision ID: e15e1d91923c
 Revises: 
-Create Date: 2024-02-16 13:13:07.800371
+Create Date: 2024-03-16 17:49:56.739410
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '36f10ac5713e'
+revision = 'e15e1d91923c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -53,6 +53,7 @@ def upgrade() -> None:
     op.create_table('cart',
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
+    sa.Column('cart_total_price', sa.Float(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], onupdate='cascade', ondelete='cascade'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
@@ -66,6 +67,7 @@ def upgrade() -> None:
     op.create_table('order',
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
+    sa.Column('waiting_for_payment', sa.Boolean(), server_default='true', nullable=False),
     sa.Column('order_accepted', sa.Boolean(), server_default='false', nullable=False),
     sa.Column('payment_accepted', sa.Boolean(), server_default='false', nullable=False),
     sa.Column('being_delivered', sa.Boolean(), server_default='false', nullable=False),
@@ -77,6 +79,7 @@ def upgrade() -> None:
     op.create_table('product_inventory',
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
+    sa.Column('quantity_for_cart_items', sa.Integer(), nullable=False),
     sa.Column('sold', sa.Integer(), nullable=False),
     sa.Column('product_id', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['product_id'], ['product.id'], onupdate='cascade', ondelete='cascade'),
@@ -102,6 +105,8 @@ def upgrade() -> None:
     sa.Column('cart_id', sa.String(), nullable=False),
     sa.Column('product_id', sa.String(), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
+    sa.Column('cart_item_price', sa.Float(), nullable=False),
+    sa.Column('cart_item_validity', sa.Date(), nullable=False),
     sa.ForeignKeyConstraint(['cart_id'], ['cart.id'], onupdate='cascade', ondelete='cascade'),
     sa.ForeignKeyConstraint(['product_id'], ['product.id'], onupdate='cascade', ondelete='cascade'),
     sa.PrimaryKeyConstraint('id'),
@@ -112,6 +117,7 @@ def upgrade() -> None:
     sa.Column('order_id', sa.String(), nullable=False),
     sa.Column('product_id', sa.String(), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
+    sa.Column('order_item_price', sa.Float(), nullable=False),
     sa.ForeignKeyConstraint(['order_id'], ['order.id'], onupdate='cascade', ondelete='cascade'),
     sa.ForeignKeyConstraint(['product_id'], ['product.id'], onupdate='cascade', ondelete='cascade'),
     sa.PrimaryKeyConstraint('id'),

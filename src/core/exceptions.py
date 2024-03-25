@@ -34,7 +34,7 @@ class AccountNotActivatedException(ServiceException):
     def __init__(self, field: str, value: Any) -> None:
         super().__init__(
             f"The account of the user with {field}={value} has not been activated! "
-            "Please check your mailbox to find the message with activation link!"
+            "Please check your mailbox to find the message with activation link! "
         )
 
 
@@ -42,4 +42,51 @@ class NegativeQuantityException(ServiceException):
     def __init__(self, value: Any) -> None:
         super().__init__(
             f"The quantity of the product can't be negative (You entered quantity = {value})! "
+        )
+
+
+class ActiveCartException(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(
+            "Can't create another cart when other one is active! "
+            "Please empty the active cart before creating a new cart! "
+        )
+
+
+class ExceededItemQuantityException(ServiceException):
+    def __init__(self, product_quantity: int, entered_quantity: int) -> None:
+        super().__init__(
+            f"Requested quantity of the product({entered_quantity}) is bigger than the available one ({product_quantity})! "
+            "Please change the quantity you entered!"
+        )
+
+
+class NonPositiveCartItemQuantityException(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(
+            f"Requested quantity of the product is equal to 0! Please change the item quantity to a positive integer!"
+        )
+
+
+class EmptyCartException(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(f"You have no items in the cart!")
+
+
+class NoSuchItemInCartException(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(f"No such item in the cart!")
+
+
+class CartItemWithZeroQuantityException(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(
+            f"The requested product quantity of cart item is equal to 0, so the item will be removed from the cart!"
+        )
+
+
+class QuantityLowerThanAmountOfProductItemsInCartsException(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(
+            f"The requested quantity is lower than the amount of the product item in the active carts! Please change the value!"
         )

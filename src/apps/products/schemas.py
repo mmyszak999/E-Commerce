@@ -49,6 +49,7 @@ class InventoryUpdateSchema(BaseModel):
 
 class InventoryOutputSchema(InventoryBaseSchema):
     id: str
+    quantity_for_cart_items: int
     sold: int
 
     class Config:

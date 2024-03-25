@@ -3,6 +3,8 @@ from typing import Union
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload
 
+from src.apps.orders.models import CartItem
+# from src.apps.orders.services.cart_items_services import ...
 from src.apps.products.models import (
     Category,
     Product,
@@ -11,10 +13,12 @@ from src.apps.products.models import (
 )
 from src.apps.products.schemas import (
     InventoryOutputSchema,
+    InventoryUpdateSchema,
     ProductInputSchema,
     ProductOutputSchema,
     ProductUpdateSchema,
 )
+from src.apps.products.services.inventory_services import update_single_inventory
 from src.core.exceptions import (
     AlreadyExists,
     DoesNotExist,
@@ -57,7 +61,9 @@ def create_product(
     session.commit()
 
     new_inventory = ProductInventory(
-        quantity=inventory_data["quantity"], product_id=new_product.id
+        quantity=inventory_data["quantity"],
+        quantity_for_cart_items=inventory_data["quantity"],
+        product_id=new_product.id,
     )
     session.add(new_inventory)
     session.commit()
@@ -66,7 +72,7 @@ def create_product(
 
 
 def get_single_product_or_inventory(
-    session: Session, product_id: int, get_inventory=False
+    session: Session, product_id: str, get_inventory=False
 ) -> Union[ProductOutputSchema, InventoryOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
@@ -102,7 +108,7 @@ def get_all_products(
 
 
 def update_single_product(
-    session: Session, product_input: ProductUpdateSchema, product_id: int
+    session: Session, product_input: ProductUpdateSchema, product_id: str
 ) -> ProductOutputSchema:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
@@ -115,6 +121,22 @@ def update_single_product(
         )
         if product_name_check and (product_name_check.id != product_id):
             raise IsOccupied(Product.__name__, "name", product_input.name)
+
+    if (new_product_price := product_data.get("price")) and (
+        product_data.get("price") != product_object.price
+    ):
+        cart_items = session.scalars(
+            select(CartItem).filter(CartItem.product_id == product_object.id)
+        )
+        rows = [
+            {
+                "id": cart_item.id,
+                "cart_item_price": float(new_product_price) * cart_item.quantity,
+            }
+            for cart_item in cart_items
+        ]
+
+        session.execute(update(CartItem), rows)
 
     if product_data.get("category_ids"):
         incoming_categories = set(product_data["category_ids"])
@@ -139,14 +161,11 @@ def update_single_product(
     if "inventory" in product_data.keys():
         if product_data.get("inventory"):
             inventory_data = product_data.pop("inventory")
-            statement = (
-                update(ProductInventory)
-                .filter(ProductInventory.product_id == product_id)
-                .values(**inventory_data)
+            update_single_inventory(
+                session,
+                InventoryUpdateSchema(**inventory_data),
+                product_object.inventory.id,
             )
-
-            session.execute(statement)
-            session.commit()
 
         else:
             product_data.pop("inventory")
@@ -163,7 +182,7 @@ def update_single_product(
     return get_single_product_or_inventory(session, product_id=product_id)
 
 
-def delete_single_product(session: Session, product_id: int):
+def delete_single_product(session: Session, product_id: str):
     if not if_exists(Product, "id", product_id, session):
         raise DoesNotExist(Product.__name__, "id", product_id)
 

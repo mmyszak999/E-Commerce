@@ -2,7 +2,11 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from src.apps.products.models import Category
-from src.apps.products.schemas import CategoryInputSchema, CategoryOutputSchema
+from src.apps.products.schemas import (
+    CategoryInputSchema,
+    CategoryOutputSchema,
+    CategoryUpdateSchema,
+)
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -54,7 +58,7 @@ def get_all_categories(
 
 
 def update_single_category(
-    session: Session, category_input: CategoryInputSchema, category_id: int
+    session: Session, category_input: CategoryUpdateSchema, category_id: int
 ) -> CategoryOutputSchema:
     if not if_exists(Category, "id", category_id, session):
         raise DoesNotExist(Category.__name__, "id", category_id)

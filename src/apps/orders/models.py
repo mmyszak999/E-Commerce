@@ -1,8 +1,17 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
+from sqlalchemy import (
+    DECIMAL,
+    Boolean,
+    Column,
+    Date,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from src.core.utils.utils import generate_uuid
+from src.core.utils.utils import generate_uuid, set_cart_item_validity
 from src.database.db_connection import Base
 
 order_product_association_table = Table(
@@ -31,6 +40,7 @@ class Cart(Base):
         ForeignKey("user.id", ondelete="cascade", onupdate="cascade"),
         nullable=False,
     )
+    cart_total_price = Column(DECIMAL, nullable=False, default=0)
     user = relationship("User", back_populates="carts")
     cart_items = relationship("CartItem", back_populates="cart")
 
@@ -53,6 +63,8 @@ class CartItem(Base):
     )
     product = relationship("Product", back_populates="cart_items")
     quantity = Column(Integer, nullable=False, default=1)
+    cart_item_price = Column(DECIMAL, nullable=False)
+    cart_item_validity = Column(Date, nullable=False, default=set_cart_item_validity)
 
 
 class Order(Base):
@@ -69,6 +81,7 @@ class Order(Base):
     products = relationship(
         "Product", secondary=order_product_association_table, back_populates="orders"
     )
+    waiting_for_payment = Column(Boolean, nullable=False, server_default="true")
     order_accepted = Column(Boolean, nullable=False, server_default="false")
     payment_accepted = Column(Boolean, nullable=False, server_default="false")
     being_delivered = Column(Boolean, nullable=False, server_default="false")
@@ -94,3 +107,4 @@ class OrderItem(Base):
     )
     product = relationship("Product", back_populates="order_items")
     quantity = Column(Integer, nullable=False, default=1)
+    order_item_price = Column(DECIMAL, nullable=False, default=0)
