@@ -1,17 +1,22 @@
 from abc import abstractmethod
 from datetime import datetime
-from typing import Optional
 from decimal import Decimal
+from typing import Optional
 
 from src.apps.emails.schemas import EmailUpdateSchema
-from src.apps.orders.schemas import OrderInputSchema, CartInputSchema, CartItemInputSchema, CartItemUpdateSchema
+from src.apps.orders.schemas import (
+    CartInputSchema,
+    CartItemInputSchema,
+    CartItemUpdateSchema,
+    OrderInputSchema,
+)
 from src.apps.products.schemas import (
     CategoryInputSchema,
+    CategoryUpdateSchema,
     InventoryInputSchema,
+    InventoryUpdateSchema,
     ProductInputSchema,
     ProductUpdateSchema,
-    CategoryUpdateSchema,
-    InventoryUpdateSchema
 )
 from src.apps.user.schemas import AddressInputSchema, UserRegisterSchema
 from src.core.utils.utils import initialize_faker
@@ -87,15 +92,14 @@ class CategoryInputSchemaFactory(SchemaFactory):
         return self.schema_class(
             name=name or self.faker.ecommerce_category(),
         )
-        
+
+
 class CategoryUpdateSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=CategoryUpdateSchema):
         super().__init__(schema_class)
 
     def generate(self, name: Optional[str] = None):
-        return self.schema_class(
-            name=name
-        )
+        return self.schema_class(name=name)
 
 
 class InventoryInputSchemaFactory(SchemaFactory):
@@ -107,6 +111,7 @@ class InventoryInputSchemaFactory(SchemaFactory):
         quantity: int = None,
     ):
         return self.schema_class(quantity=quantity or self.faker.random_int(min=1))
+
 
 class InventoryUpdateSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=InventoryUpdateSchema):
@@ -195,19 +200,19 @@ class CartItemInputSchemaFactory(SchemaFactory):
         super().__init__(schema_class)
 
     def generate(self, product_id: str, quantity: int = None):
-        set_quantity = quantity if quantity is not None else self.faker.random_int(min=1, max=20)
-        
-        return self.schema_class(
-            product_id=product_id,
-            quantity=set_quantity
+        set_quantity = (
+            quantity if quantity is not None else self.faker.random_int(min=1, max=20)
         )
+
+        return self.schema_class(product_id=product_id, quantity=set_quantity)
+
 
 class CartItemUpdateSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=CartItemUpdateSchema):
         super().__init__(schema_class)
 
     def generate(self, quantity: Optional[int] = None):
-        set_quantity = quantity if quantity is not None else self.faker.random_int(min=1, max=20)
-        return self.schema_class(
-            quantity=set_quantity
+        set_quantity = (
+            quantity if quantity is not None else self.faker.random_int(min=1, max=20)
         )
+        return self.schema_class(quantity=set_quantity)

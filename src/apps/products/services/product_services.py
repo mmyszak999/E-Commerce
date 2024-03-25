@@ -4,7 +4,7 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload
 
 from src.apps.orders.models import CartItem
-#from src.apps.orders.services.cart_items_services import ...
+# from src.apps.orders.services.cart_items_services import ...
 from src.apps.products.models import (
     Category,
     Product,
@@ -13,10 +13,10 @@ from src.apps.products.models import (
 )
 from src.apps.products.schemas import (
     InventoryOutputSchema,
+    InventoryUpdateSchema,
     ProductInputSchema,
     ProductOutputSchema,
     ProductUpdateSchema,
-    InventoryUpdateSchema
 )
 from src.apps.products.services.inventory_services import update_single_inventory
 from src.core.exceptions import (
@@ -63,7 +63,7 @@ def create_product(
     new_inventory = ProductInventory(
         quantity=inventory_data["quantity"],
         quantity_for_cart_items=inventory_data["quantity"],
-        product_id=new_product.id
+        product_id=new_product.id,
     )
     session.add(new_inventory)
     session.commit()
@@ -114,25 +114,30 @@ def update_single_product(
         raise DoesNotExist(Product.__name__, "id", product_id)
 
     product_data = product_input.dict(exclude_unset=True, exclude_none=True)
-    
+
     if product_data.get("name"):
         product_name_check = session.scalar(
             select(Product).filter(Product.name == product_input.name).limit(1)
         )
         if product_name_check and (product_name_check.id != product_id):
             raise IsOccupied(Product.__name__, "name", product_input.name)
-    
-    if (new_product_price := product_data.get("price")) and (product_data.get("price") != product_object.price):
+
+    if (new_product_price := product_data.get("price")) and (
+        product_data.get("price") != product_object.price
+    ):
         cart_items = session.scalars(
             select(CartItem).filter(CartItem.product_id == product_object.id)
-        ) 
+        )
         rows = [
-                {"id": cart_item.id, "cart_item_price": float(new_product_price) * cart_item.quantity}
-                for cart_item in cart_items
-            ]
-        
+            {
+                "id": cart_item.id,
+                "cart_item_price": float(new_product_price) * cart_item.quantity,
+            }
+            for cart_item in cart_items
+        ]
+
         session.execute(update(CartItem), rows)
-        
+
     if product_data.get("category_ids"):
         incoming_categories = set(product_data["category_ids"])
         current_categories = set(category.id for category in product_object.categories)
@@ -156,7 +161,11 @@ def update_single_product(
     if "inventory" in product_data.keys():
         if product_data.get("inventory"):
             inventory_data = product_data.pop("inventory")
-            update_single_inventory(session, InventoryUpdateSchema(**inventory_data), product_object.inventory.id)
+            update_single_inventory(
+                session,
+                InventoryUpdateSchema(**inventory_data),
+                product_object.inventory.id,
+            )
 
         else:
             product_data.pop("inventory")

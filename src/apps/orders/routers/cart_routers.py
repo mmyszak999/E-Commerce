@@ -3,18 +3,18 @@ from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
 from src.apps.orders.schemas import (
+    CartInputSchema,
     CartItemInputSchema,
     CartItemOutputSchema,
     CartItemUpdateSchema,
     CartOutputSchema,
-    CartInputSchema
 )
 from src.apps.orders.services.cart_services import (
     create_cart,
-    get_single_cart,
+    delete_single_cart,
     get_all_carts,
     get_all_user_carts,
-    delete_single_cart
+    get_single_cart,
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -82,6 +82,7 @@ def get_cart(
     db_cart = get_single_cart(db, cart_id)
     check_if_staff_or_owner(request_user, "id", db_cart.user_id)
     return db_cart
+
 
 @cart_router.delete(
     "/{cart_id}",

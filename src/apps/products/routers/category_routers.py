@@ -2,7 +2,11 @@ from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import CategoryInputSchema, CategoryOutputSchema, CategoryUpdateSchema
+from src.apps.products.schemas import (
+    CategoryInputSchema,
+    CategoryOutputSchema,
+    CategoryUpdateSchema,
+)
 from src.apps.products.services.category_services import (
     create_category,
     delete_single_category,

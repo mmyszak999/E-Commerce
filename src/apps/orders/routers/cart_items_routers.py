@@ -2,24 +2,22 @@ from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
+from src.apps.orders.routers.cart_routers import cart_router
 from src.apps.orders.schemas import (
+    CartInputSchema,
     CartItemInputSchema,
     CartItemOutputSchema,
     CartItemUpdateSchema,
     CartOutputSchema,
-    CartInputSchema
-)
-from src.apps.orders.services.cart_services import (
-    get_single_cart
 )
 from src.apps.orders.services.cart_items_services import (
     create_cart_item,
-    get_single_cart_item,
+    delete_single_cart_item,
     get_all_cart_items_for_single_cart,
+    get_single_cart_item,
     update_cart_item,
-    delete_single_cart_item
 )
-from src.apps.orders.routers.cart_routers import cart_router
+from src.apps.orders.services.cart_services import get_single_cart
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -76,7 +74,10 @@ def get_cart_items_for_single_cart(
 ) -> PagedResponseSchema[CartItemOutputSchema]:
     cart_check = get_single_cart(db, cart_id)
     check_if_staff_or_owner(request_user, "id", cart_check.user_id)
-    return get_all_cart_items_for_single_cart(db, cart_id, page_params, request.query_params.multi_items())
+    return get_all_cart_items_for_single_cart(
+        db, cart_id, page_params, request.query_params.multi_items()
+    )
+
 
 @cart_items_router.patch(
     "/{cart_item_id}",

@@ -2,7 +2,11 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from src.apps.products.models import Category
-from src.apps.products.schemas import CategoryInputSchema, CategoryOutputSchema, CategoryUpdateSchema
+from src.apps.products.schemas import (
+    CategoryInputSchema,
+    CategoryOutputSchema,
+    CategoryUpdateSchema,
+)
 from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema

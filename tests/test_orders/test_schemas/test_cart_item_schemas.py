@@ -23,7 +23,7 @@ def test_cart_item_input_schema_raises_validation_error_when_quantity_is_negativ
             generate_uuid(),
             quantity=quantity,
         )
-    
+
     with result:
         CartItemUpdateSchemaFactory().generate(
             quantity=quantity,
