@@ -1,9 +1,11 @@
+import datetime
 import uuid
+from decimal import Decimal
 from random import randint
 from typing import Any
 
 from faker import Faker
-from faker.providers import date_time, internet, misc, person
+from faker.providers import address, date_time, internet, lorem, misc, person
 from faker_commerce import Provider as commerce_provider
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema
@@ -39,6 +41,8 @@ def initialize_faker():
     faker.add_provider(date_time)
     faker.add_provider(misc)
     faker.add_provider(commerce_provider)
+    faker.add_provider(address)
+    faker.add_provider(lorem)
 
     return faker
 
@@ -160,3 +164,15 @@ def send_email(
 
 def generate_uuid():
     return str(uuid.uuid4())
+
+
+def calculate_item_price(quantity: int, product_price: Decimal) -> Decimal:
+    return quantity * product_price
+
+
+def validate_item_quantity(product_quantity: int, entered_quantity: int) -> bool:
+    return entered_quantity <= product_quantity
+
+
+def set_cart_item_validity():
+    return datetime.datetime.now() + datetime.timedelta(minutes=25)

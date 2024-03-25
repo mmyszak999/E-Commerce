@@ -1,12 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class EmailSchema(BaseModel):
     email_subject: str
-    receivers: tuple[str]
+    receivers: tuple[EmailStr]
     template_name: str
 
 
 class EmailUpdateSchema(BaseModel):
-    email: str
-    new_email: str
+    email: EmailStr
+    new_email: EmailStr

@@ -44,13 +44,13 @@ def test_staff_can_update_category(
     staff_auth_headers: dict[str, str],
     db_categories: list[CategoryOutputSchema],
 ):
-    update_data = CategoryInputSchemaFactory().generate()
+    update_data = CategoryInputSchemaFactory().generate(name="updated")
     response = sync_client.patch(
         f"categories/{db_categories[0].id}",
         data=update_data.json(),
         headers=staff_auth_headers,
     )
-
+    print(response.json())
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["name"] == update_data.name
 
@@ -82,7 +82,6 @@ def test_authenticated_user_cannot_get_single_category(
     response = sync_client.get(
         f"categories/{db_categories[0].id}", headers=auth_headers
     )
-    print(response.json())
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 

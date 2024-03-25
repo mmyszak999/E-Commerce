@@ -1,3 +1,5 @@
+from typing import Union
+
 from fastapi import BackgroundTasks, Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from fastapi_jwt_auth import AuthJWT
@@ -5,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from src.apps.jwt.schemas import AccessTokenOutputSchema
 from src.apps.orders.schemas import OrderOutputSchema
-from src.apps.orders.services import get_all_user_orders
+from src.apps.orders.services.order_services import get_all_user_orders
 from src.apps.user.models import User
 from src.apps.user.schemas import (
     UserInfoOutputSchema,
@@ -14,7 +16,7 @@ from src.apps.user.schemas import (
     UserRegisterSchema,
     UserUpdateSchema,
 )
-from src.apps.user.services import (
+from src.apps.user.services.user_services import (
     delete_single_user,
     get_access_token_schema,
     get_all_users,
@@ -57,12 +59,12 @@ def login_user(
     "/me",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(authenticate_user)],
-    response_model=UserInfoOutputSchema,
+    response_model=UserOutputSchema,
 )
 def get_logged_user(
     request_user: User = Depends(authenticate_user),
-) -> UserInfoOutputSchema:
-    return UserInfoOutputSchema.from_orm(request_user)
+) -> UserOutputSchema:
+    return UserOutputSchema.from_orm(request_user)
 
 
 @user_router.get(
@@ -82,16 +84,16 @@ def get_users(
 
 @user_router.get(
     "/{user_id}",
-    response_model=UserOutputSchema,
     status_code=status.HTTP_200_OK,
 )
 def get_user(
     user_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
-) -> UserOutputSchema:
-    check_if_staff(request_user)
-    return get_single_user(db, user_id)
+) -> Union[UserInfoOutputSchema, UserOutputSchema]:
+    if request_user.is_staff:
+        return get_single_user(db, user_id)
+    return get_single_user(db, user_id, output_schema=UserInfoOutputSchema)
 
 
 @user_router.get(

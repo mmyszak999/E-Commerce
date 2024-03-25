@@ -5,7 +5,9 @@ from src.apps.products.models import Category
 from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
 from src.apps.user.schemas import UserOutputSchema
 from src.core.factories import (
+    AddressInputSchemaFactory,
     CategoryInputSchemaFactory,
+    InventoryInputSchemaFactory,
     ProductInputSchemaFactory,
     UserRegisterSchemaFactory,
 )
@@ -17,11 +19,16 @@ def test_users_can_be_sorted_by_their_attributes(
     staff_auth_headers: dict[str, str],
     db_user: UserOutputSchema,
 ):
+    new_address_1 = AddressInputSchemaFactory().generate()
+    new_address_2 = AddressInputSchemaFactory().generate()
     new_user_1 = UserRegisterSchemaFactory().generate(
-        email="zoomer1@mail.com", last_name="zimmermann", username="aabc-guy1123"
+        email="zoomer1@mail.com",
+        last_name="zimmermann",
+        username="aabc-guy1123",
+        address=new_address_1,
     )
     new_user_2 = UserRegisterSchemaFactory().generate(
-        email="zoomer2@mail.com", last_name="zimmermann"
+        email="zoomer2@mail.com", last_name="zimmermann", address=new_address_2
     )
     response = sync_client.post("users/register", data=new_user_1.json())
     assert response.status_code == status.HTTP_201_CREATED
@@ -83,10 +90,17 @@ def test_products_can_be_sorted_by_their_attributes(
     )
     assert response.status_code == status.HTTP_200_OK
     new_category_id = response.json()["results"][0]["id"]
+    new_inventory_1 = InventoryInputSchemaFactory().generate()
 
-    new_product_1 = ProductInputSchemaFactory().generate(category_ids=[new_category_id])
+    new_product_1 = ProductInputSchemaFactory().generate(
+        category_ids=[new_category_id], inventory=new_inventory_1
+    )
+
+    new_inventory_2 = InventoryInputSchemaFactory().generate()
     new_product_2 = ProductInputSchemaFactory().generate(
-        category_ids=[db_categories[0].id, db_categories[2].id], price=0.09
+        category_ids=[db_categories[0].id, db_categories[2].id],
+        price=0.09,
+        inventory=new_inventory_2,
     )
     response = sync_client.post(
         "products/", data=new_product_1.json(), headers=staff_auth_headers
