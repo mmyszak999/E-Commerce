@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from datetime import datetime
 from typing import Optional
+from decimal import Decimal
 
 from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.orders.schemas import OrderInputSchema, CartInputSchema, CartItemInputSchema, CartItemUpdateSchema
@@ -134,7 +135,7 @@ class ProductInputSchemaFactory(SchemaFactory):
             inventory=inventory,
             category_ids=category_ids,
             name=name or self.faker.ecommerce_name(),
-            price=price or self.faker.ecommerce_price(),
+            price=price or Decimal(self.faker.ecommerce_price()),
             description=description or self.faker.sentence(),
         )
 

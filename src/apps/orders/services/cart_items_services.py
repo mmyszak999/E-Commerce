@@ -76,8 +76,7 @@ def get_single_cart_item(
 def get_all_cart_items(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
-    query = select(CartItem)
-    #.join(User, Cart.user_id == User.id)
+    query = select(CartItem).join(Product, CartItem.product_id == Product.id)
 
     if query_params:
         query = filter_and_sort_instances(query_params, query, Cart)
@@ -94,8 +93,7 @@ def get_all_cart_items(
 def get_all_cart_items_for_single_cart(
     session: Session, cart_id: str, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
-    query = select(CartItem).filter(CartItem.cart_id == cart_id)
-    #.join(User, Cart.user_id == User.id)
+    query = select(CartItem).join(Product, CartItem.product_id == Product.id).filter(CartItem.cart_id == cart_id)
 
     if query_params:
         query = filter_and_sort_instances(query_params, query, Cart)

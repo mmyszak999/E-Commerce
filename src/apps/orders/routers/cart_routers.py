@@ -28,7 +28,6 @@ cart_router = APIRouter(prefix="/carts", tags=["cart"])
 
 @cart_router.post(
     "/",
-    dependencies=[Depends(authenticate_user)],
     response_model=CartOutputSchema,
     status_code=status.HTTP_201_CREATED,
 )
@@ -59,7 +58,7 @@ def get_carts(
     response_model=PagedResponseSchema[CartOutputSchema],
     status_code=status.HTTP_200_OK,
 )
-def get_logged_user_carts(
+def get_logged_user_cart(
     request: Request,
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),

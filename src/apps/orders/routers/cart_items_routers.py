@@ -29,13 +29,9 @@ from src.dependencies.user import authenticate_user
 
 cart_items_router = APIRouter(prefix="/carts/{cart_id}/items", tags=["cart-items"])
 
-"""
-    Routers that are part of cart routers, but they are linked to cart item logic
-"""
 
 @cart_items_router.post(
     "/",
-    dependencies=[Depends(authenticate_user)],
     response_model=CartItemOutputSchema,
     status_code=status.HTTP_201_CREATED,
 )

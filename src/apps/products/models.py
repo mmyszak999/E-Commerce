@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, Numeric, String, Table
+from sqlalchemy import Column, ForeignKey, Integer, DECIMAL, String, Table
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -41,7 +41,7 @@ class Product(Base):
         String, primary_key=True, unique=True, nullable=False, default=generate_uuid
     )
     name = Column(String(length=75), nullable=False, unique=True)
-    price = Column(Numeric, nullable=False)
+    price = Column(DECIMAL, nullable=False)
     description = Column(String(length=300), nullable=True)
     inventory = relationship(
         "ProductInventory", uselist=False, back_populates="product"

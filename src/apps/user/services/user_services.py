@@ -4,7 +4,7 @@ from fastapi import BackgroundTasks
 from fastapi_jwt_auth import AuthJWT
 from pydantic import BaseModel
 from sqlalchemy import delete, select, update
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 
 from src.apps.emails.services import send_activation_email
 from src.apps.jwt.schemas import AccessTokenOutputSchema
@@ -131,7 +131,7 @@ def get_single_user(
 def get_all_users(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
-    query = select(User).options(selectinload(User.carts))
+    query = select(User)
     if query_params:
         query = filter_and_sort_instances(query_params, query, User)
 

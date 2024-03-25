@@ -2,6 +2,7 @@ import uuid
 import datetime
 from random import randint
 from typing import Any
+from decimal import Decimal
 
 from faker import Faker
 from faker.providers import address, date_time, internet, lorem, misc, person
@@ -165,8 +166,8 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
-def calculate_item_price(quantity: int, product_price: float) -> float:
-    return float(quantity * product_price)
+def calculate_item_price(quantity: int, product_price: Decimal) -> Decimal:
+    return quantity * product_price
 
   
 def validate_item_quantity(product_quantity: int, entered_quantity: int) -> bool:

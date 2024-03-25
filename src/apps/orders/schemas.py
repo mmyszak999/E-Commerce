@@ -1,4 +1,5 @@
 from typing import Optional
+from decimal import Decimal
 
 from pydantic import BaseModel, validator
 
@@ -34,22 +35,25 @@ class CartItemOutputSchema(CartItemBaseSchema):
     id: str
     product: ProductOutputSchema
     cart_id: str
-    cart_item_price: float
+    cart_item_price: Decimal
     
     class Config:
         orm_mode = True
+        
 
-
-class CartInputSchema(BaseModel):
+class CartBaseSchema(BaseModel):
     user_id: str
 
 
-class CartOutputSchema(BaseModel):
+class CartInputSchema(CartBaseSchema):
+    pass
+
+
+class CartOutputSchema(CartBaseSchema):
     id: str
     user: UserInfoOutputSchema
-    user_id: str
     cart_items: list[CartItemOutputSchema]
-    cart_total_price: float
+    cart_total_price: Decimal
     
     class Config:
         orm_mode = True

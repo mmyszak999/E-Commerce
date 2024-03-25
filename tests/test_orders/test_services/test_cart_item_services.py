@@ -18,8 +18,7 @@ from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import (
     AlreadyExists, DoesNotExist, IsOccupied, ExceededItemQuantityException,
     NonPositiveCartItemQuantityException, NoSuchItemInCartException,
-    EmptyCartException, CartItemWithZeroQuantityException,
-    QuantityLowerThanItemInCartsAmountException, ActiveCartException)
+    EmptyCartException, CartItemWithZeroQuantityException, ActiveCartException)
 
 from src.core.factories import (
     CartInputSchemaFactory, CartItemInputSchemaFactory,
@@ -77,7 +76,7 @@ def test_cart_will_contain_correct_total_items_price_after_adding_cart_item(
     result = create_cart_item(sync_session, cart_item_input, cart_id=cart.id)
     cart = get_single_cart(sync_session, cart.id)
     
-    assert cart.cart_total_price == float(current_cart_item_price) + result.cart_item_price
+    assert cart.cart_total_price == current_cart_item_price + result.cart_item_price
 
 def test_quantity_cart_item_will_be_managed_correctly_when_re_adding_the_product_to_the_cart(
     sync_session: Session, db_products: list[ProductOutputSchema], db_user: UserOutputSchema
@@ -304,4 +303,4 @@ def test_if_cart_price_and_quantity_are_managed_correctly_when_cart_item_was_del
     cart_1 = get_single_cart(sync_session, cart_1.id)
     
     assert product_1.inventory.quantity_for_cart_items == product_1_quantity_for_cart_items + quantity_1
-    assert cart_1.cart_total_price == cart_1_price - float(quantity_1 * product_1.price)
+    assert cart_1.cart_total_price == cart_1_price - (quantity_1 * product_1.price)

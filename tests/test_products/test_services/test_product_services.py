@@ -10,7 +10,7 @@ from src.apps.products.services.product_services import (
     update_single_product,
 )
 from src.apps.user.schemas import UserOutputSchema
-from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied, QuantityLowerThanItemInCartsAmountException
+from src.core.exceptions import AlreadyExists, DoesNotExist, IsOccupied, QuantityLowerThanAmountOfProductItemsInCartsException
 from src.core.factories import (InventoryInputSchemaFactory, ProductInputSchemaFactory,
                                 CartInputSchemaFactory, CartItemInputSchemaFactory,
                                 InventoryUpdateSchemaFactory, ProductUpdateSchemaFactory)
@@ -82,7 +82,7 @@ def test_product_quantity_cannot_be_lower_than_the_items_amount_in_the_carts(
     inventory_update_data = InventoryUpdateSchemaFactory().generate(quantity=10)
     update_data = ProductUpdateSchemaFactory().generate(inventory=inventory_update_data)
     
-    with pytest.raises(QuantityLowerThanItemInCartsAmountException):
+    with pytest.raises(QuantityLowerThanAmountOfProductItemsInCartsException):
         update_single_product(sync_session, update_data, product.id)
 
 
