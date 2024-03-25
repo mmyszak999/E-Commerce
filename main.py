@@ -165,7 +165,7 @@ def handle_no_such_item_in_cart_exception(
     ) 
     
 @app.exception_handler(QuantityLowerThanAmountOfProductItemsInCartsException)
-def handle_quantity_lower_than_item_in_carts_amount_exception(
+def handle_quantity_lower_than_amount_of_product_items_in_carts(
     request: Request, exception: QuantityLowerThanAmountOfProductItemsInCartsException
 ) -> JSONResponse:
     return JSONResponse(
