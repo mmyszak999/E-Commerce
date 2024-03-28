@@ -14,21 +14,6 @@ from sqlalchemy.orm import relationship
 from src.core.utils.utils import generate_uuid, set_cart_item_validity
 from src.database.db_connection import Base
 
-order_product_association_table = Table(
-    "order_product_association_table",
-    Base.metadata,
-    Column(
-        "order_id",
-        ForeignKey("order.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False,
-    ),
-    Column(
-        "product_id",
-        ForeignKey("product.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False,
-    ),
-)
-
 
 class Cart(Base):
     __tablename__ = "cart"
@@ -78,9 +63,6 @@ class Order(Base):
         nullable=False,
     )
     user = relationship("User", back_populates="orders")
-    products = relationship(
-        "Product", secondary=order_product_association_table, back_populates="orders"
-    )
     waiting_for_payment = Column(Boolean, nullable=False, server_default="true")
     order_accepted = Column(Boolean, nullable=False, server_default="false")
     payment_accepted = Column(Boolean, nullable=False, server_default="false")
@@ -106,5 +88,5 @@ class OrderItem(Base):
         nullable=False,
     )
     product = relationship("Product", back_populates="order_items")
-    quantity = Column(Integer, nullable=False, default=1)
+    quantity = Column(Integer, nullable=False, default=0)
     order_item_price = Column(DECIMAL, nullable=False, default=0)

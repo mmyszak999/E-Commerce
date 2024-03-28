@@ -1,7 +1,7 @@
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
-from src.apps.orders.models import Order, order_product_association_table
+from src.apps.orders.models import Order
 from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
 from src.apps.products.models import Product
 from src.apps.user.models import User
@@ -15,7 +15,8 @@ from src.core.utils.utils import filter_and_sort_instances, if_exists
 def create_order(
     session: Session, order_input: OrderInputSchema, user_id: int
 ) -> OrderOutputSchema:
-    order_input_data = order_input.dict()
+    pass
+    """order_input_data = order_input.dict()
 
     product_ids = order_input_data.pop("product_ids")
     products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
@@ -32,7 +33,7 @@ def create_order(
     session.add(new_order)
     session.commit()
 
-    return OrderOutputSchema.from_orm(new_order)
+    return OrderOutputSchema.from_orm(new_order)"""
 
 
 def get_single_order(
@@ -79,52 +80,3 @@ def get_all_user_orders(
     )
 
 
-def update_single_order(
-    session: Session, order_input: OrderInputSchema, order_id: int, user_id: int
-) -> OrderOutputSchema:
-    if not (order_object := if_exists(Order, "id", order_id, session)):
-        raise DoesNotExist(Order.__name__, order_id)
-
-    order_data = order_input.dict(exclude_none=True, exclude_unset=True)
-
-    if order_data.get("product_ids"):
-        incoming_products = set(order_data["product_ids"])
-        current_products = set(product.id for product in order_object.products)
-
-        if to_delete := current_products - incoming_products:
-            session.execute(
-                delete(order_product_association_table)
-                .where(Product.id.in_(to_delete))
-                .options(selectinload(Order.products))
-            )
-
-        if to_insert := incoming_products - current_products:
-            rows = [
-                {"order_id": order_id, "product_id": product_id}
-                for product_id in to_insert
-            ]
-            session.execute(
-                insert(order_product_association_table)
-                .values(rows)
-                .options(selectinload(Order.products))
-            )
-
-        order_data.pop("product_ids")
-
-        statement = update(Order).filter(Order.id == order_id).values(**order_data)
-
-        session.execute(statement)
-        session.commit()
-
-    return get_single_order(session, order_id=order_id, user_id=user_id)
-
-
-def delete_single_order(session: Session, order_id: int):
-    if not if_exists(Order, "id", order_id, session):
-        raise DoesNotExist(Order.__name__, order_id)
-
-    statement = delete(Order).filter(Order.id == order_id)
-    result = session.execute(statement)
-    session.commit()
-
-    return result

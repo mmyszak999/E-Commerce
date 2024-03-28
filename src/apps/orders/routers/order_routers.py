@@ -8,12 +8,9 @@ from src.apps.orders.schemas import (
     OrderUpdateSchema,
 )
 from src.apps.orders.services.order_services import (
-    create_order,
-    delete_single_order,
     get_all_orders,
     get_all_user_orders,
     get_single_order,
-    update_single_order,
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -25,7 +22,7 @@ from src.dependencies.user import authenticate_user
 order_router = APIRouter(prefix="/orders", tags=["order"])
 
 
-@order_router.post(
+"""@order_router.post(
     "/",
     dependencies=[Depends(authenticate_user)],
     response_model=OrderOutputSchema,
@@ -36,7 +33,7 @@ def post_order(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
-    return create_order(db, order, user_id=request_user.id)
+    return create_order(db, order, user_id=request_user.id)"""
 
 
 @order_router.get(
@@ -84,32 +81,3 @@ def get_order(
     check_if_staff_or_owner(request_user, "id", db_order.user.id)
     return db_order
 
-
-@order_router.patch(
-    "/{order_id}",
-    response_model=OrderOutputSchema,
-    status_code=status.HTTP_200_OK,
-)
-def update_order(
-    order_id: str,
-    order: OrderUpdateSchema,
-    db: Session = Depends(get_db),
-    request_user: User = Depends(authenticate_user),
-) -> OrderOutputSchema:
-    order_check = get_single_order(db, order_id)
-    check_if_staff_or_owner(request_user, "id", order_check.user.id)
-    return update_single_order(db, order, order_id)
-
-
-@order_router.delete(
-    "/{order_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def delete_order(
-    order_id: str,
-    db: Session = Depends(get_db),
-    request_user: User = Depends(authenticate_user),
-) -> Response:
-    check_if_staff(request_user)
-    delete_single_order(db, order_id)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)

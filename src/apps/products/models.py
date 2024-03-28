@@ -2,7 +2,6 @@ from sqlalchemy import DECIMAL, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from src.apps.orders.models import order_product_association_table
 from src.core.utils.utils import generate_uuid
 from src.database.db_connection import Base
 
@@ -50,9 +49,6 @@ class Product(Base):
         "Category",
         secondary=category_product_association_table,
         back_populates="products",
-    )
-    orders = relationship(
-        "Order", secondary=order_product_association_table, back_populates="products"
     )
     cart_items = relationship("CartItem", back_populates="product")
     order_items = relationship("OrderItem", back_populates="product")
