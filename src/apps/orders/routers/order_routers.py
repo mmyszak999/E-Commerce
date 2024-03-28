@@ -3,14 +3,12 @@ from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
 from src.apps.orders.schemas import (
-    OrderInputSchema,
-    OrderOutputSchema,
-    OrderUpdateSchema,
+    OrderOutputSchema
 )
 from src.apps.orders.services.order_services import (
     get_all_orders,
     get_all_user_orders,
-    get_single_order,
+    get_single_order
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -78,6 +76,6 @@ def get_order(
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     db_order = get_single_order(db, order_id)
-    check_if_staff_or_owner(request_user, "id", db_order.user.id)
+    check_if_staff_or_owner(request_user, "id", db_order.user_id)
     return db_order
 

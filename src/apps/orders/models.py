@@ -69,6 +69,7 @@ class Order(Base):
     being_delivered = Column(Boolean, nullable=False, server_default="false")
     received = Column(Boolean, nullable=False, server_default="false")
     order_items = relationship("OrderItem", back_populates="order")
+    total_order_price = Column(Integer, nullable=False, default=0)
 
 
 class OrderItem(Base):

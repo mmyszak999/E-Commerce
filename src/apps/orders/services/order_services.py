@@ -1,8 +1,9 @@
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
-from src.apps.orders.models import Order
-from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
+from src.apps.orders.models import Order, Cart
+from src.apps.orders.schemas import OrderOutputSchema, OrderItemOutputSchema
+from src.apps.orders.services.order_items_services import create_order_items
 from src.apps.products.models import Product
 from src.apps.user.models import User
 from src.core.exceptions import DoesNotExist, ServiceException
@@ -13,34 +14,37 @@ from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
 def create_order(
-    session: Session, order_input: OrderInputSchema, user_id: int
+    session: Session, user_id: str, cart_id: str
 ) -> OrderOutputSchema:
-    pass
-    """order_input_data = order_input.dict()
+    if not (user_object := if_exists(User, "id", user_id, session)):
+        raise DoesNotExist(User.__name__, user_id)
 
-    product_ids = order_input_data.pop("product_ids")
-    products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
-
-    if not len(set(product_ids)) == len(products):
-        raise ServiceException(
-            "Amount of products in the order is not consistent. "
-            "Check if all products exist!"
-        )
-
-    order_create_data = dict()
-    order_create_data["user_id"], order_create_data["products"] = user_id, products
-    new_order = Order(user_id=user_id, products=products)
+    if not (cart_object := if_exists(Cart, "id", cart_id, session)):
+        raise DoesNotExist(Cart.__name__, cart_id)
+    
+    new_order = Order(user_id=user_id)
     session.add(new_order)
     session.commit()
-
-    return OrderOutputSchema.from_orm(new_order)"""
+    
+    create_order_items(session=session, order=new_order, cart_items=cart_object.cart_items)
+    new_order.total_order_price = cart_object.cart_total_price
+    print(new_order.order_items.__dict__, "nn22")
+    session.add(new_order)
+    session.commit()
+    
+    statement = delete(Cart).filter(Cart.id==cart_id)
+    session.execute(statement)
+    session.commit()
+    return OrderOutputSchema.from_orm(new_order)
 
 
 def get_single_order(
-    session: Session, order_id: int, user_id: int
+    session: Session, order_id: int
 ) -> OrderOutputSchema:
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, order_id)
+    
+    print([OrderItemOutputSchema.from_orm(item) for item in order_object.order_items], "ww")
 
     return OrderOutputSchema.from_orm(order_object)
 
@@ -48,7 +52,7 @@ def get_single_order(
 def get_all_orders(
     session: Session, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema:
-    query = select(Order).options(selectinload(Order.products))
+    query = select(Order)
 
     if query_params:
         query = filter_and_sort_instances(query_params, query, Order)

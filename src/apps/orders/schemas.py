@@ -59,24 +59,24 @@ class CartOutputSchema(CartBaseSchema):
         orm_mode = True
 
 
-class OrderBaseSchema(BaseModel):
-    product_ids: list[str]
-
-
-class OrderInputSchema(OrderBaseSchema):
-    pass
-
+class OrderItemOutputSchema(BaseModel):
+    order_id: str
+    product: ProductOutputSchema
+    quantity: int
+    order_item_price: Decimal
+    
     class Config:
         orm_mode = True
-
-
-class OrderUpdateSchema(BaseModel):
-    product_ids: Optional[list[str]]
-
+    
 
 class OrderOutputSchema(BaseModel):
     id: str
-    products: list[ProductOutputSchema]
+    user_id: str
+    waiting_for_payment: bool
+    order_accepted: bool
+    payment_accepted: bool
+    being_delivered: bool
+    received: bool
 
     class Config:
         orm_mode = True
