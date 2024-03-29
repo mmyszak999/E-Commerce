@@ -77,6 +77,8 @@ class OrderOutputSchema(BaseModel):
     payment_accepted: bool
     being_delivered: bool
     received: bool
+    order_items: list[OrderItemOutputSchema]
+    total_order_price: Decimal
 
     class Config:
         orm_mode = True

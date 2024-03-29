@@ -28,7 +28,6 @@ def create_order(
     
     create_order_items(session=session, order=new_order, cart_items=cart_object.cart_items)
     new_order.total_order_price = cart_object.cart_total_price
-    print(new_order.order_items.__dict__, "nn22")
     session.add(new_order)
     session.commit()
     
@@ -39,12 +38,10 @@ def create_order(
 
 
 def get_single_order(
-    session: Session, order_id: int
+    session: Session, order_id: str
 ) -> OrderOutputSchema:
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, order_id)
-    
-    print([OrderItemOutputSchema.from_orm(item) for item in order_object.order_items], "ww")
 
     return OrderOutputSchema.from_orm(order_object)
 
@@ -67,10 +64,10 @@ def get_all_orders(
 
 
 def get_all_user_orders(
-    session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
+    session: Session, user_id: str, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema[OrderOutputSchema]:
     query = (
-        select(Order).filter(User.id == user_id).options(selectinload(Order.products))
+        select(Order).filter(User.id == user_id).options(selectinload(Order.order_items))
     )
     if query_params:
         query = filter_and_sort_instances(query_params, query, Order)
