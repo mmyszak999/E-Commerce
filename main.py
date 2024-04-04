@@ -30,8 +30,18 @@ from src.core.exceptions import (
     NoSuchItemInCartException,
     QuantityLowerThanAmountOfProductItemsInCartsException
 )
+from src.core.tasks import scheduler
 
 app = FastAPI()
+
+"""@app.on_event("startup")
+def startup_event():
+    print("chuj")
+    scheduler.start()
+
+@app.on_event("shutdown")
+def shutdown_event():
+    scheduler.shutdown()"""
 
 root_router = APIRouter(prefix="/api")
 
