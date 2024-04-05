@@ -13,10 +13,9 @@ from src.apps.products.routers.category_routers import category_router
 
 
 def _delete_invalid_cart_items():
-    print("oh")
     delete_invalid_cart_items(next(get_db()))
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(_delete_invalid_cart_items, 'interval', seconds=10)
+scheduler.add_job(_delete_invalid_cart_items, 'interval', seconds=60)
 scheduler.start()
