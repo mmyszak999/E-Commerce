@@ -2,7 +2,6 @@ from sqlalchemy import (
     DECIMAL,
     Boolean,
     Column,
-    Date,
     ForeignKey,
     Integer,
     String,
@@ -10,6 +9,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.sql import func
+from sqlalchemy.sql.sqltypes import DateTime
 
 from src.core.utils.utils import generate_uuid, set_cart_item_validity
 from src.database.db_connection import Base
@@ -49,8 +51,8 @@ class CartItem(Base):
     product = relationship("Product", back_populates="cart_items")
     quantity = Column(Integer, nullable=False, default=1)
     cart_item_price = Column(DECIMAL, nullable=False)
-    cart_item_validity = Column(Date, nullable=False, default=set_cart_item_validity)
-
+    cart_item_validity = Column(DateTime, nullable=False, default=set_cart_item_validity)
+                                
 
 class Order(Base):
     __tablename__ = "order"

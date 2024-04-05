@@ -175,4 +175,4 @@ def validate_item_quantity(product_quantity: int, entered_quantity: int) -> bool
 
 
 def set_cart_item_validity():
-    return datetime.datetime.now() + datetime.timedelta(minutes=25)
+    return datetime.datetime.now() + datetime.timedelta(minutes=30)
