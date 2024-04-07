@@ -72,7 +72,7 @@ def get_all_user_orders(
     session: Session, user_id: str, page_params: PageParams, query_params: list[tuple]
 ) -> PagedResponseSchema[OrderOutputSchema]:
     query = (
-        select(Order).filter(User.id == user_id).options(selectinload(Order.order_items))
+        select(Order).filter(User.id == user_id).join(User, Order.user_id == User.id)
     )
     if query_params:
         query = filter_and_sort_instances(query_params, query, Order)
@@ -103,7 +103,7 @@ def cancel_single_order(session: Session, order_id: int, exceeded_payment_deadli
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, order_id)
     
-    if order.cancelled:
+    if order_object.cancelled:
         raise OrderAlreadyCancelled
     
     for order_item in order_object.order_items:
