@@ -31,6 +31,7 @@ def create_order_items(
         
         new_order_item = OrderItem(**order_item_data)
         session.add(new_order_item)
+        
     session.add(order)
     session.commit()
     return

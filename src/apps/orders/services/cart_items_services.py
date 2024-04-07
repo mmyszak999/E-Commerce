@@ -270,7 +270,6 @@ def delete_invalid_cart_items(session: Session) -> None:
         .filter(CartItem.cart_item_validity < datetime.datetime.now())
         ).unique().all()
     
-    print(len(invalid_cart_items), "len")
     [delete_single_cart_item(
         session, cart_item.cart_id, cart_item.id) for cart_item in invalid_cart_items
     ]

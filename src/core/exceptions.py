@@ -90,3 +90,9 @@ class QuantityLowerThanAmountOfProductItemsInCartsException(ServiceException):
         super().__init__(
             f"The requested quantity is lower than the amount of the product item in the active carts! Please change the value!"
         )
+
+class OrderAlreadyCancelled(ServiceException):
+    def __init__(self) -> None:
+        super().__init__(
+            f"Order is already cancelled!"
+        )

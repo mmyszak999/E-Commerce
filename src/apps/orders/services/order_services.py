@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
@@ -6,7 +8,7 @@ from src.apps.orders.schemas import OrderOutputSchema, OrderItemOutputSchema
 from src.apps.orders.services.order_items_services import create_order_items
 from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.core.exceptions import DoesNotExist, ServiceException
+from src.core.exceptions import DoesNotExist, EmptyCartException, OrderAlreadyCancelled
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -21,6 +23,9 @@ def create_order(
 
     if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, cart_id)
+    
+    if not cart_object.cart_items:
+        raise EmptyCartException
     
     new_order = Order(user_id=user_id)
     session.add(new_order)
@@ -79,5 +84,39 @@ def get_all_user_orders(
         page_params=page_params,
         session=session,
     )
+    
 
+def cancel_orders_with_exceeded_payment_deadline(session: Session) -> None:
+    invalid_orders = session.scalars(
+        select(Order)
+        .filter(
+            Order.waiting_for_payment == True, Order.cancelled == False,
+            Order.payment_deadline < datetime.datetime.now())
+        ).unique().all()
+    
+    [
+        cancel_single_order(session, order.id, True) for order in invalid_orders
+    ]
+    
 
+def cancel_single_order(session: Session, order_id: int, exceeded_payment_deadline: bool = False):
+    if not (order_object := if_exists(Order, "id", order_id, session)):
+        raise DoesNotExist(Order.__name__, order_id)
+    
+    if order.cancelled:
+        raise OrderAlreadyCancelled
+    
+    for order_item in order_object.order_items:
+        if not (product_object := if_exists(Product, "id", order_item.product_id, session)):
+            raise DoesNotExist(Product.__name__, "id", order_item.product_id)
+        
+        product_object.inventory.quantity_for_cart_items += order_item.quantity
+        session.add(product_object)
+    
+    if exceeded_payment_deadline:
+        order_object.waiting_for_payment = False
+        session.add(order_object)
+        
+    order_object.cancelled = True
+    session.add(order_object)
+    session.commit()

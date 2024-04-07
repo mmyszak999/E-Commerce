@@ -28,20 +28,13 @@ from src.core.exceptions import (
     NonPositiveCartItemQuantityException,
     EmptyCartException,
     NoSuchItemInCartException,
-    QuantityLowerThanAmountOfProductItemsInCartsException
+    QuantityLowerThanAmountOfProductItemsInCartsException,
+    OrderAlreadyCancelled
 )
 from src.core.tasks import scheduler
 
 app = FastAPI()
 
-"""@app.on_event("startup")
-def startup_event():
-    print("chuj")
-    scheduler.start()
-
-@app.on_event("shutdown")
-def shutdown_event():
-    scheduler.shutdown()"""
 
 root_router = APIRouter(prefix="/api")
 
@@ -175,8 +168,16 @@ def handle_no_such_item_in_cart_exception(
     ) 
     
 @app.exception_handler(QuantityLowerThanAmountOfProductItemsInCartsException)
-def handle_quantity_lower_than_amount_of_product_items_in_carts(
+def handle_quantity_lower_than_amount_of_product_items_in_carts_exception(
     request: Request, exception: QuantityLowerThanAmountOfProductItemsInCartsException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    ) 
+
+@app.exception_handler(OrderAlreadyCancelled)
+def handle_order_already_cancelled_exception(
+    request: Request, exception: OrderAlreadyCancelled
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}

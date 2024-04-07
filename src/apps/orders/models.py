@@ -13,7 +13,9 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from src.core.utils.utils import generate_uuid, set_cart_item_validity
+from src.core.utils.utils import (
+    generate_uuid, set_cart_item_validity, get_current_time, set_payment_deadline
+)
 from src.database.db_connection import Base
 
 
@@ -70,8 +72,11 @@ class Order(Base):
     payment_accepted = Column(Boolean, nullable=False, server_default="false")
     being_delivered = Column(Boolean, nullable=False, server_default="false")
     received = Column(Boolean, nullable=False, server_default="false")
+    cancelled = Column(Boolean, nullable=False, server_default="false")
     order_items = relationship("OrderItem", back_populates="order")
     total_order_price = Column(DECIMAL, nullable=False, default=0)
+    created_at = Column(DateTime, nullable=False, default=get_current_time)
+    payment_deadline = Column(DateTime, nullable=False, default=set_payment_deadline)
 
 
 class OrderItem(Base):

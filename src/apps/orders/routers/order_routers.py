@@ -8,7 +8,8 @@ from src.apps.orders.schemas import (
 from src.apps.orders.services.order_services import (
     get_all_orders,
     get_all_user_orders,
-    get_single_order
+    get_single_order,
+    cancel_single_order
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -78,4 +79,17 @@ def get_order(
     db_order = get_single_order(db, order_id)
     check_if_staff_or_owner(request_user, "id", db_order.user_id)
     return db_order
+
+@order_router.patch(
+    "/{order_id}/cancel",
+    status_code=status.HTTP_200_OK,
+)
+def cancel_order(
+    order_id: str,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> Response:
+    check_if_staff(request_user)
+    cancel_single_order(db, order_id, True)
+    return {"message": "Order has been cancelled"}
 

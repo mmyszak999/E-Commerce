@@ -174,5 +174,13 @@ def validate_item_quantity(product_quantity: int, entered_quantity: int) -> bool
     return entered_quantity <= product_quantity
 
 
+def get_current_time():
+    return datetime.datetime.now()
+
+
 def set_cart_item_validity():
-    return datetime.datetime.now() + datetime.timedelta(minutes=30)
+    return (get_current_time() + datetime.timedelta(minutes=30))
+    
+    
+def set_payment_deadline():
+    return (get_current_time()+ datetime.timedelta(minutes=60))

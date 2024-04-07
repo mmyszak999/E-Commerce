@@ -7,7 +7,7 @@ from src.apps.emails.schemas import EmailUpdateSchema
 from src.apps.orders.schemas import (
     CartInputSchema,
     CartItemInputSchema,
-    CartItemUpdateSchema
+    CartItemUpdateSchema,
 )
 from src.apps.products.schemas import (
     CategoryInputSchema,
