@@ -11,7 +11,7 @@ from src.apps.orders.services.cart_items_services import (
     get_all_cart_items
 )
 from src.apps.orders.services.cart_services import create_cart, get_all_carts
-from src.apps.orders.services.order_services import create_order
+from src.apps.orders.services.order_services import create_order, get_all_orders
 from src.apps.user.schemas import UserOutputSchema
 from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
 from src.core.factories import CartInputSchemaFactory, CartItemInputSchemaFactory
@@ -72,7 +72,9 @@ def db_orders(
     db_products: list[ProductOutputSchema],
     db_carts: PagedResponseSchema[CartOutputSchema]
 ) -> list[OrderOutputSchema]:
-    return [
+    [
         create_order(sync_session, user.id, cart.id) for user, cart in zip(
             [db_user, db_staff_user], [db_carts.results[0], db_carts.results[1]])
         ]
+    
+    return get_all_orders(sync_session, PageParams())

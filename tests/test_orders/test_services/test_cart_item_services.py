@@ -47,6 +47,7 @@ from src.core.factories import (
     ProductUpdateSchemaFactory,
 )
 from src.core.pagination.models import PageParams
+from src.core.pagination.schemas import PagedResponseSchema
 from src.core.utils.utils import generate_uuid
 from tests.test_orders.conftest import db_carts
 from tests.test_users.conftest import db_user
@@ -54,7 +55,7 @@ from tests.test_users.conftest import db_user
 
 def test_raise_exception_when_cart_item_created_with_nonexistent_cart_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -67,7 +68,7 @@ def test_raise_exception_when_cart_item_created_with_nonexistent_cart_id(
 
 def test_raise_exception_when_cart_item_created_with_nonexistent_product_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -78,7 +79,7 @@ def test_raise_exception_when_cart_item_created_with_nonexistent_product_id(
 
 def test_raise_exception_when_cart_item_created_with_too_big_quantity(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -164,7 +165,7 @@ def test_quantity_cart_item_will_be_managed_correctly_when_re_adding_the_product
 
 def test_if_only_one_cart_item_was_returned(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -174,7 +175,7 @@ def test_if_only_one_cart_item_was_returned(
 
 def test_raise_exception_while_getting_nonexistent_cart_item(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -184,7 +185,7 @@ def test_raise_exception_while_getting_nonexistent_cart_item(
 
 def test_if_multiple_cart_items_were_returned(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -203,7 +204,7 @@ def test_if_multiple_cart_items_were_returned(
 
 def test_raise_exception_when_cart_item_updated_with_nonexistent_cart_item_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -219,7 +220,7 @@ def test_raise_exception_when_cart_item_updated_with_nonexistent_cart_item_id(
 
 def test_raise_exception_when_cart_item_updated_with_nonexistent_cart_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -263,7 +264,7 @@ def test_raise_exception_when_there_is_no_cart_item_with_provided_id(
 
 def test_raise_exception_when_cart_item_updated_with_too_big_quantity(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -393,7 +394,7 @@ def test_updated_cart_item_will_be_deleted_when_quantity_equals_to_zero(
 
 def test_raise_exception_when_cart_item_deleted_with_nonexistent_cart_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -426,7 +427,7 @@ def test_cart_will_be_deleted_when_there_are_no_cart_items_left_while_deleting(
 
 def test_raise_exception_when_cart_item_deleted_with_nonexistent_cart_item_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):

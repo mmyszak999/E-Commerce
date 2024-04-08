@@ -19,10 +19,10 @@ def create_order(
     session: Session, user_id: str, cart_id: str
 ) -> OrderOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
-        raise DoesNotExist(User.__name__, user_id)
+        raise DoesNotExist(User.__name__, "id", user_id)
 
     if not (cart_object := if_exists(Cart, "id", cart_id, session)):
-        raise DoesNotExist(Cart.__name__, cart_id)
+        raise DoesNotExist(Cart.__name__, "id", cart_id)
     
     if not cart_object.cart_items:
         raise EmptyCartException
@@ -46,13 +46,13 @@ def get_single_order(
     session: Session, order_id: str
 ) -> OrderOutputSchema:
     if not (order_object := if_exists(Order, "id", order_id, session)):
-        raise DoesNotExist(Order.__name__, order_id)
+        raise DoesNotExist(Order.__name__, "id",order_id)
 
     return OrderOutputSchema.from_orm(order_object)
 
 
 def get_all_orders(
-    session: Session, page_params: PageParams, query_params: list[tuple]
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
     query = select(Order)
 
@@ -69,7 +69,7 @@ def get_all_orders(
 
 
 def get_all_user_orders(
-    session: Session, user_id: str, page_params: PageParams, query_params: list[tuple]
+    session: Session, user_id: str, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema[OrderOutputSchema]:
     query = (
         select(Order).filter(User.id == user_id).join(User, Order.user_id == User.id)
@@ -101,7 +101,7 @@ def cancel_orders_with_exceeded_payment_deadline(session: Session) -> None:
 
 def cancel_single_order(session: Session, order_id: int, exceeded_payment_deadline: bool = False):
     if not (order_object := if_exists(Order, "id", order_id, session)):
-        raise DoesNotExist(Order.__name__, order_id)
+        raise DoesNotExist(Order.__name__, "id", order_id)
     
     if order_object.cancelled:
         raise OrderAlreadyCancelled
