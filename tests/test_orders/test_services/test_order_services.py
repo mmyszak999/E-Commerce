@@ -1,5 +1,8 @@
+from datetime import datetime, timedelta
+
 import pytest
 from sqlalchemy.orm import Session
+from freezegun import freeze_time
 
 from src.apps.orders.schemas import CartItemOutputSchema, CartOutputSchema, OrderOutputSchema
 from src.apps.orders.services.cart_services import create_cart, get_single_cart
@@ -12,13 +15,17 @@ from src.apps.orders.services.order_services import (
     cancel_single_order
 )
 from src.apps.products.schemas import ProductOutputSchema
+from src.apps.products.services.product_services import (
+    get_single_product_or_inventory
+)
 from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import (
     ActiveCartException,
     AlreadyExists,
     DoesNotExist,
     IsOccupied,
-    EmptyCartException
+    EmptyCartException,
+    OrderAlreadyCancelled
 )
 from src.core.factories import CartInputSchemaFactory
 from src.core.pagination.models import PageParams
@@ -96,3 +103,57 @@ def test_if_multiple_orders_were_returned(
 ):
     orders = get_all_orders(sync_session, PageParams(page=1, size=5))
     assert orders.total == db_orders.total
+
+
+def test_orders_with_exceeded_payment_deadline_will_be_cancelled(
+    sync_session: Session, db_orders: PagedResponseSchema[OrderOutputSchema]
+):
+    """
+    the default deadline is 1 hour since order was created
+    """
+    orders = get_all_orders(sync_session, PageParams())
+    cancel_orders_with_exceeded_payment_deadline(sync_session)
+    assert len([order for order in orders.results if order.cancelled]) == 0
+    
+    
+    with freeze_time(str(datetime.now() + timedelta(minutes=30))):
+        cancel_orders_with_exceeded_payment_deadline(sync_session)
+        orders = get_all_orders(sync_session, PageParams())
+        assert len([order for order in orders.results if order.cancelled]) == 0
+    
+    
+    with freeze_time(str(datetime.now() + timedelta(minutes=60))):
+        cancel_orders_with_exceeded_payment_deadline(sync_session)
+        orders = get_all_orders(sync_session, PageParams())
+        assert len([order for order in orders.results if (
+            order.cancelled == True and order.waiting_for_payment == False)]) == db_orders.total
+
+
+def test_cancelled_order_cannot_be_cancelled_another_time(
+    sync_session: Session, db_orders: PagedResponseSchema[OrderOutputSchema],
+    db_user: UserOutputSchema
+):
+    cancel_single_order(sync_session, db_orders.results[0].id)
+    with pytest.raises(OrderAlreadyCancelled):
+        cancel_single_order(sync_session, db_orders.results[0].id)
+
+
+def test_raise_exception_while_cancelling_nonexistent_order(
+    sync_session: Session, db_orders: PagedResponseSchema[OrderOutputSchema]
+):
+    with pytest.raises(DoesNotExist):
+        cancel_single_order(sync_session, generate_uuid())
+
+
+def test_product_quantity_will_be_managed_correctly_when_order_is_being_cancelled(
+    sync_session: Session, db_orders: PagedResponseSchema[OrderOutputSchema]
+):
+    order = db_orders.results[0]
+    product = order.order_items[0].product
+    order_item_quantity = order.order_items[0].quantity
+    product_quantity_for_cart_items = product.inventory.quantity_for_cart_items
+    
+    cancel_single_order(sync_session, db_orders.results[0].id)
+    product = get_single_product_or_inventory(sync_session, product.id)
+    
+    assert product_quantity_for_cart_items + order_item_quantity == product.inventory.quantity_for_cart_items
