@@ -13,6 +13,7 @@ from src.apps.user.routers.user_routers import user_router
 from src.apps.user.routers.address_routers import address_router
 from src.apps.orders.routers.cart_routers import cart_router
 from src.apps.orders.routers.cart_items_routers import cart_items_router
+from src.apps.orders.routers.order_items_routers import order_items_router
 
 from src.core.exceptions import (
     AccountNotActivatedException,
@@ -49,6 +50,7 @@ root_router.include_router(email_router)
 root_router.include_router(admin_router)
 root_router.include_router(cart_router)
 root_router.include_router(cart_items_router)
+root_router.include_router(order_items_router)
 
 app.include_router(root_router)
 

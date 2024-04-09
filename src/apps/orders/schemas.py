@@ -62,6 +62,7 @@ class CartOutputSchema(CartBaseSchema):
 
 
 class OrderItemOutputSchema(BaseModel):
+    id: str
     order_id: str
     product: ProductOutputSchema
     quantity: int

@@ -10,6 +10,9 @@ from src.apps.orders.services.cart_items_services import (
     create_cart_item,
     get_all_cart_items
 )
+from src.apps.orders.services.order_items_services import (
+    get_all_order_items
+)
 from src.apps.orders.services.cart_services import create_cart, get_all_carts
 from src.apps.orders.services.order_services import create_order, get_all_orders
 from src.apps.user.schemas import UserOutputSchema
@@ -78,3 +81,8 @@ def db_orders(
         ]
     
     return get_all_orders(sync_session, PageParams())
+
+
+@pytest.fixture
+def db_order_items(sync_session: Session) -> PagedResponseSchema[CartItemOutputSchema]:
+    return get_all_order_items(sync_session, PageParams())

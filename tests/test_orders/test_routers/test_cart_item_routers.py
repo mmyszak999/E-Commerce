@@ -402,3 +402,5 @@ def test_anonymous_user_cannot_delete_cart_item(
     response = sync_client.delete(f"carts/{cart.id}/items/{cart.cart_items[0].id}")
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+

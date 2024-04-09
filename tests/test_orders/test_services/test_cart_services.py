@@ -29,7 +29,7 @@ from tests.test_users.conftest import db_user
 def test_raise_exception_when_user_create_more_than_one_cart(
     sync_session: Session,
     db_carts: PagedResponseSchema[CartOutputSchema],
-    db_cart_items: PagedResponseSchema[CartItemOutputSchema]
+    db_cart_items: PagedResponseSchema[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
     db_user: UserOutputSchema,
 ):

@@ -1,7 +1,8 @@
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
-from src.apps.orders.models import Order, CartItem, OrderItem
+from src.apps.orders.models import Order, OrderItem, OrderItem
+from src.apps.orders.schemas import OrderItemOutputSchema
 from src.apps.products.models import Product
 from src.core.exceptions import DoesNotExist, ServiceException, EmptyCartException
 from src.core.pagination.models import PageParams
@@ -11,8 +12,8 @@ from src.core.utils.utils import filter_and_sort_instances, if_exists, validate_
 
 
 def create_order_items(
-    session: Session, order: Order, cart_items: list[CartItem]
-):
+    session: Session, order: Order, cart_items: list[OrderItem]
+):    
     if not cart_items:
         raise EmptyCartException
     
@@ -35,5 +36,54 @@ def create_order_items(
     session.add(order)
     session.commit()
     return
+
+
+def get_single_order_item(session: Session, order_item_id: int) -> OrderItemOutputSchema:
+    if not (order_item_object := if_exists(OrderItem, "id", order_item_id, session)):
+        raise DoesNotExist(OrderItem.__name__, "id", order_item_id)
+
+    return OrderItemOutputSchema.from_orm(order_item_object)
+
+
+def get_all_order_items(
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
+) -> PagedResponseSchema:
+    query = select(OrderItem).join(Product, OrderItem.product_id == Product.id)
+
+    if query_params:
+        query = filter_and_sort_instances(query_params, query, OrderItem)
+
+    return paginate(
+        query=query,
+        response_schema=OrderItemOutputSchema,
+        table=OrderItem,
+        page_params=page_params,
+        session=session,
+    )
+
+
+def get_all_order_items_for_single_order(
+    session: Session,
+    order_id: str,
+    page_params: PageParams,
+    query_params: list[tuple] = None,
+) -> PagedResponseSchema:
+    query = (
+        select(OrderItem)
+        .join(Product, OrderItem.product_id == Product.id)
+        .filter(OrderItem.order_id == order_id)
+    )
+
+    if query_params:
+        query = filter_and_sort_instances(query_params, query, OrderItem)
+
+    return paginate(
+        query=query,
+        response_schema=OrderItemOutputSchema,
+        table=OrderItem,
+        page_params=page_params,
+        session=session,
+    )
+
         
         

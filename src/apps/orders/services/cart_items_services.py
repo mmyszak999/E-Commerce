@@ -100,7 +100,7 @@ def get_all_cart_items(
     query = select(CartItem).join(Product, CartItem.product_id == Product.id)
 
     if query_params:
-        query = filter_and_sort_instances(query_params, query, Cart)
+        query = filter_and_sort_instances(query_params, query, CartItem)
 
     return paginate(
         query=query,
@@ -124,7 +124,7 @@ def get_all_cart_items_for_single_cart(
     )
 
     if query_params:
-        query = filter_and_sort_instances(query_params, query, Cart)
+        query = filter_and_sort_instances(query_params, query, CartItem)
 
     return paginate(
         query=query,

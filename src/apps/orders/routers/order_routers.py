@@ -21,20 +21,6 @@ from src.dependencies.user import authenticate_user
 order_router = APIRouter(prefix="/orders", tags=["order"])
 
 
-"""@order_router.post(
-    "/",
-    dependencies=[Depends(authenticate_user)],
-    response_model=OrderOutputSchema,
-    status_code=status.HTTP_201_CREATED,
-)
-def post_order(
-    order: OrderInputSchema,
-    db: Session = Depends(get_db),
-    request_user: User = Depends(authenticate_user),
-) -> OrderOutputSchema:
-    return create_order(db, order, user_id=request_user.id)"""
-
-
 @order_router.get(
     "/all",
     response_model=PagedResponseSchema[OrderOutputSchema],

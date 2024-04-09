@@ -18,7 +18,7 @@ def test_authenticated_user_can_create_cart(
     sync_client: TestClient, auth_headers: dict[str, str], db_user: UserOutputSchema
 ):
     create_data = CartInputSchemaFactory().generate(user_id=db_user.id)
-    response = sync_client.post("carts/", headers=auth_headers, data=create_data.json())
+    response = sync_client.post("carts/", headers=auth_headers, content=create_data.json())
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["user_id"] == db_user.id
@@ -77,7 +77,7 @@ def test_anonymous_user_cannot_create_cart(
     sync_client: TestClient, db_user: UserOutputSchema
 ):
     create_data = CartInputSchemaFactory().generate(user_id=db_user.id)
-    response = sync_client.post("carts/", data=create_data.json())
+    response = sync_client.post("carts/", content=create_data.json())
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -118,3 +118,16 @@ def test_authenticated_cannot_delete_cart(
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+    
+def test_authenticated_user_can_create_order_from_their_cart(
+    sync_client: TestClient,
+    auth_headers: dict[str, str],
+    db_carts: list[CartOutputSchema],
+    db_user: UserOutputSchema
+):
+    response = sync_client.post(
+        f"carts/{db_carts.results[0].id}/order", headers=auth_headers
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["user_id"] == db_user.id
