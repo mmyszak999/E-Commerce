@@ -87,12 +87,11 @@ def get_all_products(
 ) -> PagedResponseSchema:
     query = (
         select(Product)
-        .options(joinedload(Product.categories, innerjoin=True))
         .join(
             category_product_association_table,
             Product.id == category_product_association_table.c.product_id,
         )
-        .join(Category, category_product_association_table.c.category_id == Category.id)
+        .join(Category, category_product_association_table.c.category_id == Category.id, isouter=True)
     )
 
     if query_params:
