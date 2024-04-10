@@ -76,7 +76,7 @@ def test_authenticated_user_can_get_single_order(
     response = sync_client.get(f"orders/{db_orders.results[0].id}", headers=auth_headers)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["id"] == db_orders[0].id
+    assert response.json()["id"] == db_orders.results[0].id
 
 def test_authenticated_user_cannot_get_not_their_order(
     sync_client: TestClient,

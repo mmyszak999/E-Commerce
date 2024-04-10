@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.orm import Session
 from freezegun import freeze_time
 
-from src.apps.orders.schemas import CartItemOutputSchema, CartOutputSchema, OrderOutputSchema
+from src.apps.orders.schemas import CartItemOutputSchema, CartOutputSchema, OrderOutputSchema, OrderItemOutputSchema
 from src.apps.orders.services.cart_services import create_cart, get_single_cart
 from src.apps.orders.services.order_services import (
     create_order,
@@ -40,11 +40,38 @@ from tests.test_products.conftest import db_products
 from tests.test_users.conftest import db_user
 
 
-def test_raise_exception_when_cart_has_no_items_when_creating_order_items(
+def test_if_only_one_order_item_was_returned(
     sync_session: Session,
-    db_products: list[ProductOutputSchema],
-    db_user: UserO
+    db_orders: PagedResponseSchema[OrderOutputSchema],
+    db_order_items: PagedResponseSchema[OrderItemOutputSchema],
 ):
-    
+    order_item = get_single_order_item(sync_session, db_order_items.results[1].id)
+    assert order_item.id == db_order_items.results[1].id
+
+
+def test_raise_exception_while_getting_nonexistent_order_item(
+    sync_session: Session, db_orders: PagedResponseSchema[OrderOutputSchema],
+    db_order_items: PagedResponseSchema[OrderItemOutputSchema],
+):
     with pytest.raises(DoesNotExist):
-        create_cart_item(sync_session, cart_item_input, cart_id=generate_uuid())
+        get_single_order_item(sync_session, generate_uuid())
+
+
+def test_all_order_items_in_the_order_belongs_to_the_same_order(
+    sync_session: Session, db_user: UserOutputSchema,
+    db_orders: PagedResponseSchema[OrderOutputSchema],
+    db_order_items: PagedResponseSchema[OrderItemOutputSchema]
+):
+    order_items = get_all_order_items_for_single_order(sync_session, db_orders.results[0].id, PageParams(page=1, size=25))
+    print([order_id for order_id in {order_item.order_id for order_item in order_items.results}])
+    assert [order_id for order_id in {order_item.order_id for order_item in order_items.results}][
+        0
+    ] == db_orders.results[0].id
+
+
+def test_if_multiple_order_items_were_returned(
+    sync_session: Session, db_orders: PagedResponseSchema[OrderOutputSchema],
+    db_order_items: PagedResponseSchema[OrderItemOutputSchema]
+):
+    order_items = get_all_order_items(sync_session, PageParams(page=1, size=5))
+    assert order_items .total == db_order_items.total

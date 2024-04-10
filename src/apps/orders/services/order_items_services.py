@@ -38,7 +38,7 @@ def create_order_items(
     return
 
 
-def get_single_order_item(session: Session, order_item_id: int) -> OrderItemOutputSchema:
+def get_single_order_item(session: Session, order_item_id: str) -> OrderItemOutputSchema:
     if not (order_item_object := if_exists(OrderItem, "id", order_item_id, session)):
         raise DoesNotExist(OrderItem.__name__, "id", order_item_id)
 
