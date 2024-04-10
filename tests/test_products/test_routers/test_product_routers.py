@@ -121,7 +121,9 @@ def test_authenticated_user_cannot_update_product(
 ):
     update_data = ProductUpdateSchemaFactory().generate()
     response = sync_client.patch(
-        f"products/{db_products[0].id}", headers=auth_headers, content=update_data.json()
+        f"products/{db_products[0].id}",
+        headers=auth_headers,
+        content=update_data.json(),
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 

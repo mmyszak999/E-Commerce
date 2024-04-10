@@ -179,8 +179,8 @@ def get_current_time():
 
 
 def set_cart_item_validity():
-    return (get_current_time() + datetime.timedelta(minutes=30))
-    
-    
+    return get_current_time() + datetime.timedelta(minutes=30)
+
+
 def set_payment_deadline():
-    return (get_current_time()+ datetime.timedelta(minutes=60))
+    return get_current_time() + datetime.timedelta(minutes=60)

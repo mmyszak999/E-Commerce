@@ -4,6 +4,7 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload
 
 from src.apps.orders.models import CartItem
+
 # from src.apps.orders.services.cart_items_services import ...
 from src.apps.products.models import (
     Category,
@@ -91,7 +92,11 @@ def get_all_products(
             category_product_association_table,
             Product.id == category_product_association_table.c.product_id,
         )
-        .join(Category, category_product_association_table.c.category_id == Category.id, isouter=True)
+        .join(
+            Category,
+            category_product_association_table.c.category_id == Category.id,
+            isouter=True,
+        )
     )
 
     if query_params:

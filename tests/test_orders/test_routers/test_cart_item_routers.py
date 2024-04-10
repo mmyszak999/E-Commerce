@@ -47,7 +47,9 @@ def test_staff_user_can_add_item_to_any_cart(
     new_cart_item = CartItemInputSchemaFactory().generate(product_id=db_products[1].id)
 
     response = sync_client.post(
-        f"carts/{cart.id}/items/", headers=staff_auth_headers, content=new_cart_item.json()
+        f"carts/{cart.id}/items/",
+        headers=staff_auth_headers,
+        content=new_cart_item.json(),
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -110,7 +112,9 @@ def test_staff_user_can_re_add_item_to_any_cart(
     )
 
     response = sync_client.post(
-        f"carts/{cart.id}/items/", headers=staff_auth_headers, content=new_cart_item.json()
+        f"carts/{cart.id}/items/",
+        headers=staff_auth_headers,
+        content=new_cart_item.json(),
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -402,5 +406,3 @@ def test_anonymous_user_cannot_delete_cart_item(
     response = sync_client.delete(f"carts/{cart.id}/items/{cart.cart_items[0].id}")
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-

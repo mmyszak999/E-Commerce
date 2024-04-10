@@ -1,7 +1,11 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema, InventoryOutputSchema
+from src.apps.products.schemas import (
+    CategoryOutputSchema,
+    InventoryOutputSchema,
+    ProductOutputSchema,
+)
 from src.apps.products.services.category_services import create_category
 from src.apps.products.services.inventory_services import get_all_inventories
 from src.apps.products.services.product_services import create_product
@@ -38,7 +42,9 @@ def db_categories(sync_session: Session) -> list[CategoryOutputSchema]:
 
 
 @pytest.fixture
-def db_products(sync_session: Session, db_categories: list[CategoryOutputSchema]) -> list[ProductOutputSchema]:
+def db_products(
+    sync_session: Session, db_categories: list[CategoryOutputSchema]
+) -> list[ProductOutputSchema]:
     for index, product in enumerate(DB_PRODUCT_SCHEMAS):
         category_id = db_categories[
             index

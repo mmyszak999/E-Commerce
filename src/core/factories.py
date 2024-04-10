@@ -164,6 +164,7 @@ class ProductUpdateSchemaFactory(SchemaFactory):
             description=description,
         )
 
+
 class EmailUpdateSchemaFactory(SchemaFactory):
     def __init__(self, schema_class=EmailUpdateSchema):
         super().__init__(schema_class)

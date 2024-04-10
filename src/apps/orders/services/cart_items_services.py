@@ -28,8 +28,8 @@ from src.core.utils.utils import (
     calculate_item_price,
     filter_and_sort_instances,
     if_exists,
+    set_cart_item_validity,
     validate_item_quantity,
-    set_cart_item_validity
 )
 
 
@@ -79,7 +79,7 @@ def create_cart_item(
 
         cart_item_data["cart_item_price"] = cart_item_price
         cart_item_data["cart_id"] = cart_id
-        
+
         new_cart_item = CartItem(**cart_item_data)
         session.add(new_cart_item)
         session.commit()
@@ -265,11 +265,17 @@ def delete_single_cart_item(
 
 
 def delete_invalid_cart_items(session: Session) -> None:
-    invalid_cart_items = session.scalars(
-        select(CartItem)
-        .filter(CartItem.cart_item_validity < datetime.datetime.now())
-        ).unique().all()
-    
-    [delete_single_cart_item(
-        session, cart_item.cart_id, cart_item.id) for cart_item in invalid_cart_items
+    invalid_cart_items = (
+        session.scalars(
+            select(CartItem).filter(
+                CartItem.cart_item_validity < datetime.datetime.now()
+            )
+        )
+        .unique()
+        .all()
+    )
+
+    [
+        delete_single_cart_item(session, cart_item.cart_id, cart_item.id)
+        for cart_item in invalid_cart_items
     ]

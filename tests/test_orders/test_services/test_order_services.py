@@ -1,31 +1,33 @@
 from datetime import datetime, timedelta
 
 import pytest
-from sqlalchemy.orm import Session
 from freezegun import freeze_time
+from sqlalchemy.orm import Session
 
-from src.apps.orders.schemas import CartItemOutputSchema, CartOutputSchema, OrderOutputSchema
+from src.apps.orders.schemas import (
+    CartItemOutputSchema,
+    CartOutputSchema,
+    OrderOutputSchema,
+)
 from src.apps.orders.services.cart_services import create_cart, get_single_cart
 from src.apps.orders.services.order_services import (
+    cancel_orders_with_exceeded_payment_deadline,
+    cancel_single_order,
     create_order,
-    get_single_order,
     get_all_orders,
     get_all_user_orders,
-    cancel_orders_with_exceeded_payment_deadline,
-    cancel_single_order
+    get_single_order,
 )
 from src.apps.products.schemas import ProductOutputSchema
-from src.apps.products.services.product_services import (
-    get_single_product_or_inventory
-)
+from src.apps.products.services.product_services import get_single_product_or_inventory
 from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import (
     ActiveCartException,
     AlreadyExists,
     DoesNotExist,
-    IsOccupied,
     EmptyCartException,
-    OrderAlreadyCancelled
+    IsOccupied,
+    OrderAlreadyCancelled,
 )
 from src.core.factories import CartInputSchemaFactory
 from src.core.pagination.models import PageParams
@@ -59,22 +61,24 @@ def test_raise_exception_when_cart_has_no_items_inside(
 
 
 def test_if_cart_data_is_managed_correctly_when_creating_order(
-    sync_session: Session, db_user: UserOutputSchema,
-    db_carts: PagedResponseSchema[CartOutputSchema]
+    sync_session: Session,
+    db_user: UserOutputSchema,
+    db_carts: PagedResponseSchema[CartOutputSchema],
 ):
     cart = db_carts.results[0]
     cart_total_price = cart.cart_total_price
     order = create_order(sync_session, db_user.id, cart.id)
-    
+
     assert cart_total_price == order.total_order_price
-    
+
     with pytest.raises(DoesNotExist):
         get_single_cart(sync_session, cart.id)
 
 
 def test_if_only_one_order_was_returned(
-    sync_session: Session, db_orders: PagedResponseSchema[OrderOutputSchema],
-    db_staff_user: UserOutputSchema
+    sync_session: Session,
+    db_orders: PagedResponseSchema[OrderOutputSchema],
+    db_staff_user: UserOutputSchema,
 ):
     order = get_single_order(sync_session, db_orders.results[1].id)
     assert order.id == db_orders.results[1].id
@@ -88,8 +92,9 @@ def test_raise_exception_while_getting_nonexistent_order(
 
 
 def test_check_user_orders_ownership(
-    sync_session: Session, db_user: UserOutputSchema,
-    db_orders: PagedResponseSchema[OrderOutputSchema]
+    sync_session: Session,
+    db_user: UserOutputSchema,
+    db_orders: PagedResponseSchema[OrderOutputSchema],
 ):
     orders = get_all_user_orders(sync_session, db_user.id, PageParams(page=1, size=25))
 
@@ -114,24 +119,31 @@ def test_orders_with_exceeded_payment_deadline_will_be_cancelled(
     orders = get_all_orders(sync_session, PageParams())
     cancel_orders_with_exceeded_payment_deadline(sync_session)
     assert len([order for order in orders.results if order.cancelled]) == 0
-    
-    
+
     with freeze_time(str(datetime.now() + timedelta(minutes=30))):
         cancel_orders_with_exceeded_payment_deadline(sync_session)
         orders = get_all_orders(sync_session, PageParams())
         assert len([order for order in orders.results if order.cancelled]) == 0
-    
-    
+
     with freeze_time(str(datetime.now() + timedelta(minutes=60))):
         cancel_orders_with_exceeded_payment_deadline(sync_session)
         orders = get_all_orders(sync_session, PageParams())
-        assert len([order for order in orders.results if (
-            order.cancelled == True and order.waiting_for_payment == False)]) == db_orders.total
+        assert (
+            len(
+                [
+                    order
+                    for order in orders.results
+                    if (order.cancelled == True and order.waiting_for_payment == False)
+                ]
+            )
+            == db_orders.total
+        )
 
 
 def test_cancelled_order_cannot_be_cancelled_another_time(
-    sync_session: Session, db_orders: PagedResponseSchema[OrderOutputSchema],
-    db_user: UserOutputSchema
+    sync_session: Session,
+    db_orders: PagedResponseSchema[OrderOutputSchema],
+    db_user: UserOutputSchema,
 ):
     cancel_single_order(sync_session, db_orders.results[0].id)
     with pytest.raises(OrderAlreadyCancelled):
@@ -152,8 +164,11 @@ def test_product_quantity_will_be_managed_correctly_when_order_is_being_cancelle
     product = order.order_items[0].product
     order_item_quantity = order.order_items[0].quantity
     product_quantity_for_cart_items = product.inventory.quantity_for_cart_items
-    
+
     cancel_single_order(sync_session, db_orders.results[0].id)
     product = get_single_product_or_inventory(sync_session, product.id)
-    
-    assert product_quantity_for_cart_items + order_item_quantity == product.inventory.quantity_for_cart_items
+
+    assert (
+        product_quantity_for_cart_items + order_item_quantity
+        == product.inventory.quantity_for_cart_items
+    )

@@ -1,12 +1,23 @@
-from sqlalchemy import DECIMAL, Column, ForeignKey, Integer, String, Table, Boolean, DateTime
+from sqlalchemy import (
+    DECIMAL,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import DateTime
 
 from src.core.utils.utils import (
-    generate_uuid, set_cart_item_validity, get_current_time, set_payment_deadline
+    generate_uuid,
+    get_current_time,
+    set_cart_item_validity,
+    set_payment_deadline,
 )
-
 from src.database.db_connection import Base
 
 category_product_association_table = Table(
@@ -58,7 +69,6 @@ class Product(Base):
     )
     cart_items = relationship("CartItem", back_populates="product")
     order_items = relationship("OrderItem", back_populates="product")
-    
 
 
 class ProductInventory(Base):

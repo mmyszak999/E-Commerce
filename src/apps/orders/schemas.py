@@ -1,6 +1,6 @@
-from datetime import datetime, date, time
+from datetime import date, datetime, time
 from decimal import Decimal
-from typing import Optional, Any
+from typing import Any, Optional
 
 from pydantic import BaseModel, validator
 
@@ -67,10 +67,10 @@ class OrderItemOutputSchema(BaseModel):
     product: ProductOutputSchema
     quantity: int
     order_item_price: Decimal
-    
+
     class Config:
         orm_mode = True
-    
+
 
 class OrderOutputSchema(BaseModel):
     id: str

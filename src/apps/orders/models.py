@@ -1,20 +1,15 @@
-from sqlalchemy import (
-    DECIMAL,
-    Boolean,
-    Column,
-    ForeignKey,
-    Integer,
-    String,
-    Table,
-)
+from sqlalchemy import DECIMAL, Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
 from src.core.utils.utils import (
-    generate_uuid, set_cart_item_validity, get_current_time, set_payment_deadline
+    generate_uuid,
+    get_current_time,
+    set_cart_item_validity,
+    set_payment_deadline,
 )
 from src.database.db_connection import Base
 
@@ -53,8 +48,10 @@ class CartItem(Base):
     product = relationship("Product", back_populates="cart_items")
     quantity = Column(Integer, nullable=False, default=1)
     cart_item_price = Column(DECIMAL, nullable=False)
-    cart_item_validity = Column(DateTime, nullable=False, default=set_cart_item_validity)
-                                
+    cart_item_validity = Column(
+        DateTime, nullable=False, default=set_cart_item_validity
+    )
+
 
 class Order(Base):
     __tablename__ = "order"

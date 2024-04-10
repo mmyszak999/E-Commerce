@@ -38,7 +38,7 @@ def get_single_cart(session: Session, cart_id: int) -> CartOutputSchema:
 
     if not (user_object := if_exists(User, "id", cart_object.user_id, session)):
         raise DoesNotExist(User.__name__, "user_id", cart_object.user_id)
-    
+
     if cart_object.cart_items:
         print(cart_object.cart_items[0].cart_item_validity, "ww")
 

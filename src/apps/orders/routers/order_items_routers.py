@@ -2,15 +2,12 @@ from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.orders.schemas import (
-    OrderOutputSchema, OrderItemOutputSchema
-)
-from src.apps.orders.services.order_services import (
-    get_single_order,
-)
+from src.apps.orders.schemas import OrderItemOutputSchema, OrderOutputSchema
 from src.apps.orders.services.order_items_services import (
-    get_single_order_item, get_all_order_items_for_single_order
+    get_all_order_items_for_single_order,
+    get_single_order_item,
 )
+from src.apps.orders.services.order_services import get_single_order
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -18,8 +15,8 @@ from src.core.permissions import check_if_staff, check_if_staff_or_owner
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
-
 order_items_router = APIRouter(prefix="/orders/{order_id}/items", tags=["order-items"])
+
 
 @order_items_router.get(
     "/{order_item_id}",

@@ -5,16 +5,15 @@ from fastapi_jwt_auth.exceptions import AuthJWTException
 from src.apps.admin.routers import admin_router
 from src.apps.emails.routers import email_router
 from src.apps.jwt.routers import jwt_router
+from src.apps.orders.routers.cart_items_routers import cart_items_router
+from src.apps.orders.routers.cart_routers import cart_router
+from src.apps.orders.routers.order_items_routers import order_items_router
 from src.apps.orders.routers.order_routers import order_router
 from src.apps.products.routers.category_routers import category_router
-from src.apps.products.routers.product_routers import product_router
 from src.apps.products.routers.inventory_routers import inventory_router
-from src.apps.user.routers.user_routers import user_router
+from src.apps.products.routers.product_routers import product_router
 from src.apps.user.routers.address_routers import address_router
-from src.apps.orders.routers.cart_routers import cart_router
-from src.apps.orders.routers.cart_items_routers import cart_items_router
-from src.apps.orders.routers.order_items_routers import order_items_router
-
+from src.apps.user.routers.user_routers import user_router
 from src.core.exceptions import (
     AccountNotActivatedException,
     ActiveCartException,
@@ -22,15 +21,15 @@ from src.core.exceptions import (
     AuthenticationException,
     AuthorizationException,
     DoesNotExist,
-    IsOccupied,
-    ServiceException,
-    NegativeQuantityException,
-    ExceededItemQuantityException,
-    NonPositiveCartItemQuantityException,
     EmptyCartException,
+    ExceededItemQuantityException,
+    IsOccupied,
+    NegativeQuantityException,
+    NonPositiveCartItemQuantityException,
     NoSuchItemInCartException,
+    OrderAlreadyCancelled,
     QuantityLowerThanAmountOfProductItemsInCartsException,
-    OrderAlreadyCancelled
+    ServiceException,
 )
 from src.core.tasks import scheduler
 
@@ -120,6 +119,7 @@ def handle_account_not_activated_exception(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
     )
 
+
 @app.exception_handler(NegativeQuantityException)
 def handle_negative_quantity_exception(
     request: Request, exception: NegativeQuantityException
@@ -127,6 +127,7 @@ def handle_negative_quantity_exception(
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
     )
+
 
 @app.exception_handler(ActiveCartException)
 def handle_active_cart_exception(
@@ -136,6 +137,7 @@ def handle_active_cart_exception(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
     )
 
+
 @app.exception_handler(ExceededItemQuantityException)
 def handle_exceeded_item_quantity_exception(
     request: Request, exception: ExceededItemQuantityException
@@ -144,13 +146,14 @@ def handle_exceeded_item_quantity_exception(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
     )
 
+
 @app.exception_handler(NonPositiveCartItemQuantityException)
 def handle_non_positive_cart_item_quantity_exception(
     request: Request, exception: NonPositiveCartItemQuantityException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
-    ) 
+    )
 
 
 @app.exception_handler(EmptyCartException)
@@ -159,23 +162,26 @@ def handle_empty_cart_exception(
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
-    ) 
-    
+    )
+
+
 @app.exception_handler(NoSuchItemInCartException)
 def handle_no_such_item_in_cart_exception(
     request: Request, exception: NoSuchItemInCartException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
-    ) 
-    
+    )
+
+
 @app.exception_handler(QuantityLowerThanAmountOfProductItemsInCartsException)
 def handle_quantity_lower_than_amount_of_product_items_in_carts_exception(
     request: Request, exception: QuantityLowerThanAmountOfProductItemsInCartsException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
-    ) 
+    )
+
 
 @app.exception_handler(OrderAlreadyCancelled)
 def handle_order_already_cancelled_exception(
@@ -183,4 +189,4 @@ def handle_order_already_cancelled_exception(
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
-    ) 
+    )

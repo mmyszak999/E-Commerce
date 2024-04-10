@@ -2,14 +2,12 @@ from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.orders.schemas import (
-    OrderOutputSchema
-)
+from src.apps.orders.schemas import OrderOutputSchema
 from src.apps.orders.services.order_services import (
+    cancel_single_order,
     get_all_orders,
     get_all_user_orders,
     get_single_order,
-    cancel_single_order
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -66,6 +64,7 @@ def get_order(
     check_if_staff_or_owner(request_user, "id", db_order.user_id)
     return db_order
 
+
 @order_router.patch(
     "/{order_id}/cancel",
     status_code=status.HTTP_200_OK,
@@ -78,4 +77,3 @@ def cancel_order(
     check_if_staff(request_user)
     cancel_single_order(db, order_id, True)
     return {"message": "Order has been cancelled"}
-

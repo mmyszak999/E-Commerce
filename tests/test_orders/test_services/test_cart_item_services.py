@@ -2,8 +2,8 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 
 import pytest
-from sqlalchemy.orm import Session
 from freezegun import freeze_time
+from sqlalchemy.orm import Session
 
 from src.apps.orders.schemas import (
     CartItemInputSchema,
@@ -12,12 +12,12 @@ from src.apps.orders.schemas import (
 )
 from src.apps.orders.services.cart_items_services import (
     create_cart_item,
+    delete_invalid_cart_items,
     delete_single_cart_item,
+    get_all_cart_items,
     get_all_cart_items_for_single_cart,
     get_single_cart_item,
     update_cart_item,
-    delete_invalid_cart_items,
-    get_all_cart_items
 )
 from src.apps.orders.services.cart_services import create_cart, get_single_cart
 from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
@@ -474,50 +474,49 @@ def test_if_cart_price_and_quantity_are_managed_correctly_when_cart_item_was_del
     )
     assert cart_1.cart_total_price == cart_1_price - (quantity_1 * product_1.price)
 
+
 def test_invalid_cart_items_are_deleted_after_30_minutes_in_the_cart(
     sync_session: Session,
     db_products: list[ProductOutputSchema],
-    db_user: UserOutputSchema
+    db_user: UserOutputSchema,
 ):
     cart = create_cart(sync_session, db_user.id)
     cart_item_input = CartItemInputSchemaFactory().generate(
         product_id=db_products[0].id
     )
     cart_item = create_cart_item(sync_session, cart_item_input, cart.id)
-    
+
     delete_invalid_cart_items(sync_session)
-    
+
     cart_items = get_all_cart_items(sync_session, PageParams(page=1, size=25))
     assert cart_items.total == 1
-    
+
     with freeze_time(str(datetime.now() + timedelta(minutes=15))):
         cart_item_input_2 = CartItemInputSchemaFactory().generate(
-        product_id=db_products[1].id
+            product_id=db_products[1].id
         )
         cart_item_2 = create_cart_item(sync_session, cart_item_input_2, cart.id)
-        
+
         cart_items = get_all_cart_items(sync_session, PageParams(page=1, size=25))
         assert cart_items.total == 2
 
-
-    with freeze_time(str(datetime.now() + timedelta(minutes=30))): 
-        delete_invalid_cart_items(sync_session)       
+    with freeze_time(str(datetime.now() + timedelta(minutes=30))):
+        delete_invalid_cart_items(sync_session)
         cart_items = get_all_cart_items(sync_session, PageParams(page=1, size=25))
         assert cart_items.total == 1
-        
+
         with pytest.raises(DoesNotExist):
             get_single_cart_item(sync_session, cart_item.id)
-        
-    with freeze_time(str(datetime.now() + timedelta(minutes=45))): 
+
+    with freeze_time(str(datetime.now() + timedelta(minutes=45))):
         with pytest.raises(EmptyCartException):
-            delete_invalid_cart_items(sync_session) 
-                
+            delete_invalid_cart_items(sync_session)
+
         cart_items = get_all_cart_items(sync_session, PageParams(page=1, size=25))
         assert cart_items.total == 0
-        
+
         with pytest.raises(DoesNotExist):
             get_single_cart_item(sync_session, cart_item.id)
-        
+
         with pytest.raises(DoesNotExist):
             get_single_cart(sync_session, cart.id)
-    

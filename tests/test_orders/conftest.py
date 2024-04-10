@@ -3,20 +3,20 @@ from sqlalchemy.orm import Session
 
 from src.apps.orders.models import Cart
 from src.apps.orders.schemas import (
-    CartOutputSchema, CartItemOutputSchema,
-    OrderOutputSchema, OrderItemOutputSchema
+    CartItemOutputSchema,
+    CartOutputSchema,
+    OrderItemOutputSchema,
+    OrderOutputSchema,
 )
 from src.apps.orders.services.cart_items_services import (
     create_cart_item,
-    get_all_cart_items
-)
-from src.apps.orders.services.order_items_services import (
-    get_all_order_items
+    get_all_cart_items,
 )
 from src.apps.orders.services.cart_services import create_cart, get_all_carts
+from src.apps.orders.services.order_items_services import get_all_order_items
 from src.apps.orders.services.order_services import create_order, get_all_orders
-from src.apps.user.schemas import UserOutputSchema
 from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
+from src.apps.user.schemas import UserOutputSchema
 from src.core.factories import CartInputSchemaFactory, CartItemInputSchemaFactory
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -73,13 +73,15 @@ def db_orders(
     db_staff_user: UserOutputSchema,
     db_categories: list[CategoryOutputSchema],
     db_products: list[ProductOutputSchema],
-    db_carts: PagedResponseSchema[CartOutputSchema]
+    db_carts: PagedResponseSchema[CartOutputSchema],
 ) -> list[OrderOutputSchema]:
     [
-        create_order(sync_session, user.id, cart.id) for user, cart in zip(
-            [db_user, db_staff_user], [db_carts.results[0], db_carts.results[1]])
-        ]
-    
+        create_order(sync_session, user.id, cart.id)
+        for user, cart in zip(
+            [db_user, db_staff_user], [db_carts.results[0], db_carts.results[1]]
+        )
+    ]
+
     return get_all_orders(sync_session, PageParams())
 
 
