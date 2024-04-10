@@ -23,7 +23,7 @@ def test_staff_can_create_product(
         category_ids=[db_categories[0].id], inventory=inventory_data
     )
     response = sync_client.post(
-        "products/", data=product_data.json(), headers=staff_auth_headers
+        "products/", content=product_data.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -69,7 +69,7 @@ def test_staff_can_get_product_inventory(
         category_ids=[db_categories[1].id], inventory=inventory_data
     )
     response = sync_client.post(
-        "products/", data=product_data.json(), headers=staff_auth_headers
+        "products/", content=product_data.json(), headers=staff_auth_headers
     )
     inventory_id = response.json()["inventory"]["id"]
     product_id = response.json()["id"]
@@ -95,7 +95,7 @@ def test_staff_can_update_product(
 
     response = sync_client.patch(
         f"products/{db_products[0].id}",
-        data=update_data.json(),
+        content=update_data.json(),
         headers=staff_auth_headers,
     )
 
@@ -121,7 +121,7 @@ def test_authenticated_user_cannot_update_product(
 ):
     update_data = ProductUpdateSchemaFactory().generate()
     response = sync_client.patch(
-        f"products/{db_products[0].id}", headers=auth_headers, data=update_data.json()
+        f"products/{db_products[0].id}", headers=auth_headers, content=update_data.json()
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -130,7 +130,7 @@ def test_anonymous_user_cannot_update_product(
     sync_client: TestClient,
 ):
     update_data = ProductUpdateSchemaFactory().generate()
-    response = sync_client.patch("products/1", data=update_data.json())
+    response = sync_client.patch("products/1", content=update_data.json())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 

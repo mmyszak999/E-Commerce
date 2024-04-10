@@ -11,7 +11,7 @@ from tests.test_users.conftest import DB_USER_SCHEMA
 def test_if_user_was_created_successfully(sync_client: TestClient):
     new_address = AddressInputSchemaFactory().generate()
     register_data = UserRegisterSchemaFactory().generate(address=new_address)
-    response = sync_client.post("users/register", data=register_data.json())
+    response = sync_client.post("users/register", content=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
 
 
@@ -29,7 +29,7 @@ def test_if_user_was_logged_correctly(
 def test_user_cannot_be_logged_without_activated_account(sync_client: TestClient):
     new_address = AddressInputSchemaFactory().generate()
     register_data = UserRegisterSchemaFactory().generate(address=new_address)
-    response = sync_client.post("users/register", data=register_data.json())
+    response = sync_client.post("users/register", content=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["is_active"] == False
 
@@ -87,7 +87,7 @@ def test_authenticated_user_cannot_get_their_account_info_page_with_inactive_acc
     """
     new_address = AddressInputSchemaFactory().generate()
     register_data = UserRegisterSchemaFactory().generate(address=new_address)
-    response = sync_client.post("users/register", data=register_data.json())
+    response = sync_client.post("users/register", content=register_data.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["is_active"] == False
 

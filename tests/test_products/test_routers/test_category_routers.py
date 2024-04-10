@@ -11,7 +11,7 @@ def test_staff_can_create_category(
 ):
     create_data = CategoryInputSchemaFactory().generate()
     response = sync_client.post(
-        "categories/", data=create_data.json(), headers=staff_auth_headers
+        "categories/", content=create_data.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -47,7 +47,7 @@ def test_staff_can_update_category(
     update_data = CategoryInputSchemaFactory().generate(name="updated")
     response = sync_client.patch(
         f"categories/{db_categories[0].id}",
-        data=update_data.json(),
+        content=update_data.json(),
         headers=staff_auth_headers,
     )
     print(response.json())
@@ -93,7 +93,7 @@ def test_authenticated_user_cannot_update_category(
     update_data = CategoryInputSchemaFactory().generate()
     response = sync_client.patch(
         f"categories/{db_categories[0].id}",
-        data=update_data.json(),
+        content=update_data.json(),
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -104,7 +104,7 @@ def test_anonymous_user_cannot_update_category(
 ):
     update_data = CategoryInputSchemaFactory().generate()
     response = sync_client.patch(
-        f"categories/{db_categories[0].id}", data=update_data.json()
+        f"categories/{db_categories[0].id}", content=update_data.json()
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"

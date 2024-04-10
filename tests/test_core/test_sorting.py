@@ -30,10 +30,10 @@ def test_users_can_be_sorted_by_their_attributes(
     new_user_2 = UserRegisterSchemaFactory().generate(
         email="zoomer2@mail.com", last_name="zimmermann", address=new_address_2
     )
-    response = sync_client.post("users/register", data=new_user_1.json())
+    response = sync_client.post("users/register", content=new_user_1.json())
     assert response.status_code == status.HTTP_201_CREATED
 
-    response = sync_client.post("users/register", data=new_user_2.json())
+    response = sync_client.post("users/register", content=new_user_2.json())
     assert response.status_code == status.HTTP_201_CREATED
 
     response = sync_client.get(
@@ -56,12 +56,12 @@ def test_categories_can_be_sorted_by_their_attributes(
     new_category_1 = CategoryInputSchemaFactory().generate(name="aa-category")
     new_category_2 = CategoryInputSchemaFactory().generate(name="zz-category")
     response = sync_client.post(
-        "categories/", data=new_category_1.json(), headers=staff_auth_headers
+        "categories/", content=new_category_1.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
     response = sync_client.post(
-        "categories/", data=new_category_2.json(), headers=staff_auth_headers
+        "categories/", content=new_category_2.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -81,7 +81,7 @@ def test_products_can_be_sorted_by_their_attributes(
 ):
     new_category = CategoryInputSchemaFactory().generate(name="zz-category")
     response = sync_client.post(
-        "categories/", data=new_category.json(), headers=staff_auth_headers
+        "categories/", content=new_category.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -103,12 +103,12 @@ def test_products_can_be_sorted_by_their_attributes(
         inventory=new_inventory_2,
     )
     response = sync_client.post(
-        "products/", data=new_product_1.json(), headers=staff_auth_headers
+        "products/", content=new_product_1.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
     response = sync_client.post(
-        "products/", data=new_product_2.json(), headers=staff_auth_headers
+        "products/", content=new_product_2.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
