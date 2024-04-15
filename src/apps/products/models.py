@@ -1,9 +1,23 @@
-from sqlalchemy import DECIMAL, Column, ForeignKey, Integer, String, Table
+from sqlalchemy import (
+    DECIMAL,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import DateTime
 
-from src.apps.orders.models import order_product_association_table
-from src.core.utils.utils import generate_uuid
+from src.core.utils.utils import (
+    generate_uuid,
+    get_current_time,
+    set_cart_item_validity,
+    set_payment_deadline,
+)
 from src.database.db_connection import Base
 
 category_product_association_table = Table(
@@ -11,8 +25,8 @@ category_product_association_table = Table(
     Base.metadata,
     Column(
         "category_id",
-        ForeignKey("category.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False,
+        ForeignKey("category.id", ondelete="SET NULL", onupdate="cascade"),
+        nullable=True,
     ),
     Column(
         "product_id",
@@ -43,6 +57,8 @@ class Product(Base):
     name = Column(String(length=75), nullable=False, unique=True)
     price = Column(DECIMAL, nullable=False)
     description = Column(String(length=300), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=get_current_time)
+    removed_from_store = Column(Boolean, nullable=False, server_default="false")
     inventory = relationship(
         "ProductInventory", uselist=False, back_populates="product"
     )
@@ -50,9 +66,6 @@ class Product(Base):
         "Category",
         secondary=category_product_association_table,
         back_populates="products",
-    )
-    orders = relationship(
-        "Order", secondary=order_product_association_table, back_populates="products"
     )
     cart_items = relationship("CartItem", back_populates="product")
     order_items = relationship("OrderItem", back_populates="product")

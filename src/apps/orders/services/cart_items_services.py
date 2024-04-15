@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload, selectinload
 
@@ -26,6 +28,7 @@ from src.core.utils.utils import (
     calculate_item_price,
     filter_and_sort_instances,
     if_exists,
+    set_cart_item_validity,
     validate_item_quantity,
 )
 
@@ -76,6 +79,7 @@ def create_cart_item(
 
         cart_item_data["cart_item_price"] = cart_item_price
         cart_item_data["cart_id"] = cart_id
+
         new_cart_item = CartItem(**cart_item_data)
         session.add(new_cart_item)
         session.commit()
@@ -96,7 +100,7 @@ def get_all_cart_items(
     query = select(CartItem).join(Product, CartItem.product_id == Product.id)
 
     if query_params:
-        query = filter_and_sort_instances(query_params, query, Cart)
+        query = filter_and_sort_instances(query_params, query, CartItem)
 
     return paginate(
         query=query,
@@ -120,7 +124,7 @@ def get_all_cart_items_for_single_cart(
     )
 
     if query_params:
-        query = filter_and_sort_instances(query_params, query, Cart)
+        query = filter_and_sort_instances(query_params, query, CartItem)
 
     return paginate(
         query=query,
@@ -258,3 +262,20 @@ def delete_single_cart_item(
 
         return result
     raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
+
+
+def delete_invalid_cart_items(session: Session) -> None:
+    invalid_cart_items = (
+        session.scalars(
+            select(CartItem).filter(
+                CartItem.cart_item_validity < datetime.datetime.now()
+            )
+        )
+        .unique()
+        .all()
+    )
+
+    [
+        delete_single_cart_item(session, cart_item.cart_id, cart_item.id)
+        for cart_item in invalid_cart_items
+    ]

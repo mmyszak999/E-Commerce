@@ -22,7 +22,7 @@ def test_user_can_succesfully_activate_their_account_via_activation_link(
 ):
     new_address = AddressInputSchemaFactory().generate()
     register_data = UserRegisterSchemaFactory().generate(address=new_address)
-    response = sync_client.post("users/register", data=register_data.json())
+    response = sync_client.post("users/register", content=register_data.json())
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["is_active"] == False
@@ -46,7 +46,7 @@ def test_authenticated_user_can_send_email_change_confirmation_mail(
         email=db_user.email, new_email="mail@mail.com"
     )
     response = sync_client.post(
-        "email/change-email", data=update_data.json(), headers=auth_headers
+        "email/change-email", content=update_data.json(), headers=auth_headers
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -61,7 +61,7 @@ def test_authenticated_user_cannot_send_email_change_confirmation_mail_to_change
 ):
     new_address = AddressInputSchemaFactory().generate()
     register_data = UserRegisterSchemaFactory().generate(address=new_address)
-    response = sync_client.post("users/register", data=register_data.json())
+    response = sync_client.post("users/register", content=register_data.json())
 
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -69,7 +69,7 @@ def test_authenticated_user_cannot_send_email_change_confirmation_mail_to_change
         email=register_data.email, new_email="new_email@mail.com"
     )
     response = sync_client.post(
-        "email/change-email", data=update_data.json(), headers=auth_headers
+        "email/change-email", content=update_data.json(), headers=auth_headers
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -78,7 +78,7 @@ def test_anonymous_user_cannot_send_email_change_confirmation_email(
     sync_client: TestClient,
 ):
     update_data = EmailUpdateSchemaFactory().generate(new_email="mail@mail.com")
-    response = sync_client.post(f"email/change-email", data=update_data.json())
+    response = sync_client.post(f"email/change-email", content=update_data.json())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 

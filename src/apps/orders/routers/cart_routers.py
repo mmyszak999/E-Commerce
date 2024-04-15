@@ -8,6 +8,7 @@ from src.apps.orders.schemas import (
     CartItemOutputSchema,
     CartItemUpdateSchema,
     CartOutputSchema,
+    OrderOutputSchema,
 )
 from src.apps.orders.services.cart_services import (
     create_cart,
@@ -16,6 +17,7 @@ from src.apps.orders.services.cart_services import (
     get_all_user_carts,
     get_single_cart,
 )
+from src.apps.orders.services.order_services import create_order
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -96,3 +98,16 @@ def delete_cart(
     check_if_staff(request_user)
     delete_single_cart(db, cart_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@cart_router.post(
+    "/{cart_id}/order",
+    response_model=OrderOutputSchema,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_order_from_cart(
+    cart_id: str,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> OrderOutputSchema:
+    return create_order(db, request_user.id, cart_id)

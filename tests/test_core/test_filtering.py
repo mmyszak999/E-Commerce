@@ -22,7 +22,7 @@ def test_users_can_be_filtered_by_their_attributes(
     new_user = UserRegisterSchemaFactory().generate(
         email="supertest@mail.com", address=new_address
     )
-    response = sync_client.post("users/register", data=new_user.json())
+    response = sync_client.post("users/register", content=new_user.json())
     assert response.status_code == status.HTTP_201_CREATED
 
     response = sync_client.get("users/?is_active__eq=True", headers=staff_auth_headers)
@@ -51,12 +51,12 @@ def test_categories_can_be_filtered_by_their_attributes(
     new_category_1 = CategoryInputSchemaFactory().generate("zazzz")
     new_category_2 = CategoryInputSchemaFactory().generate(name="zbzzz")
     response = sync_client.post(
-        "categories/", data=new_category_1.json(), headers=staff_auth_headers
+        "categories/", content=new_category_1.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
     response = sync_client.post(
-        "categories/", data=new_category_2.json(), headers=staff_auth_headers
+        "categories/", content=new_category_2.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -91,12 +91,12 @@ def test_products_can_be_filtered_by_their_attributes(
         inventory=new_inventory_2,
     )
     response = sync_client.post(
-        "products/", data=new_product_1.json(), headers=staff_auth_headers
+        "products/", content=new_product_1.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 
     response = sync_client.post(
-        "products/", data=new_product_2.json(), headers=staff_auth_headers
+        "products/", content=new_product_2.json(), headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_201_CREATED
 

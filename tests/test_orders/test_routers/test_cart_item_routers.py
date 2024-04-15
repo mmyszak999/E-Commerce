@@ -28,7 +28,7 @@ def test_authenticated_user_can_add_item_to_their_cart(
     new_cart_item = CartItemInputSchemaFactory().generate(product_id=db_products[2].id)
 
     response = sync_client.post(
-        f"carts/{cart.id}/items/", headers=auth_headers, data=new_cart_item.json()
+        f"carts/{cart.id}/items/", headers=auth_headers, content=new_cart_item.json()
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -47,7 +47,9 @@ def test_staff_user_can_add_item_to_any_cart(
     new_cart_item = CartItemInputSchemaFactory().generate(product_id=db_products[1].id)
 
     response = sync_client.post(
-        f"carts/{cart.id}/items/", headers=staff_auth_headers, data=new_cart_item.json()
+        f"carts/{cart.id}/items/",
+        headers=staff_auth_headers,
+        content=new_cart_item.json(),
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -65,7 +67,7 @@ def test_anonymous_user_cannot_add_item_to_the_cart(
     cart = [cart for cart in db_carts.results if cart.user_id == db_user.id][0]
     new_cart_item = CartItemInputSchemaFactory().generate(product_id=db_products[1].id)
 
-    response = sync_client.post(f"carts/{cart.id}/items/", data=new_cart_item.json())
+    response = sync_client.post(f"carts/{cart.id}/items/", content=new_cart_item.json())
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -89,7 +91,7 @@ def test_authenticated_user_can_re_add_item_to_their_cart(
     )
 
     response = sync_client.post(
-        f"carts/{cart.id}/items/", headers=auth_headers, data=new_cart_item.json()
+        f"carts/{cart.id}/items/", headers=auth_headers, content=new_cart_item.json()
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -110,7 +112,9 @@ def test_staff_user_can_re_add_item_to_any_cart(
     )
 
     response = sync_client.post(
-        f"carts/{cart.id}/items/", headers=staff_auth_headers, data=new_cart_item.json()
+        f"carts/{cart.id}/items/",
+        headers=staff_auth_headers,
+        content=new_cart_item.json(),
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -127,7 +131,7 @@ def test_authenticated_user_cannot_add_item_to_not_their_cart(
     cart_id = db_carts.results[0].id
     new_cart_item = CartItemInputSchemaFactory().generate(product_id=db_products[0].id)
     response = sync_client.post(
-        f"carts/{cart_id}/items/", headers=auth_headers, data=new_cart_item.json()
+        f"carts/{cart_id}/items/", headers=auth_headers, content=new_cart_item.json()
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -276,7 +280,7 @@ def test_authenticated_user_can_update_their_cart_item(
     response = sync_client.patch(
         f"carts/{cart.id}/items/{cart.cart_items[0].id}",
         headers=auth_headers,
-        data=update_data.json(),
+        content=update_data.json(),
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -297,7 +301,7 @@ def test_staff_user_can_update_any_cart_item(
     response = sync_client.patch(
         f"carts/{cart.id}/items/{cart.cart_items[0].id}",
         headers=staff_auth_headers,
-        data=update_data.json(),
+        content=update_data.json(),
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -318,7 +322,7 @@ def test_authenticated_user_cannot_update_cart_item_from_not_their_cart(
     response = sync_client.patch(
         f"carts/{cart.id}/items/{cart.cart_items[0].id}",
         headers=auth_headers,
-        data=update_data.json(),
+        content=update_data.json(),
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -335,7 +339,7 @@ def test_anonnymous_user_cannot_update_cart_item(
     update_data = CartItemUpdateSchemaFactory().generate(quantity=21)
 
     response = sync_client.patch(
-        f"carts/{cart.id}/items/{cart.cart_items[0].id}", data=update_data.json()
+        f"carts/{cart.id}/items/{cart.cart_items[0].id}", content=update_data.json()
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED

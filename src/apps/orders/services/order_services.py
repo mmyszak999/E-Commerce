@@ -1,53 +1,58 @@
+import datetime
+
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
-from src.apps.orders.models import Order, order_product_association_table
-from src.apps.orders.schemas import OrderInputSchema, OrderOutputSchema
+from src.apps.orders.models import Cart, Order
+from src.apps.orders.schemas import OrderItemOutputSchema, OrderOutputSchema
+from src.apps.orders.services.order_items_services import create_order_items
 from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.core.exceptions import DoesNotExist, ServiceException
+from src.core.exceptions import DoesNotExist, EmptyCartException, OrderAlreadyCancelled
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
 from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
-def create_order(
-    session: Session, order_input: OrderInputSchema, user_id: int
-) -> OrderOutputSchema:
-    order_input_data = order_input.dict()
+def create_order(session: Session, user_id: str, cart_id: str) -> OrderOutputSchema:
+    if not (user_object := if_exists(User, "id", user_id, session)):
+        raise DoesNotExist(User.__name__, "id", user_id)
 
-    product_ids = order_input_data.pop("product_ids")
-    products = session.scalars(select(Product).where(Product.id.in_(product_ids))).all()
+    if not (cart_object := if_exists(Cart, "id", cart_id, session)):
+        raise DoesNotExist(Cart.__name__, "id", cart_id)
 
-    if not len(set(product_ids)) == len(products):
-        raise ServiceException(
-            "Amount of products in the order is not consistent. "
-            "Check if all products exist!"
-        )
+    if not cart_object.cart_items:
+        raise EmptyCartException
 
-    order_create_data = dict()
-    order_create_data["user_id"], order_create_data["products"] = user_id, products
-    new_order = Order(user_id=user_id, products=products)
+    new_order = Order(user_id=user_id)
     session.add(new_order)
     session.commit()
 
+    create_order_items(
+        session=session, order=new_order, cart_items=cart_object.cart_items
+    )
+    new_order.total_order_price = cart_object.cart_total_price
+    session.add(new_order)
+    session.commit()
+
+    statement = delete(Cart).filter(Cart.id == cart_id)
+    session.execute(statement)
+    session.commit()
     return OrderOutputSchema.from_orm(new_order)
 
 
-def get_single_order(
-    session: Session, order_id: int, user_id: int
-) -> OrderOutputSchema:
+def get_single_order(session: Session, order_id: str) -> OrderOutputSchema:
     if not (order_object := if_exists(Order, "id", order_id, session)):
-        raise DoesNotExist(Order.__name__, order_id)
+        raise DoesNotExist(Order.__name__, "id", order_id)
 
     return OrderOutputSchema.from_orm(order_object)
 
 
 def get_all_orders(
-    session: Session, page_params: PageParams, query_params: list[tuple]
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema:
-    query = select(Order).options(selectinload(Order.products))
+    query = select(Order)
 
     if query_params:
         query = filter_and_sort_instances(query_params, query, Order)
@@ -62,10 +67,13 @@ def get_all_orders(
 
 
 def get_all_user_orders(
-    session: Session, user_id: int, page_params: PageParams, query_params: list[tuple]
+    session: Session,
+    user_id: str,
+    page_params: PageParams,
+    query_params: list[tuple] = None,
 ) -> PagedResponseSchema[OrderOutputSchema]:
     query = (
-        select(Order).filter(User.id == user_id).options(selectinload(Order.products))
+        select(Order).filter(User.id == user_id).join(User, Order.user_id == User.id)
     )
     if query_params:
         query = filter_and_sort_instances(query_params, query, Order)
@@ -79,52 +87,44 @@ def get_all_user_orders(
     )
 
 
-def update_single_order(
-    session: Session, order_input: OrderInputSchema, order_id: int, user_id: int
-) -> OrderOutputSchema:
+def cancel_orders_with_exceeded_payment_deadline(session: Session) -> None:
+    invalid_orders = (
+        session.scalars(
+            select(Order).filter(
+                Order.waiting_for_payment == True,
+                Order.cancelled == False,
+                Order.payment_deadline < datetime.datetime.now(),
+            )
+        )
+        .unique()
+        .all()
+    )
+
+    [cancel_single_order(session, order.id, True) for order in invalid_orders]
+
+
+def cancel_single_order(
+    session: Session, order_id: int, exceeded_payment_deadline: bool = False
+):
     if not (order_object := if_exists(Order, "id", order_id, session)):
-        raise DoesNotExist(Order.__name__, order_id)
+        raise DoesNotExist(Order.__name__, "id", order_id)
 
-    order_data = order_input.dict(exclude_none=True, exclude_unset=True)
+    if order_object.cancelled:
+        raise OrderAlreadyCancelled
 
-    if order_data.get("product_ids"):
-        incoming_products = set(order_data["product_ids"])
-        current_products = set(product.id for product in order_object.products)
+    for order_item in order_object.order_items:
+        if not (
+            product_object := if_exists(Product, "id", order_item.product_id, session)
+        ):
+            raise DoesNotExist(Product.__name__, "id", order_item.product_id)
 
-        if to_delete := current_products - incoming_products:
-            session.execute(
-                delete(order_product_association_table)
-                .where(Product.id.in_(to_delete))
-                .options(selectinload(Order.products))
-            )
+        product_object.inventory.quantity_for_cart_items += order_item.quantity
+        session.add(product_object)
 
-        if to_insert := incoming_products - current_products:
-            rows = [
-                {"order_id": order_id, "product_id": product_id}
-                for product_id in to_insert
-            ]
-            session.execute(
-                insert(order_product_association_table)
-                .values(rows)
-                .options(selectinload(Order.products))
-            )
+    if exceeded_payment_deadline:
+        order_object.waiting_for_payment = False
+        session.add(order_object)
 
-        order_data.pop("product_ids")
-
-        statement = update(Order).filter(Order.id == order_id).values(**order_data)
-
-        session.execute(statement)
-        session.commit()
-
-    return get_single_order(session, order_id=order_id, user_id=user_id)
-
-
-def delete_single_order(session: Session, order_id: int):
-    if not if_exists(Order, "id", order_id, session):
-        raise DoesNotExist(Order.__name__, order_id)
-
-    statement = delete(Order).filter(Order.id == order_id)
-    result = session.execute(statement)
+    order_object.cancelled = True
+    session.add(order_object)
     session.commit()
-
-    return result
