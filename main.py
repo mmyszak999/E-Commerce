@@ -31,7 +31,6 @@ from src.core.exceptions import (
     QuantityLowerThanAmountOfProductItemsInCartsException,
     ServiceException,
 )
-from src.core.tasks import scheduler
 
 app = FastAPI()
 

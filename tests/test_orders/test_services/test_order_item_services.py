@@ -75,12 +75,6 @@ def test_all_order_items_in_the_order_belongs_to_the_same_order(
     order_items = get_all_order_items_for_single_order(
         sync_session, db_orders.results[0].id, PageParams(page=1, size=25)
     )
-    print(
-        [
-            order_id
-            for order_id in {order_item.order_id for order_item in order_items.results}
-        ]
-    )
     assert [
         order_id
         for order_id in {order_item.order_id for order_item in order_items.results}

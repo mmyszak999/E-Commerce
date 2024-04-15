@@ -64,34 +64,34 @@ class ExceededItemQuantityException(ServiceException):
 class NonPositiveCartItemQuantityException(ServiceException):
     def __init__(self) -> None:
         super().__init__(
-            f"Requested quantity of the product is equal to 0! Please change the item quantity to a positive integer!"
+            "Requested quantity of the product is equal to 0! Please change the item quantity to a positive integer!"
         )
 
 
 class EmptyCartException(ServiceException):
     def __init__(self) -> None:
-        super().__init__(f"You have no items in the cart!")
+        super().__init__("You have no items in the cart!")
 
 
 class NoSuchItemInCartException(ServiceException):
     def __init__(self) -> None:
-        super().__init__(f"No such item in the cart!")
+        super().__init__("No such item in the cart!")
 
 
 class CartItemWithZeroQuantityException(ServiceException):
     def __init__(self) -> None:
         super().__init__(
-            f"The requested product quantity of cart item is equal to 0, so the item will be removed from the cart!"
+            "The requested product quantity of cart item is equal to 0, so the item will be removed from the cart!"
         )
 
 
 class QuantityLowerThanAmountOfProductItemsInCartsException(ServiceException):
     def __init__(self) -> None:
         super().__init__(
-            f"The requested quantity is lower than the amount of the product item in the active carts! Please change the value!"
+            "The requested quantity is lower than the amount of the product item in the active carts! Please change the value!"
         )
 
 
 class OrderAlreadyCancelled(ServiceException):
     def __init__(self) -> None:
-        super().__init__(f"Order is already cancelled!")
+        super().__init__("Order is already cancelled!")

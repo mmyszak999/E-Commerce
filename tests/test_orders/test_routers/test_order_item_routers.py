@@ -13,7 +13,7 @@ from tests.test_users.conftest import (
 )
 
 
-def test_staff_user_can_get_any_single_order_items(
+def test_staff_user_can_get_any_single_order_item(
     sync_client: TestClient,
     staff_auth_headers: dict[str, str],
     db_orders: list[OrderOutputSchema],

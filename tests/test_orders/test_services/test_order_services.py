@@ -140,7 +140,7 @@ def test_orders_with_exceeded_payment_deadline_will_be_cancelled(
         )
 
 
-def test_cancelled_order_cannot_be_cancelled_another_time(
+def test_cancelled_order_cannot_be_cancelled_second_time(
     sync_session: Session,
     db_orders: PagedResponseSchema[OrderOutputSchema],
     db_user: UserOutputSchema,

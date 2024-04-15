@@ -1,6 +1,6 @@
 from datetime import date, datetime, time
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Optional
 
 from pydantic import BaseModel, validator
 
@@ -37,7 +37,7 @@ class CartItemOutputSchema(CartItemBaseSchema):
     product: ProductOutputSchema
     cart_id: str
     cart_item_price: Decimal
-    cart_item_validity: Any
+    cart_item_validity: datetime
 
     class Config:
         orm_mode = True
