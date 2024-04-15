@@ -82,7 +82,7 @@ def update_single_category(
     return get_single_category(session, category_id=category_id)
 
 
-def delete_single_category(session: Session, category_id: int):
+def delete_single_category(session: Session, category_id: str):
     if not if_exists(Category, "id", category_id, session):
         raise DoesNotExist(Category.__name__, "id", category_id)
 

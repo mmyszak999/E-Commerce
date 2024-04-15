@@ -42,7 +42,7 @@ def test_staff_can_update_single_address(
     response = sync_client.patch(
         f"addresses/{db_addresses.results[0].id}",
         headers=staff_auth_headers,
-        data=update_data.json(),
+        content=update_data.json(),
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -76,7 +76,7 @@ def test_authenticated_user_cannot_update_address(
     update_data = AddressInputSchemaFactory().generate()
     response = sync_client.patch(
         f"addresses/{db_addresses.results[0].id}",
-        data=update_data.json(),
+        content=update_data.json(),
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -88,7 +88,7 @@ def test_anonymous_user_cannot_update_address(
 ):
     update_data = AddressInputSchemaFactory().generate()
     response = sync_client.patch(
-        f"addresses/{db_addresses.results[0].id}", data=update_data.json()
+        f"addresses/{db_addresses.results[0].id}", content=update_data.json()
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"

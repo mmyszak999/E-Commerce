@@ -8,7 +8,6 @@ from src.apps.orders.schemas import (
     CartInputSchema,
     CartItemInputSchema,
     CartItemUpdateSchema,
-    OrderInputSchema,
 )
 from src.apps.products.schemas import (
     CategoryInputSchema,
@@ -164,14 +163,6 @@ class ProductUpdateSchemaFactory(SchemaFactory):
             price=price,
             description=description,
         )
-
-
-class OrderInputSchemaFactory(SchemaFactory):
-    def __init__(self, schema_class=OrderInputSchema):
-        super().__init__(schema_class)
-
-    def generate(self, product_ids: list[str] = []):
-        return self.schema_class(product_ids=product_ids)
 
 
 class EmailUpdateSchemaFactory(SchemaFactory):

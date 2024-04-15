@@ -38,7 +38,7 @@ def test_staff_can_update_inventory(
     update_data = InventoryInputSchemaFactory().generate()
     response = sync_client.patch(
         f"inventories/{db_inventories.results[0].id}",
-        data=update_data.json(),
+        content=update_data.json(),
         headers=staff_auth_headers,
     )
 
@@ -75,7 +75,7 @@ def test_authenticated_user_cannot_update_inventory(
     update_data = InventoryInputSchemaFactory().generate()
     response = sync_client.patch(
         f"inventories/{db_inventories.results[0].id}",
-        data=update_data.json(),
+        content=update_data.json(),
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -88,7 +88,7 @@ def test_anonymous_user_cannot_update_inventory(
 ):
     update_data = InventoryInputSchemaFactory().generate()
     response = sync_client.patch(
-        f"inventories/{db_inventories.results[0].id}", data=update_data.json()
+        f"inventories/{db_inventories.results[0].id}", content=update_data.json()
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"

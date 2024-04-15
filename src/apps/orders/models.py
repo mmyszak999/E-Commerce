@@ -1,33 +1,17 @@
-from sqlalchemy import (
-    DECIMAL,
-    Boolean,
-    Column,
-    Date,
-    ForeignKey,
-    Integer,
-    String,
-    Table,
-)
+from sqlalchemy import DECIMAL, Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+from sqlalchemy.sql.sqltypes import DateTime
 
-from src.core.utils.utils import generate_uuid, set_cart_item_validity
-from src.database.db_connection import Base
-
-order_product_association_table = Table(
-    "order_product_association_table",
-    Base.metadata,
-    Column(
-        "order_id",
-        ForeignKey("order.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False,
-    ),
-    Column(
-        "product_id",
-        ForeignKey("product.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False,
-    ),
+from src.core.utils.utils import (
+    generate_uuid,
+    get_current_time,
+    set_cart_item_validity,
+    set_payment_deadline,
 )
+from src.database.db_connection import Base
 
 
 class Cart(Base):
@@ -64,7 +48,9 @@ class CartItem(Base):
     product = relationship("Product", back_populates="cart_items")
     quantity = Column(Integer, nullable=False, default=1)
     cart_item_price = Column(DECIMAL, nullable=False)
-    cart_item_validity = Column(Date, nullable=False, default=set_cart_item_validity)
+    cart_item_validity = Column(
+        DateTime, nullable=False, default=set_cart_item_validity
+    )
 
 
 class Order(Base):
@@ -78,15 +64,16 @@ class Order(Base):
         nullable=False,
     )
     user = relationship("User", back_populates="orders")
-    products = relationship(
-        "Product", secondary=order_product_association_table, back_populates="orders"
-    )
     waiting_for_payment = Column(Boolean, nullable=False, server_default="true")
     order_accepted = Column(Boolean, nullable=False, server_default="false")
     payment_accepted = Column(Boolean, nullable=False, server_default="false")
     being_delivered = Column(Boolean, nullable=False, server_default="false")
     received = Column(Boolean, nullable=False, server_default="false")
+    cancelled = Column(Boolean, nullable=False, server_default="false")
     order_items = relationship("OrderItem", back_populates="order")
+    total_order_price = Column(DECIMAL, nullable=False, default=0)
+    created_at = Column(DateTime, nullable=False, default=get_current_time)
+    payment_deadline = Column(DateTime, nullable=False, default=set_payment_deadline)
 
 
 class OrderItem(Base):
@@ -106,5 +93,5 @@ class OrderItem(Base):
         nullable=False,
     )
     product = relationship("Product", back_populates="order_items")
-    quantity = Column(Integer, nullable=False, default=1)
+    quantity = Column(Integer, nullable=False, default=0)
     order_item_price = Column(DECIMAL, nullable=False, default=0)

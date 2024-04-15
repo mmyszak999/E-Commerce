@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 0def45b00aa5
-Revises: e15e1d91923c
-Create Date: 2024-03-25 19:12:43.881028
+Revision ID: ee481e216246
+Revises: 873e7cedb671
+Create Date: 2024-04-10 17:12:30.877760
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0def45b00aa5'
-down_revision = 'e15e1d91923c'
+revision = 'ee481e216246'
+down_revision = '873e7cedb671'
 branch_labels = None
 depends_on = None
 
@@ -21,6 +21,9 @@ def upgrade() -> None:
     op.create_unique_constraint(None, 'cart', ['id'])
     op.create_unique_constraint(None, 'cart_item', ['id'])
     op.create_unique_constraint(None, 'category', ['id'])
+    op.alter_column('category_product_association_table', 'category_id',
+               existing_type=sa.VARCHAR(),
+               nullable=True)
     op.create_unique_constraint(None, 'order', ['id'])
     op.create_unique_constraint(None, 'order_item', ['id'])
     op.create_unique_constraint(None, 'product', ['id'])
@@ -38,6 +41,9 @@ def downgrade() -> None:
     op.drop_constraint(None, 'product', type_='unique')
     op.drop_constraint(None, 'order_item', type_='unique')
     op.drop_constraint(None, 'order', type_='unique')
+    op.alter_column('category_product_association_table', 'category_id',
+               existing_type=sa.VARCHAR(),
+               nullable=False)
     op.drop_constraint(None, 'category', type_='unique')
     op.drop_constraint(None, 'cart_item', type_='unique')
     op.drop_constraint(None, 'cart', type_='unique')

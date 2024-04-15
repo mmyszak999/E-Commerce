@@ -1,6 +1,8 @@
 from copy import deepcopy
+from datetime import datetime, timedelta
 
 import pytest
+from freezegun import freeze_time
 from sqlalchemy.orm import Session
 
 from src.apps.orders.schemas import (
@@ -10,7 +12,9 @@ from src.apps.orders.schemas import (
 )
 from src.apps.orders.services.cart_items_services import (
     create_cart_item,
+    delete_invalid_cart_items,
     delete_single_cart_item,
+    get_all_cart_items,
     get_all_cart_items_for_single_cart,
     get_single_cart_item,
     update_cart_item,
@@ -43,6 +47,7 @@ from src.core.factories import (
     ProductUpdateSchemaFactory,
 )
 from src.core.pagination.models import PageParams
+from src.core.pagination.schemas import PagedResponseSchema
 from src.core.utils.utils import generate_uuid
 from tests.test_orders.conftest import db_carts
 from tests.test_users.conftest import db_user
@@ -50,7 +55,7 @@ from tests.test_users.conftest import db_user
 
 def test_raise_exception_when_cart_item_created_with_nonexistent_cart_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -63,7 +68,7 @@ def test_raise_exception_when_cart_item_created_with_nonexistent_cart_id(
 
 def test_raise_exception_when_cart_item_created_with_nonexistent_product_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -74,7 +79,7 @@ def test_raise_exception_when_cart_item_created_with_nonexistent_product_id(
 
 def test_raise_exception_when_cart_item_created_with_too_big_quantity(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -160,7 +165,7 @@ def test_quantity_cart_item_will_be_managed_correctly_when_re_adding_the_product
 
 def test_if_only_one_cart_item_was_returned(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -170,7 +175,7 @@ def test_if_only_one_cart_item_was_returned(
 
 def test_raise_exception_while_getting_nonexistent_cart_item(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -180,7 +185,7 @@ def test_raise_exception_while_getting_nonexistent_cart_item(
 
 def test_if_multiple_cart_items_were_returned(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -199,7 +204,7 @@ def test_if_multiple_cart_items_were_returned(
 
 def test_raise_exception_when_cart_item_updated_with_nonexistent_cart_item_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -215,7 +220,7 @@ def test_raise_exception_when_cart_item_updated_with_nonexistent_cart_item_id(
 
 def test_raise_exception_when_cart_item_updated_with_nonexistent_cart_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -259,7 +264,7 @@ def test_raise_exception_when_there_is_no_cart_item_with_provided_id(
 
 def test_raise_exception_when_cart_item_updated_with_too_big_quantity(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -389,7 +394,7 @@ def test_updated_cart_item_will_be_deleted_when_quantity_equals_to_zero(
 
 def test_raise_exception_when_cart_item_deleted_with_nonexistent_cart_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -422,7 +427,7 @@ def test_cart_will_be_deleted_when_there_are_no_cart_items_left_while_deleting(
 
 def test_raise_exception_when_cart_item_deleted_with_nonexistent_cart_item_id(
     sync_session: Session,
-    db_carts: list[CartOutputSchema],
+    db_carts: PagedResponseSchema[CartOutputSchema],
     db_cart_items: list[CartItemOutputSchema],
     db_products: list[ProductOutputSchema],
 ):
@@ -468,3 +473,50 @@ def test_if_cart_price_and_quantity_are_managed_correctly_when_cart_item_was_del
         == product_1_quantity_for_cart_items + quantity_1
     )
     assert cart_1.cart_total_price == cart_1_price - (quantity_1 * product_1.price)
+
+
+def test_invalid_cart_items_are_deleted_after_30_minutes_in_the_cart(
+    sync_session: Session,
+    db_products: list[ProductOutputSchema],
+    db_user: UserOutputSchema,
+):
+    cart = create_cart(sync_session, db_user.id)
+    cart_item_input = CartItemInputSchemaFactory().generate(
+        product_id=db_products[0].id
+    )
+    cart_item = create_cart_item(sync_session, cart_item_input, cart.id)
+
+    delete_invalid_cart_items(sync_session)
+
+    cart_items = get_all_cart_items(sync_session, PageParams(page=1, size=25))
+    assert cart_items.total == 1
+
+    with freeze_time(str(datetime.now() + timedelta(minutes=15))):
+        cart_item_input_2 = CartItemInputSchemaFactory().generate(
+            product_id=db_products[1].id
+        )
+        cart_item_2 = create_cart_item(sync_session, cart_item_input_2, cart.id)
+
+        cart_items = get_all_cart_items(sync_session, PageParams(page=1, size=25))
+        assert cart_items.total == 2
+
+    with freeze_time(str(datetime.now() + timedelta(minutes=30))):
+        delete_invalid_cart_items(sync_session)
+        cart_items = get_all_cart_items(sync_session, PageParams(page=1, size=25))
+        assert cart_items.total == 1
+
+        with pytest.raises(DoesNotExist):
+            get_single_cart_item(sync_session, cart_item.id)
+
+    with freeze_time(str(datetime.now() + timedelta(minutes=45))):
+        with pytest.raises(EmptyCartException):
+            delete_invalid_cart_items(sync_session)
+
+        cart_items = get_all_cart_items(sync_session, PageParams(page=1, size=25))
+        assert cart_items.total == 0
+
+        with pytest.raises(DoesNotExist):
+            get_single_cart_item(sync_session, cart_item.id)
+
+        with pytest.raises(DoesNotExist):
+            get_single_cart(sync_session, cart.id)
