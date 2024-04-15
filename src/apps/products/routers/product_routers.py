@@ -1,4 +1,5 @@
 from fastapi import Depends, Request, Response, status
+from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
@@ -11,7 +12,7 @@ from src.apps.products.schemas import (
 from src.apps.products.services.inventory_services import get_single_inventory
 from src.apps.products.services.product_services import (
     create_product,
-    delete_single_product,
+    remove_single_product_from_store,
     get_all_products,
     get_single_product_or_inventory,
     update_single_product,
@@ -89,15 +90,15 @@ def update_product(
     return update_single_product(db, product, product_id)
 
 
-@product_router.delete(
+@product_router.patch(
     "/{product_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK,
 )
-def delete_product(
+def remove_product_from_store(
     product_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> Response:
     check_if_staff(request_user)
-    delete_single_product(db, product_id)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    result = remove_single_product_from_store(db, product_id)
+    return JSONResponse(result)

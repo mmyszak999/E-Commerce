@@ -3,9 +3,8 @@ from typing import Union
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload
 
-from src.apps.orders.models import CartItem
+from src.apps.orders.models import CartItem, Cart
 
-# from src.apps.orders.services.cart_items_services import ...
 from src.apps.products.models import (
     Category,
     Product,
@@ -77,6 +76,9 @@ def get_single_product_or_inventory(
 ) -> Union[ProductOutputSchema, InventoryOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
+    
+    if product_object.removed_from_store:
+        raise Exception
 
     if not get_inventory:
         return ProductOutputSchema.from_orm(product_object)
@@ -132,15 +134,20 @@ def update_single_product(
         cart_items = session.scalars(
             select(CartItem).filter(CartItem.product_id == product_object.id)
         )
-        rows = [
-            {
-                "id": cart_item.id,
-                "cart_item_price": float(new_product_price) * cart_item.quantity,
-            }
-            for cart_item in cart_items
-        ]
+        for cart_item in cart_items:
+            cart = session.scalar(
+            select(Cart).filter(Cart.id == cart_item.cart_id).limit(1)
+        )
+            new_cart_item_price = new_product_price * cart_item.quantity
+            old_cart_item_price = cart_item.cart_item_price
+            price_difference = old_cart_item_price - new_cart_item_price
+            
+            cart.cart_total_price -= price_difference
+            session.add(cart)
+            
+            cart_item.cart_item_price = new_cart_item_price
+            session.add(cart_item)
 
-        session.execute(update(CartItem), rows)
 
     if product_data.get("category_ids"):
         incoming_categories = set(product_data["category_ids"])
@@ -186,12 +193,12 @@ def update_single_product(
     return get_single_product_or_inventory(session, product_id=product_id)
 
 
-def delete_single_product(session: Session, product_id: str):
-    if not if_exists(Product, "id", product_id, session):
+def remove_single_product_from_store(session: Session, product_id: str) -> dict[str, str]:
+    if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
 
-    statement = delete(Product).filter(Product.id == product_id)
-    result = session.execute(statement)
+    product_object.removed_from_store = True
+    session.add(product_object)
     session.commit()
 
-    return result
+    return {"message": "Product has been removed from the store"}
