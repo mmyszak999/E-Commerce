@@ -58,16 +58,16 @@ class InventoryOutputSchema(InventoryBaseSchema):
 
 class ProductBaseSchema(BaseModel):
     name: str = Field(max_length=75)
-    price: Decimal
     description: str
 
 
 class ProductInputSchema(ProductBaseSchema):
+    price: Decimal
     category_ids: list[str]
     inventory: InventoryInputSchema
 
 
-class ProductUpdateSchema(ProductBaseSchema):
+class ProductUpdateSchema(BaseModel):
     name: Optional[str]
     price: Optional[Decimal]
     description: Optional[str]
@@ -75,10 +75,25 @@ class ProductUpdateSchema(ProductBaseSchema):
     inventory: Optional[InventoryUpdateSchema]
 
 
-class ProductOutputSchema(ProductBaseSchema):
+class ProductWithoutInventoryOutputSchema(ProductBaseSchema):
     id: str
+    price: Decimal
     categories: list[CategoryOutputSchema]
+    
+    class Config:
+        orm_mode = True
+    
+    
+class ProductOutputSchema(ProductWithoutInventoryOutputSchema):
     inventory: InventoryOutputSchema
+    removed_from_store: bool
+
+    class Config:
+        orm_mode = True
+
+
+class RemovedProductOutputSchema(ProductBaseSchema):
+    pass
 
     class Config:
         orm_mode = True

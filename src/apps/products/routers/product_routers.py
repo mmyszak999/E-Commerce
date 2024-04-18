@@ -1,3 +1,5 @@
+from typing import Union
+
 from fastapi import Depends, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
@@ -8,6 +10,8 @@ from src.apps.products.schemas import (
     ProductInputSchema,
     ProductOutputSchema,
     ProductUpdateSchema,
+    RemovedProductOutputSchema,
+    ProductWithoutInventoryOutputSchema
 )
 from src.apps.products.services.inventory_services import get_single_inventory
 from src.apps.products.services.product_services import (
@@ -16,6 +20,8 @@ from src.apps.products.services.product_services import (
     get_all_products,
     get_single_product_or_inventory,
     update_single_product,
+    get_all_available_products,
+    get_available_single_product_or_inventory
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -43,22 +49,47 @@ def post_product(
 
 @product_router.get(
     "/",
+    response_model=PagedResponseSchema[ProductWithoutInventoryOutputSchema],
+    status_code=status.HTTP_200_OK,
+)
+def get_available_products(
+    request: Request, db: Session = Depends(get_db), page_params: PageParams = Depends()
+) -> PagedResponseSchema[ProductWithoutInventoryOutputSchema]:
+    return get_all_available_products(db, page_params, query_params=request.query_params.multi_items())
+
+
+@product_router.get(
+    "/all",
     response_model=PagedResponseSchema[ProductOutputSchema],
     status_code=status.HTTP_200_OK,
 )
 def get_products(
-    request: Request, db: Session = Depends(get_db), page_params: PageParams = Depends()
+    request: Request, db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+    page_params: PageParams = Depends()
 ) -> PagedResponseSchema[ProductOutputSchema]:
+    check_if_staff(request_user)
     return get_all_products(db, page_params, request.query_params.multi_items())
 
 
 @product_router.get(
-    "/{product_id}",
+    "/all/{product_id}",
     response_model=ProductOutputSchema,
     status_code=status.HTTP_200_OK,
 )
-def get_product(product_id: str, db: Session = Depends(get_db)) -> ProductOutputSchema:
+def get_product_as_staff(
+    product_id: str, db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user)) -> ProductOutputSchema:
     return get_single_product_or_inventory(db, product_id)
+
+
+@product_router.get(
+    "/{product_id}",
+    response_model=Union[ProductWithoutInventoryOutputSchema, RemovedProductOutputSchema],
+    status_code=status.HTTP_200_OK,
+)
+def get_product(product_id: str, db: Session = Depends(get_db)) -> Union[ProductWithoutInventoryOutputSchema, RemovedProductOutputSchema]:
+    return get_available_single_product_or_inventory(db, product_id)
 
 
 @product_router.get(
@@ -72,7 +103,7 @@ def get_product_inventory(
     request_user: User = Depends(authenticate_user),
 ) -> InventoryOutputSchema:
     check_if_staff(request_user)
-    return get_single_product_or_inventory(db, product_id, get_inventory=True)
+    return get_available_single_product_or_inventory(db, product_id, get_inventory=True)
 
 
 @product_router.patch(
@@ -91,7 +122,7 @@ def update_product(
 
 
 @product_router.patch(
-    "/{product_id}",
+    "/{product_id}/remove",
     status_code=status.HTTP_200_OK,
 )
 def remove_product_from_store(

@@ -17,6 +17,8 @@ from src.apps.products.schemas import (
     ProductInputSchema,
     ProductOutputSchema,
     ProductUpdateSchema,
+    RemovedProductOutputSchema,
+    ProductWithoutInventoryOutputSchema
 )
 from src.apps.products.services.inventory_services import update_single_inventory
 from src.core.exceptions import (
@@ -71,26 +73,39 @@ def create_product(
     return ProductOutputSchema.from_orm(new_product)
 
 
+def get_available_single_product_or_inventory(
+    session: Session, product_id: str, get_inventory=False
+) -> Union[ProductWithoutInventoryOutputSchema, InventoryOutputSchema, RemovedProductOutputSchema]:
+    if not (product_object := if_exists(Product, "id", product_id, session)):
+        raise DoesNotExist(Product.__name__, "id", product_id)
+
+    if get_inventory:
+        return InventoryOutputSchema.from_orm(product_object.inventory)
+        
+    if product_object.removed_from_store:
+        return RemovedProductOutputSchema.from_orm(product_object)
+    return ProductWithoutInventoryOutputSchema.from_orm(product_object)
+
+
 def get_single_product_or_inventory(
     session: Session, product_id: str, get_inventory=False
 ) -> Union[ProductOutputSchema, InventoryOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
     
-    if product_object.removed_from_store:
-        raise Exception
-
-    if not get_inventory:
-        return ProductOutputSchema.from_orm(product_object)
-    return InventoryOutputSchema.from_orm(product_object.inventory)
+    return ProductOutputSchema.from_orm(product_object)
 
 
-def get_all_products(
-    session: Session, page_params: PageParams, query_params: list[tuple] = None
-) -> PagedResponseSchema:
+def get_all_available_products(
+    session: Session, page_params: PageParams,
+    get_removed: bool = False, query_params: list[tuple] = None
+) -> PagedResponseSchema[ProductWithoutInventoryOutputSchema]:
+    query = select(Product)
+    if not get_removed:
+        query = select(Product).filter(Product.removed_from_store == False)
+        
     query = (
-        select(Product)
-        .join(
+        query.join(
             category_product_association_table,
             Product.id == category_product_association_table.c.product_id,
         )
@@ -100,17 +115,22 @@ def get_all_products(
             isouter=True,
         )
     )
-
+        
     if query_params:
         query = filter_and_sort_instances(query_params, query, Product)
 
     return paginate(
         query=query,
-        response_schema=ProductOutputSchema,
+        response_schema=ProductWithoutInventoryOutputSchema,
         table=Product,
         page_params=page_params,
         session=session,
     )
+
+def get_all_products(
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
+) -> PagedResponseSchema[ProductOutputSchema]:
+    return get_all_available_products(session, page_params, get_removed=True, query_params=query_params)
 
 
 def update_single_product(
