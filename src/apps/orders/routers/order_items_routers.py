@@ -37,17 +37,16 @@ def get_order_item(
         OrderItemOutputSchema,
         UserOrderItemOutputSchema
     ]:
-    order_check = get_single_order(db, order_id)
-    check_if_staff_or_owner(request_user, "id", order_check.user_id)
-    return get_single_order_item(db, order_item_id)
+    db_order = get_single_order(db, order_id)
+    if check_if_staff_or_owner(request_user, "id", db_order.user_id):
+        if request_user.is_staff: 
+            return get_single_order_item(db, order_item_id, as_staff=True) 
+        return get_single_order_item(db, order_item_id)
 
 
 @order_items_router.get(
     "/",
-    response_model=Union[
-        PagedResponseSchema[OrderItemOutputSchema],
-        PagedResponseSchema[UserOrderItemOutputSchema],
-    ],
+    response_model=PagedResponseSchema[UserOrderItemOutputSchema],
     status_code=status.HTTP_200_OK,
 )
 def get_order_items_for_single_order(
@@ -56,10 +55,7 @@ def get_order_items_for_single_order(
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
-) -> Union[
-        PagedResponseSchema[OrderItemOutputSchema],
-        PagedResponseSchema[UserOrderItemOutputSchema],
-    ]:
+) -> PagedResponseSchema[UserOrderItemOutputSchema]:
     order_check = get_single_order(db, order_id)
     check_if_staff_or_owner(request_user, "id", order_check.user_id)
     return get_all_order_items_for_single_order(

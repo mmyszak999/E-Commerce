@@ -91,14 +91,14 @@ class BaseOrderItemOutputSchema(BaseModel):
     order_item_price: Decimal
 
 
-class OrderItemOutputSchema(BaseModel):
+class OrderItemOutputSchema(BaseOrderItemOutputSchema):
     product: ProductOutputSchema
 
     class Config:
         orm_mode = True
         
         
-class UserOrderItemOutputSchema(BaseModel):
+class UserOrderItemOutputSchema(BaseOrderItemOutputSchema):
     product: ProductWithoutInventoryOutputSchema
 
     class Config:
