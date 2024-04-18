@@ -102,7 +102,7 @@ def get_single_cart_item(session: Session, cart_item_id: int, as_staff: bool=Fal
 
 def get_all_cart_items(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
-) -> PagedResponseSchema:
+) -> PagedResponseSchema[CartItemOutputSchema]:
     query = select(CartItem).join(Product, CartItem.product_id == Product.id)
 
     if query_params:

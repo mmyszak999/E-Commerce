@@ -10,9 +10,9 @@ from src.apps.orders.schemas import (
     CartItemOutputSchema,
     CartItemUpdateSchema,
     CartOutputSchema,
-    OrderOutputSchema,
     UserCartItemOutputSchema,
-    UserCartOutputSchema
+    UserCartOutputSchema,
+    UserOrderOutputSchema
 )
 from src.apps.orders.services.cart_services import (
     create_cart,
@@ -108,14 +108,14 @@ def delete_cart(
 
 @cart_router.post(
     "/{cart_id}/order",
-    response_model=OrderOutputSchema,
+    response_model=UserOrderOutputSchema,
     status_code=status.HTTP_201_CREATED,
 )
 def create_order_from_cart(
     cart_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
-) -> OrderOutputSchema:
+) -> UserOrderOutputSchema:
     db_cart = get_single_cart(db, cart_id)
     check_if_staff_or_owner(request_user, "id", db_cart.user_id)
     return create_order(db, request_user.id, cart_id)

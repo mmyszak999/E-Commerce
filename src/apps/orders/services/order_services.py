@@ -1,10 +1,11 @@
 import datetime
+from typing import Union
 
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from src.apps.orders.models import Cart, Order
-from src.apps.orders.schemas import OrderItemOutputSchema, OrderOutputSchema
+from src.apps.orders.schemas import OrderItemOutputSchema, OrderOutputSchema, UserOrderOutputSchema
 from src.apps.orders.services.order_items_services import create_order_items
 from src.apps.products.models import Product
 from src.apps.user.models import User
@@ -15,7 +16,7 @@ from src.core.pagination.services import paginate
 from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
-def create_order(session: Session, user_id: str, cart_id: str) -> OrderOutputSchema:
+def create_order(session: Session, user_id: str, cart_id: str) -> UserOrderOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, "id", user_id)
 
@@ -39,14 +40,18 @@ def create_order(session: Session, user_id: str, cart_id: str) -> OrderOutputSch
     statement = delete(Cart).filter(Cart.id == cart_id)
     session.execute(statement)
     session.commit()
-    return OrderOutputSchema.from_orm(new_order)
+    return UserOrderOutputSchema.from_orm(new_order)
 
 
-def get_single_order(session: Session, order_id: str) -> OrderOutputSchema:
+def get_single_order(session: Session, order_id: str, as_staff: bool=False) -> Union[
+    OrderOutputSchema, UserOrderOutputSchema
+]:
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, "id", order_id)
-
-    return OrderOutputSchema.from_orm(order_object)
+    
+    if as_staff:
+        return OrderOutputSchema.from_orm(order_object)
+    return UserOrderOutputSchema.from_orm(order_object)
 
 
 def get_all_orders(

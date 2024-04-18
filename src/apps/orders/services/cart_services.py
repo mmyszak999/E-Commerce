@@ -6,10 +6,8 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from src.apps.orders.models import Cart, CartItem
 from src.apps.orders.schemas import (
     CartItemInputSchema,
-    CartItemOutputSchema,
     CartItemUpdateSchema,
     CartOutputSchema,
-    UserCartItemOutputSchema,
     UserCartOutputSchema
 )
 from src.apps.orders.services.cart_items_services import delete_single_cart_item

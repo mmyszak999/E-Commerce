@@ -63,7 +63,7 @@ def get_order(
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
     db_order = get_single_order(db, order_id)
-    check_if_staff_or_owner(request_user, "id", db_order.user_id)
+    check_if_staff(request_user)
     return db_order
 
 
@@ -78,8 +78,11 @@ def get_order(
     request_user: User = Depends(authenticate_user),
 ) -> Union[OrderOutputSchema, UserOrderOutputSchema]:
     db_order = get_single_order(db, order_id)
-    check_if_staff_or_owner(request_user, "id", db_order.user_id)
-    return db_order
+    if check_if_staff_or_owner(request_user, "id", db_order.user_id):
+        if request_user.is_staff: 
+            return get_single_order(db, order_id, as_staff=True) 
+        return get_single_order(db, order_id)
+
 
 
 @order_router.patch(
