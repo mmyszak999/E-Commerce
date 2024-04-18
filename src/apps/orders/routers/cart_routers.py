@@ -92,7 +92,6 @@ def get_cart(
         return get_single_cart(db, cart_id, as_staff=True)
         
 
-
 @cart_router.delete(
     "/{cart_id}",
     status_code=status.HTTP_204_NO_CONTENT,

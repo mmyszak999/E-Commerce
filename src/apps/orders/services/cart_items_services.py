@@ -1,4 +1,5 @@
 import datetime
+from typing import Union
 
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload, selectinload
@@ -8,6 +9,7 @@ from src.apps.orders.schemas import (
     CartItemInputSchema,
     CartItemOutputSchema,
     CartItemUpdateSchema,
+    UserCartItemOutputSchema
 )
 from src.apps.products.models import Product
 from src.apps.user.models import User
@@ -35,7 +37,7 @@ from src.core.utils.utils import (
 
 def create_cart_item(
     session: Session, cart_item: CartItemInputSchema, cart_id: str
-) -> CartItemOutputSchema:
+) -> UserCartItemOutputSchema:
     if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
 
@@ -84,14 +86,18 @@ def create_cart_item(
         session.add(new_cart_item)
         session.commit()
 
-    return CartItemOutputSchema.from_orm(new_cart_item)
+    return UserCartItemOutputSchema.from_orm(new_cart_item)
 
 
-def get_single_cart_item(session: Session, cart_item_id: int) -> CartItemOutputSchema:
+def get_single_cart_item(session: Session, cart_item_id: int, as_staff: bool=False) -> Union[
+    CartItemOutputSchema, UserCartItemOutputSchema
+]:
     if not (cart_item_object := if_exists(CartItem, "id", cart_item_id, session)):
         raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
-
-    return CartItemOutputSchema.from_orm(cart_item_object)
+    
+    if as_staff:
+        return CartItemOutputSchema.from_orm(cart_item_object)
+    return UserCartItemOutputSchema.from_orm(cart_item_object)
 
 
 def get_all_cart_items(
@@ -116,7 +122,15 @@ def get_all_cart_items_for_single_cart(
     cart_id: str,
     page_params: PageParams,
     query_params: list[tuple] = None,
-) -> PagedResponseSchema:
+    as_staff: bool = False
+) -> Union[
+        PagedResponseSchema[CartItemOutputSchema],
+        PagedResponseSchema[UserCartItemOutputSchema]
+    ]:
+    schema = UserCartItemOutputSchema
+    if as_staff:
+        schema = CartItemOutputSchema
+        
     query = (
         select(CartItem)
         .join(Product, CartItem.product_id == Product.id)
@@ -128,7 +142,7 @@ def get_all_cart_items_for_single_cart(
 
     return paginate(
         query=query,
-        response_schema=CartItemOutputSchema,
+        response_schema=schema,
         table=CartItem,
         page_params=page_params,
         session=session,
@@ -183,7 +197,7 @@ def update_cart_item(
     cart_item_input: CartItemUpdateSchema,
     cart_item_id: str,
     cart_id: str,
-):
+) -> UserCartItemOutputSchema:
     if not (cart_item_object := if_exists(CartItem, "id", cart_item_id, session)):
         raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
 

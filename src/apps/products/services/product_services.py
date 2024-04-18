@@ -103,6 +103,7 @@ def get_all_available_products(
     PagedResponseSchema[ProductWithoutInventoryOutputSchema],
     PagedResponseSchema[ProductOutputSchema]
     ]:
+    schema = ProductOutputSchema
     query = select(Product)
     if not get_removed:
         schema = ProductWithoutInventoryOutputSchema
@@ -125,7 +126,7 @@ def get_all_available_products(
 
     return paginate(
         query=query,
-        response_schema=ProductOutputSchema,
+        response_schema=schema,
         table=Product,
         page_params=page_params,
         session=session,
