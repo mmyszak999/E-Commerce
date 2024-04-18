@@ -1,8 +1,10 @@
+from typing import Union
+
 from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.orders.schemas import OrderOutputSchema
+from src.apps.orders.schemas import OrderOutputSchema, UserOrderOutputSchema
 from src.apps.orders.services.order_services import (
     cancel_single_order,
     get_all_orders,
@@ -36,7 +38,7 @@ def get_orders(
 
 @order_router.get(
     "/",
-    response_model=PagedResponseSchema[OrderOutputSchema],
+    response_model=PagedResponseSchema[UserOrderOutputSchema],
     status_code=status.HTTP_200_OK,
 )
 def get_logged_user_orders(
@@ -44,14 +46,14 @@ def get_logged_user_orders(
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
-) -> PagedResponseSchema[OrderOutputSchema]:
+) -> PagedResponseSchema[UserOrderOutputSchema]:
     return get_all_user_orders(
         db, request_user.id, page_params, request.query_params.multi_items()
     )
 
 
 @order_router.get(
-    "/{order_id}",
+    "/all/{order_id}",
     response_model=OrderOutputSchema,
     status_code=status.HTTP_200_OK,
 )
@@ -60,6 +62,21 @@ def get_order(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
+    db_order = get_single_order(db, order_id)
+    check_if_staff_or_owner(request_user, "id", db_order.user_id)
+    return db_order
+
+
+@order_router.get(
+    "/{order_id}",
+    response_model=Union[OrderOutputSchema, UserOrderOutputSchema],
+    status_code=status.HTTP_200_OK,
+)
+def get_order(
+    order_id: str,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> Union[OrderOutputSchema, UserOrderOutputSchema]:
     db_order = get_single_order(db, order_id)
     check_if_staff_or_owner(request_user, "id", db_order.user_id)
     return db_order

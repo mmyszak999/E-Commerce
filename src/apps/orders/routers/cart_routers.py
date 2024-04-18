@@ -9,6 +9,8 @@ from src.apps.orders.schemas import (
     CartItemUpdateSchema,
     CartOutputSchema,
     OrderOutputSchema,
+    UserCartItemOutputSchema,
+    UserCartOutputSchema
 )
 from src.apps.orders.services.cart_services import (
     create_cart,
@@ -30,13 +32,13 @@ cart_router = APIRouter(prefix="/carts", tags=["cart"])
 
 @cart_router.post(
     "/",
-    response_model=CartOutputSchema,
+    response_model=UserCartOutputSchema,
     status_code=status.HTTP_201_CREATED,
 )
 def post_cart(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
-) -> CartOutputSchema:
+) -> UserCartOutputSchema:
     return create_cart(db, user_id=request_user.id)
 
 
@@ -82,8 +84,10 @@ def get_cart(
     request_user: User = Depends(authenticate_user),
 ) -> CartOutputSchema:
     db_cart = get_single_cart(db, cart_id)
-    check_if_staff_or_owner(request_user, "id", db_cart.user_id)
-    return db_cart
+    if check_if_staff_or_owner(request_user, "id", db_cart.user_id):
+        if check_if_staff(request_user):
+            return get_single_cart(db, cart_id, as_staff=True)
+        return db_cart
 
 
 @cart_router.delete(
@@ -110,4 +114,6 @@ def create_order_from_cart(
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> OrderOutputSchema:
+    db_cart = get_single_cart(db, cart_id)
+    check_if_staff_or_owner(request_user, "id", db_cart.user_id)
     return create_order(db, request_user.id, cart_id)

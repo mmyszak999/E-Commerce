@@ -1,8 +1,10 @@
+from typing import Union
+
 from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-from src.apps.orders.schemas import OrderItemOutputSchema, OrderOutputSchema
+from src.apps.orders.schemas import OrderItemOutputSchema, UserOrderItemOutputSchema
 from src.apps.orders.services.order_items_services import (
     get_all_order_items_for_single_order,
     get_single_order_item,
@@ -20,7 +22,10 @@ order_items_router = APIRouter(prefix="/orders/{order_id}/items", tags=["order-i
 
 @order_items_router.get(
     "/{order_item_id}",
-    response_model=OrderItemOutputSchema,
+    response_model=Union[
+        OrderItemOutputSchema,
+        UserOrderItemOutputSchema
+    ],
     status_code=status.HTTP_200_OK,
 )
 def get_order_item(
@@ -28,7 +33,10 @@ def get_order_item(
     order_item_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
-) -> OrderOutputSchema:
+) -> Union[
+        OrderItemOutputSchema,
+        UserOrderItemOutputSchema
+    ]:
     order_check = get_single_order(db, order_id)
     check_if_staff_or_owner(request_user, "id", order_check.user_id)
     return get_single_order_item(db, order_item_id)
@@ -36,7 +44,10 @@ def get_order_item(
 
 @order_items_router.get(
     "/",
-    response_model=PagedResponseSchema[OrderItemOutputSchema],
+    response_model=Union[
+        PagedResponseSchema[OrderItemOutputSchema],
+        PagedResponseSchema[UserOrderItemOutputSchema],
+    ],
     status_code=status.HTTP_200_OK,
 )
 def get_order_items_for_single_order(
@@ -45,7 +56,10 @@ def get_order_items_for_single_order(
     db: Session = Depends(get_db),
     page_params: PageParams = Depends(),
     request_user: User = Depends(authenticate_user),
-) -> PagedResponseSchema[OrderItemOutputSchema]:
+) -> Union[
+        PagedResponseSchema[OrderItemOutputSchema],
+        PagedResponseSchema[UserOrderItemOutputSchema],
+    ]:
     order_check = get_single_order(db, order_id)
     check_if_staff_or_owner(request_user, "id", order_check.user_id)
     return get_all_order_items_for_single_order(

@@ -32,13 +32,20 @@ class CartItemUpdateSchema(BaseModel):
         return quantity
 
 
-class CartItemOutputSchema(CartItemBaseSchema):
+class BaseCartItemOutputSchema(CartItemBaseSchema):
     id: str
-    product: ProductOutputSchema
     cart_id: str
     cart_item_price: Decimal
     cart_item_validity: datetime
 
+
+class UserCartItemOutputSchema:
+    product: ProductWithoutInventoryOutputSchema
+
+
+class CartItemOutputSchema:
+    product: ProductOutputSchema
+    
     class Config:
         orm_mode = True
 
@@ -51,12 +58,22 @@ class CartInputSchema(CartBaseSchema):
     pass
 
 
-class CartOutputSchema(CartBaseSchema):
+class BaseCartOutputSchema(CartBaseSchema):
     id: str
     user: UserInfoOutputSchema
-    cart_items: list[CartItemOutputSchema]
     cart_total_price: Decimal
 
+
+class CartOutputSchema(BaseCartOutputSchema):
+    cart_items: list[CartItemOutputSchema]
+    
+    class Config:
+        orm_mode = True
+
+
+class UserCartOutputSchema(BaseCartOutputSchema):
+    cart_items: list[UserCartItemOutputSchema]
+    
     class Config:
         orm_mode = True
 
