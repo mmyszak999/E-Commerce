@@ -1,4 +1,4 @@
-from typing impor Union
+from typing import Union
 
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload, selectinload
@@ -45,6 +45,7 @@ def get_single_cart(session: Session, cart_id: int, as_staff: bool=False) -> Uni
 
     if as_staff:
         return CartOutputSchema.from_orm(cart_object)
+    print("wsx")
     return UserCartOutputSchema.from_orm(cart_object)
 
 

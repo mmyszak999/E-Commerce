@@ -80,6 +80,7 @@ def get_products(
 def get_product_as_staff(
     product_id: str, db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user)) -> ProductOutputSchema:
+    check_if_staff(request_user)
     return get_single_product_or_inventory(db, product_id)
 
 

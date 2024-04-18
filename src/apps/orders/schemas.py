@@ -39,11 +39,14 @@ class BaseCartItemOutputSchema(CartItemBaseSchema):
     cart_item_validity: datetime
 
 
-class UserCartItemOutputSchema:
+class UserCartItemOutputSchema(BaseCartItemOutputSchema):
     product: ProductWithoutInventoryOutputSchema
+    
+    class Config:
+        orm_mode = True
 
 
-class CartItemOutputSchema:
+class CartItemOutputSchema(BaseCartItemOutputSchema):
     product: ProductOutputSchema
     
     class Config:
@@ -62,6 +65,9 @@ class BaseCartOutputSchema(CartBaseSchema):
     id: str
     user: UserInfoOutputSchema
     cart_total_price: Decimal
+    
+    class Config:
+        orm_mode = True
 
 
 class CartOutputSchema(BaseCartOutputSchema):

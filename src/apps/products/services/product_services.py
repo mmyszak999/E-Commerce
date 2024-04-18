@@ -99,9 +99,13 @@ def get_single_product_or_inventory(
 def get_all_available_products(
     session: Session, page_params: PageParams,
     get_removed: bool = False, query_params: list[tuple] = None
-) -> PagedResponseSchema[ProductWithoutInventoryOutputSchema]:
+) -> Union[
+    PagedResponseSchema[ProductWithoutInventoryOutputSchema],
+    PagedResponseSchema[ProductOutputSchema]
+    ]:
     query = select(Product)
     if not get_removed:
+        schema = ProductWithoutInventoryOutputSchema
         query = select(Product).filter(Product.removed_from_store == False)
         
     query = (
@@ -121,7 +125,7 @@ def get_all_available_products(
 
     return paginate(
         query=query,
-        response_schema=ProductWithoutInventoryOutputSchema,
+        response_schema=ProductOutputSchema,
         table=Product,
         page_params=page_params,
         session=session,
