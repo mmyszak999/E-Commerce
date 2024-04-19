@@ -95,3 +95,4 @@ class OrderItem(Base):
     product = relationship("Product", back_populates="order_items")
     quantity = Column(Integer, nullable=False, default=0)
     order_item_price = Column(DECIMAL, nullable=False, default=0)
+    product_price_when_order_created = Column(DECIMAL, nullable=False)

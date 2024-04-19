@@ -102,6 +102,33 @@ def test_product_quantity_cannot_be_lower_than_the_items_amount_in_the_carts(
         update_single_product(sync_session, update_data, product.id)
 
 
+def test_cart_total_price_remains_correct_when_product_price_changes(
+    sync_session,
+    db_products: list[ProductOutputSchema],
+    db_user: UserOutputSchema,
+    db_staff_user: UserOutputSchema
+):
+    from src.apps.orders.services.cart_items_services import create_cart_item, get_single_cart_item
+    from src.apps.orders.services.cart_services import create_cart, get_single_cart
+    
+    cart_1 = create_cart(sync_session, db_user.id)
+    quantity = 10
+    cart_item_input_1 = CartItemInputSchemaFactory().generate(
+        quantity=quantity, product_id=db_products[0].id
+    )
+    cart_item_1 = create_cart_item(sync_session, cart_item_input_1, cart_1.id)
+
+    price = 5.3
+    update_data = ProductUpdateSchemaFactory().generate(price=5.3)
+    update_single_product(sync_session, update_data, db_products[0].id)
+    
+    cart_1 = get_single_cart(sync_session, cart_1.id)
+    cart_item_1 = get_single_cart_item(sync_session, cart_item_1.id)
+    
+    assert cart_1.cart_total_price == price * quantity
+    assert cart_item_1.cart_item_price == price * quantity
+    
+
 def test_if_product_can_have_occupied_name(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):

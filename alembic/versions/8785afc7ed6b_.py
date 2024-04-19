@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 873e7cedb671
+Revision ID: 8785afc7ed6b
 Revises: 
-Create Date: 2024-04-10 17:09:28.576215
+Create Date: 2024-04-19 22:12:40.390354
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '873e7cedb671'
+revision = '8785afc7ed6b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -61,7 +61,7 @@ def upgrade() -> None:
     sa.UniqueConstraint('id')
     )
     op.create_table('category_product_association_table',
-    sa.Column('category_id', sa.String(), nullable=False),
+    sa.Column('category_id', sa.String(), nullable=True),
     sa.Column('product_id', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['category_id'], ['category.id'], onupdate='cascade', ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['product_id'], ['product.id'], onupdate='cascade', ondelete='cascade')
@@ -124,6 +124,7 @@ def upgrade() -> None:
     sa.Column('product_id', sa.String(), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
     sa.Column('order_item_price', sa.DECIMAL(), nullable=False),
+    sa.Column('product_price_when_order_created', sa.DECIMAL(), nullable=False),
     sa.ForeignKeyConstraint(['order_id'], ['order.id'], onupdate='cascade', ondelete='cascade'),
     sa.ForeignKeyConstraint(['product_id'], ['product.id'], onupdate='cascade', ondelete='cascade'),
     sa.PrimaryKeyConstraint('id'),

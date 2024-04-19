@@ -208,6 +208,7 @@ def test_staff_can_remove_product_from_store(
     response = sync_client.get(
         f"products/all/{db_products[0].id}", headers=staff_auth_headers
     )
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()["removed_from_store"] == True
 
 

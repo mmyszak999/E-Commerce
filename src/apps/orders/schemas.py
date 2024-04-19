@@ -89,6 +89,7 @@ class BaseOrderItemOutputSchema(BaseModel):
     order_id: str
     quantity: int
     order_item_price: Decimal
+    product_price_when_order_created: Decimal
 
 
 class OrderItemOutputSchema(BaseOrderItemOutputSchema):
