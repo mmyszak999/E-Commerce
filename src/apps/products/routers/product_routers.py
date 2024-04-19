@@ -21,7 +21,7 @@ from src.apps.products.services.product_services import (
     get_single_product_or_inventory,
     update_single_product,
     get_all_available_products,
-    get_available_single_product_or_inventory
+    get_available_single_product
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -90,7 +90,7 @@ def get_product_as_staff(
     status_code=status.HTTP_200_OK,
 )
 def get_product(product_id: str, db: Session = Depends(get_db)) -> Union[ProductWithoutInventoryOutputSchema, RemovedProductOutputSchema]:
-    return get_available_single_product_or_inventory(db, product_id)
+    return get_available_single_product(db, product_id)
 
 
 @product_router.get(
@@ -104,7 +104,7 @@ def get_product_inventory(
     request_user: User = Depends(authenticate_user),
 ) -> InventoryOutputSchema:
     check_if_staff(request_user)
-    return get_available_single_product_or_inventory(db, product_id, get_inventory=True)
+    return get_single_product_or_inventory(db, product_id, get_inventory=True)
 
 
 @product_router.patch(

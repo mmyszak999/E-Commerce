@@ -26,6 +26,7 @@ from src.core.exceptions import (
     DoesNotExist,
     IsOccupied,
     ServiceException,
+    ProductAlreadyRemovedFromStore
 )
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -73,14 +74,11 @@ def create_product(
     return ProductOutputSchema.from_orm(new_product)
 
 
-def get_available_single_product_or_inventory(
-    session: Session, product_id: str, get_inventory=False
-) -> Union[ProductWithoutInventoryOutputSchema, InventoryOutputSchema, RemovedProductOutputSchema]:
+def get_available_single_product(
+    session: Session, product_id: str
+) -> Union[ProductWithoutInventoryOutputSchema, RemovedProductOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
-
-    if get_inventory:
-        return InventoryOutputSchema.from_orm(product_object.inventory)
         
     if product_object.removed_from_store:
         return RemovedProductOutputSchema.from_orm(product_object)
@@ -92,6 +90,9 @@ def get_single_product_or_inventory(
 ) -> Union[ProductOutputSchema, InventoryOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
+    
+    if get_inventory:
+        return InventoryOutputSchema.from_orm(product_object.inventory)
     
     return ProductOutputSchema.from_orm(product_object)
 
@@ -221,6 +222,9 @@ def update_single_product(
 def remove_single_product_from_store(session: Session, product_id: str) -> dict[str, str]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
+    
+    if product_object.removed_from_store:
+        raise ProductAlreadyRemovedFromStore
 
     product_object.removed_from_store = True
     session.add(product_object)

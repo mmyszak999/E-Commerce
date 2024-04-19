@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
 from src.apps.products.services.product_services import (
     create_product,
-    delete_single_product,
+    remove_single_product_from_store,
     get_all_products,
     get_single_product_or_inventory,
     update_single_product,
@@ -15,6 +15,7 @@ from src.core.exceptions import (
     DoesNotExist,
     IsOccupied,
     QuantityLowerThanAmountOfProductItemsInCartsException,
+    ProductAlreadyRemovedFromStore
 )
 from src.core.factories import (
     CartInputSchemaFactory,
@@ -112,8 +113,16 @@ def test_if_product_can_have_occupied_name(
         update_single_product(sync_session, product_data, db_products[1].id)
 
 
-def test_raise_exception_while_deleting_nonexistent_product(
+def test_raise_exception_while_removing_nonexistent_product_from_store(
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
     with pytest.raises(DoesNotExist):
-        delete_single_product(sync_session, generate_uuid())
+        remove_single_product_from_store(sync_session, generate_uuid())
+
+
+def test_raise_exception_while_removing_product_from_store_that_is_already_removed(
+    sync_session: Session, db_products: list[ProductOutputSchema]
+):
+    remove_single_product_from_store(sync_session, db_products[0].id)
+    with pytest.raises(ProductAlreadyRemovedFromStore):
+        remove_single_product_from_store(sync_session, db_products[0].id)

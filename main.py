@@ -30,6 +30,7 @@ from src.core.exceptions import (
     OrderAlreadyCancelled,
     QuantityLowerThanAmountOfProductItemsInCartsException,
     ServiceException,
+    ProductAlreadyRemovedFromStore
 )
 
 app = FastAPI()
@@ -185,6 +186,15 @@ def handle_quantity_lower_than_amount_of_product_items_in_carts_exception(
 @app.exception_handler(OrderAlreadyCancelled)
 def handle_order_already_cancelled_exception(
     request: Request, exception: OrderAlreadyCancelled
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+
+@app.exception_handler(ProductAlreadyRemovedFromStore)
+def handle_product_already_removed_from_store_exception(
+    request: Request, exception: ProductAlreadyRemovedFromStore
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}

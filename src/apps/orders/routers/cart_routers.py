@@ -86,10 +86,10 @@ def get_cart(
     request_user: User = Depends(authenticate_user),
 ) -> Union[CartOutputSchema, UserCartOutputSchema]:
     db_cart = get_single_cart(db, cart_id)
-    if check_if_owner(request_user, "id", db_cart.user_id):
-        return db_cart
-    if check_if_staff(request_user): 
-        return get_single_cart(db, cart_id, as_staff=True)
+    if check_if_staff_or_owner(request_user, "id", db_cart.user_id):
+        if request_user.is_staff: 
+            return get_single_cart(db, cart_id, as_staff=True) 
+        return get_single_cart(db, cart_id)
         
 
 @cart_router.delete(
