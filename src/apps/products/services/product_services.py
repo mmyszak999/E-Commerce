@@ -145,8 +145,8 @@ def update_single_product(
 ) -> ProductOutputSchema:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
-
-    product_data = product_input.dict(exclude_unset=True, exclude_none=True)
+    product_data = product_input.dict(exclude_none=True)
+    print(product_data, "ww")
 
     if product_data.get("name"):
         product_name_check = session.scalar(
@@ -176,7 +176,7 @@ def update_single_product(
             session.add(cart_item)
 
 
-    if product_data.get("category_ids"):
+    if (product_data.get("category_ids")) or ("category_ids" in product_data.keys()):
         incoming_categories = set(product_data["category_ids"])
         current_categories = set(category.id for category in product_object.categories)
 

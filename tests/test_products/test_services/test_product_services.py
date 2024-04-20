@@ -153,3 +153,37 @@ def test_raise_exception_while_removing_product_from_store_that_is_already_remov
     remove_single_product_from_store(sync_session, db_products[0].id)
     with pytest.raises(ProductAlreadyRemovedFromStore):
         remove_single_product_from_store(sync_session, db_products[0].id)
+
+
+def test_if_product_can_be_created_with_no_category_attached(
+    sync_session: Session, db_categories: list[CategoryOutputSchema]
+):
+    inventory_data = InventoryInputSchemaFactory().generate()
+    product_data = ProductInputSchemaFactory().generate(inventory=inventory_data)
+    product = create_product(sync_session, product_data)
+    
+    assert len(product.categories) == 0
+
+def test_if_product_can_have_multiple_categories(
+    sync_session: Session, db_categories: list[CategoryOutputSchema]
+):
+    inventory_data = InventoryInputSchemaFactory().generate()
+    product_data = ProductInputSchemaFactory().generate(
+        inventory=inventory_data, category_ids=[
+            db_categories[0].id, db_categories[1].id
+        ])
+    product = create_product(sync_session, product_data)
+    
+    assert len(product.categories) == 2
+
+def test_if_product_can_have_no_categories_after_update(
+    sync_session: Session, db_categories: list[CategoryOutputSchema],
+    db_products: list[ProductOutputSchema]
+):
+    product_data = ProductUpdateSchemaFactory().generate(
+        category_ids=[]
+    )
+    update_single_product(sync_session, product_data, db_products[0].id)
+    
+    product = get_single_product_or_inventory(sync_session, db_products[0].id)
+    assert len(product.categories) == 0

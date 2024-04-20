@@ -182,17 +182,17 @@ def test_staff_can_update_product(
     db_categories: list[CategoryOutputSchema],
 ):
     update_data = ProductUpdateSchemaFactory().generate(
-        category_ids=[db_categories[0].id]
+        category_ids=[db_categories[1].id]
     )
 
     response = sync_client.patch(
-        f"products/{db_products[0].id}",
+        f"products/{db_products[1].id}",
         content=update_data.json(),
         headers=staff_auth_headers,
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["categories"][0]["id"] == update_data.category_ids[0]
+    assert response.json()["categories"][0]["id"] == db_categories[1].id
 
 
 def test_staff_can_remove_product_from_store(
