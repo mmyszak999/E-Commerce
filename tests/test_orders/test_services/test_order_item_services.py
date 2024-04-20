@@ -24,7 +24,10 @@ from src.apps.orders.services.order_services import (
     get_single_order,
 )
 from src.apps.products.schemas import ProductOutputSchema
-from src.apps.products.services.product_services import get_single_product_or_inventory
+from src.apps.products.services.product_services import (
+    get_single_product_or_inventory, update_single_product,
+    remove_single_product_from_store
+)
 from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import (
     ActiveCartException,
@@ -34,7 +37,7 @@ from src.core.exceptions import (
     IsOccupied,
     OrderAlreadyCancelled,
 )
-from src.core.factories import CartInputSchemaFactory
+from src.core.factories import CartInputSchemaFactory, ProductUpdateSchemaFactory
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.utils.utils import generate_uuid
@@ -88,3 +91,45 @@ def test_if_multiple_order_items_were_returned(
 ):
     order_items = get_all_order_items(sync_session, PageParams(page=1, size=5))
     assert order_items.total == db_order_items.total
+
+
+def test_if_order_item_price_remains_the_same_when_product_price_changes(
+    sync_session: Session,
+    db_orders: PagedResponseSchema[OrderOutputSchema],
+    db_order_items: PagedResponseSchema[OrderItemOutputSchema],
+    db_products: list[ProductOutputSchema]
+):
+    order = db_orders.results[0]
+    order_item = order.order_items[0]
+    order_item_price_before_update = order_item.order_item_price
+    order_item_product_price_while_creating_order = order_item.product_price_when_order_created
+    
+    product_new_price = 100
+    product_update_data = ProductUpdateSchemaFactory().generate(price=product_new_price)
+    update_single_product(sync_session, product_update_data, order_item.product.id)
+    
+    order = get_single_order(sync_session, order.id)
+
+    assert order.order_items[0].order_item_price == order_item_price_before_update
+    assert order.order_items[0].product_price_when_order_created == order_item_product_price_while_creating_order
+    assert order.order_items[0].product.price == product_new_price
+    
+    
+def test_product_removed_from_store_remains_in_the_order_details(
+    sync_session: Session,
+    db_orders: PagedResponseSchema[OrderOutputSchema],
+    db_order_items: PagedResponseSchema[OrderItemOutputSchema],
+    db_products: list[ProductOutputSchema]
+):
+    order = db_orders.results[0]
+    order_item = order.order_items[0]
+    assert len(order.order_items) == 1
+    
+    remove_single_product_from_store(sync_session, order_item.product.id)
+    order_item_product = get_single_product_or_inventory(sync_session, order_item.product.id) 
+    assert order_item_product.removed_from_store == True
+    
+    order = get_single_order(sync_session, order.id)
+
+    assert len(order.order_items) == 1
+    assert order.order_items[0].product.id == order_item.product.id

@@ -114,6 +114,7 @@ def get_all_available_products(
         query.join(
             category_product_association_table,
             Product.id == category_product_association_table.c.product_id,
+            isouter=True,
         )
         .join(
             Category,
