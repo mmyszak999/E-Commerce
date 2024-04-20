@@ -143,10 +143,11 @@ def get_all_products(
 def update_single_product(
     session: Session, product_input: ProductUpdateSchema, product_id: str
 ) -> ProductOutputSchema:
+    product_was_updated = 0
+    
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
     product_data = product_input.dict(exclude_none=True)
-    print(product_data, "ww")
 
     if product_data.get("name"):
         product_name_check = session.scalar(
@@ -180,19 +181,23 @@ def update_single_product(
         incoming_categories = set(product_data["category_ids"])
         current_categories = set(category.id for category in product_object.categories)
 
-        if to_delete := current_categories - incoming_categories:
+        if to_delete := (current_categories - incoming_categories):
+            print(to_delete, "del")
             session.execute(
                 delete(category_product_association_table).where(
                     Category.id.in_(to_delete)
                 )
             )
+            product_was_updated += 1
 
-        if to_insert := incoming_categories - current_categories:
+        if to_insert := (incoming_categories - current_categories):
+            print(to_insert, "ins")
             rows = [
                 {"product_id": product_id, "category_id": category_id}
                 for category_id in to_insert
             ]
             session.execute(insert(category_product_association_table).values(rows))
+            product_was_updated += 1
 
         product_data.pop("category_ids")
 
@@ -204,6 +209,7 @@ def update_single_product(
                 InventoryUpdateSchema(**inventory_data),
                 product_object.inventory.id,
             )
+            product_was_updated += 1
 
         else:
             product_data.pop("inventory")
@@ -214,6 +220,9 @@ def update_single_product(
         )
 
         session.execute(statement)
+        product_was_updated += 1
+    
+    if product_was_updated:
         session.commit()
         session.refresh(product_object)
 
