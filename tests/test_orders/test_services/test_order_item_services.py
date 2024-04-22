@@ -35,7 +35,6 @@ from src.core.exceptions import (
     DoesNotExist,
     EmptyCartException,
     IsOccupied,
-    OrderAlreadyCancelled,
 )
 from src.core.factories import CartInputSchemaFactory, ProductUpdateSchemaFactory
 from src.core.pagination.models import PageParams

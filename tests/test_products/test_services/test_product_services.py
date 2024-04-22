@@ -15,7 +15,8 @@ from src.core.exceptions import (
     DoesNotExist,
     IsOccupied,
     QuantityLowerThanAmountOfProductItemsInCartsException,
-    ProductAlreadyRemovedFromStoreException
+    ProductAlreadyRemovedFromStoreException,
+    ProductRemovedFromStoreException
 )
 from src.core.factories import (
     CartInputSchemaFactory,
@@ -154,6 +155,15 @@ def test_raise_exception_while_removing_product_from_store_that_is_already_remov
     with pytest.raises(ProductAlreadyRemovedFromStoreException):
         remove_single_product_from_store(sync_session, db_products[0].id)
 
+
+def test_if_product_removed_from_store_cannot_be_modified(
+    sync_session: Session, db_products: list[ProductOutputSchema]
+):
+    remove_single_product_from_store(sync_session, db_products[0].id)
+    update_data = ProductUpdateSchemaFactory().generate(price=5.50)
+    with pytest.raises(ProductRemovedFromStoreException):
+        update_single_product(sync_session, update_data, db_products[0].id)
+    
 
 def test_if_product_can_be_created_with_no_category_attached(
     sync_session: Session, db_categories: list[CategoryOutputSchema]
