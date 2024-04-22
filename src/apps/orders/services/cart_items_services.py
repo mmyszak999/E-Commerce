@@ -9,7 +9,7 @@ from src.apps.orders.schemas import (
     CartItemInputSchema,
     CartItemOutputSchema,
     CartItemUpdateSchema,
-    UserCartItemOutputSchema
+    UserCartItemOutputSchema,
 )
 from src.apps.products.models import Product
 from src.apps.user.models import User
@@ -21,8 +21,8 @@ from src.core.exceptions import (
     ExceededItemQuantityException,
     NonPositiveCartItemQuantityException,
     NoSuchItemInCartException,
+    ProductRemovedFromStoreException,
     ServiceException,
-    ProductRemovedFromStoreException
 )
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -48,7 +48,7 @@ def create_cart_item(
 
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
-    
+
     if product_object.removed_from_store:
         raise ProductRemovedFromStoreException
 
@@ -93,12 +93,12 @@ def create_cart_item(
     return UserCartItemOutputSchema.from_orm(new_cart_item)
 
 
-def get_single_cart_item(session: Session, cart_item_id: int, as_staff: bool=False) -> Union[
-    CartItemOutputSchema, UserCartItemOutputSchema
-]:
+def get_single_cart_item(
+    session: Session, cart_item_id: int, as_staff: bool = False
+) -> Union[CartItemOutputSchema, UserCartItemOutputSchema]:
     if not (cart_item_object := if_exists(CartItem, "id", cart_item_id, session)):
         raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
-    
+
     if as_staff:
         return CartItemOutputSchema.from_orm(cart_item_object)
     return UserCartItemOutputSchema.from_orm(cart_item_object)
@@ -126,15 +126,15 @@ def get_all_cart_items_for_single_cart(
     cart_id: str,
     page_params: PageParams,
     query_params: list[tuple] = None,
-    as_staff: bool = False
+    as_staff: bool = False,
 ) -> Union[
-        PagedResponseSchema[CartItemOutputSchema],
-        PagedResponseSchema[UserCartItemOutputSchema]
-    ]:
+    PagedResponseSchema[CartItemOutputSchema],
+    PagedResponseSchema[UserCartItemOutputSchema],
+]:
     schema = UserCartItemOutputSchema
     if as_staff:
         schema = CartItemOutputSchema
-        
+
     query = (
         select(CartItem)
         .join(Product, CartItem.product_id == Product.id)
@@ -285,21 +285,21 @@ def delete_single_cart_item(
     raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
 
 
-def delete_specific_cart_items(session: Session, statement, cart_removing: bool=False) -> None:
-    cart_items_to_delete = (
-        session.scalars(statement)
-        .unique()
-        .all()
-    )
+def delete_specific_cart_items(
+    session: Session, statement, cart_removing: bool = False
+) -> None:
+    cart_items_to_delete = session.scalars(statement).unique().all()
 
     [
         delete_single_cart_item(session, cart_item.cart_id, cart_item.id, cart_removing)
         for cart_item in cart_items_to_delete
     ]
-    
+
 
 def delete_invalid_cart_items(session: Session) -> None:
-    statement = select(CartItem).filter(CartItem.cart_item_validity < datetime.datetime.now())
+    statement = select(CartItem).filter(
+        CartItem.cart_item_validity < datetime.datetime.now()
+    )
     delete_specific_cart_items(session, statement=statement)
 
 

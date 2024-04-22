@@ -3,8 +3,10 @@ from typing import Union
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload
 
-from src.apps.orders.models import CartItem, Cart
-from src.apps.orders.services.cart_items_services import delete_cart_items_with_product_removed_from_store
+from src.apps.orders.models import Cart, CartItem
+from src.apps.orders.services.cart_items_services import (
+    delete_cart_items_with_product_removed_from_store,
+)
 from src.apps.products.models import (
     Category,
     Product,
@@ -17,17 +19,17 @@ from src.apps.products.schemas import (
     ProductInputSchema,
     ProductOutputSchema,
     ProductUpdateSchema,
+    ProductWithoutInventoryOutputSchema,
     RemovedProductOutputSchema,
-    ProductWithoutInventoryOutputSchema
 )
 from src.apps.products.services.inventory_services import update_single_inventory
 from src.core.exceptions import (
     AlreadyExists,
     DoesNotExist,
     IsOccupied,
-    ServiceException,
     ProductAlreadyRemovedFromStoreException,
-    ProductRemovedFromStoreException
+    ProductRemovedFromStoreException,
+    ServiceException,
 )
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -80,7 +82,7 @@ def get_available_single_product(
 ) -> Union[ProductWithoutInventoryOutputSchema, RemovedProductOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
-        
+
     if product_object.removed_from_store:
         return RemovedProductOutputSchema.from_orm(product_object)
     return ProductWithoutInventoryOutputSchema.from_orm(product_object)
@@ -91,39 +93,38 @@ def get_single_product_or_inventory(
 ) -> Union[ProductOutputSchema, InventoryOutputSchema]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
-    
+
     if get_inventory:
         return InventoryOutputSchema.from_orm(product_object.inventory)
-    
+
     return ProductOutputSchema.from_orm(product_object)
 
 
 def get_all_available_products(
-    session: Session, page_params: PageParams,
-    get_removed: bool = False, query_params: list[tuple] = None
+    session: Session,
+    page_params: PageParams,
+    get_removed: bool = False,
+    query_params: list[tuple] = None,
 ) -> Union[
     PagedResponseSchema[ProductWithoutInventoryOutputSchema],
-    PagedResponseSchema[ProductOutputSchema]
-    ]:
+    PagedResponseSchema[ProductOutputSchema],
+]:
     schema = ProductOutputSchema
     query = select(Product)
     if not get_removed:
         schema = ProductWithoutInventoryOutputSchema
         query = select(Product).filter(Product.removed_from_store == False)
-        
-    query = (
-        query.join(
-            category_product_association_table,
-            Product.id == category_product_association_table.c.product_id,
-            isouter=True,
-        )
-        .join(
-            Category,
-            category_product_association_table.c.category_id == Category.id,
-            isouter=True,
-        )
+
+    query = query.join(
+        category_product_association_table,
+        Product.id == category_product_association_table.c.product_id,
+        isouter=True,
+    ).join(
+        Category,
+        category_product_association_table.c.category_id == Category.id,
+        isouter=True,
     )
-        
+
     if query_params:
         query = filter_and_sort_instances(query_params, query, Product)
 
@@ -135,23 +136,26 @@ def get_all_available_products(
         session=session,
     )
 
+
 def get_all_products(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
 ) -> PagedResponseSchema[ProductOutputSchema]:
-    return get_all_available_products(session, page_params, get_removed=True, query_params=query_params)
+    return get_all_available_products(
+        session, page_params, get_removed=True, query_params=query_params
+    )
 
 
 def update_single_product(
     session: Session, product_input: ProductUpdateSchema, product_id: str
 ) -> ProductOutputSchema:
     product_was_updated = 0
-    
+
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
-    
+
     if product_object.removed_from_store:
         raise ProductRemovedFromStoreException
-        
+
     product_data = product_input.dict(exclude_none=True)
 
     if product_data.get("name"):
@@ -169,18 +173,17 @@ def update_single_product(
         )
         for cart_item in cart_items:
             cart = session.scalar(
-            select(Cart).filter(Cart.id == cart_item.cart_id).limit(1)
-        )
+                select(Cart).filter(Cart.id == cart_item.cart_id).limit(1)
+            )
             new_cart_item_price = new_product_price * cart_item.quantity
             old_cart_item_price = cart_item.cart_item_price
             price_difference = old_cart_item_price - new_cart_item_price
-            
+
             cart.cart_total_price -= price_difference
             session.add(cart)
-            
+
             cart_item.cart_item_price = new_cart_item_price
             session.add(cart_item)
-
 
     if (product_data.get("category_ids")) or ("category_ids" in product_data.keys()):
         incoming_categories = set(product_data["category_ids"])
@@ -224,7 +227,7 @@ def update_single_product(
 
         session.execute(statement)
         product_was_updated += 1
-    
+
     if product_was_updated:
         session.commit()
         session.refresh(product_object)
@@ -232,13 +235,15 @@ def update_single_product(
     return get_single_product_or_inventory(session, product_id=product_id)
 
 
-def remove_single_product_from_store(session: Session, product_id: str) -> dict[str, str]:
+def remove_single_product_from_store(
+    session: Session, product_id: str
+) -> dict[str, str]:
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
-    
+
     if product_object.removed_from_store:
         raise ProductAlreadyRemovedFromStoreException
-    
+
     delete_cart_items_with_product_removed_from_store(session, product_id)
 
     product_object.removed_from_store = True

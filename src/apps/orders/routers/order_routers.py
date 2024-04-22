@@ -79,10 +79,9 @@ def get_order(
 ) -> Union[OrderOutputSchema, UserOrderOutputSchema]:
     db_order = get_single_order(db, order_id)
     if check_if_staff_or_owner(request_user, "id", db_order.user_id):
-        if request_user.is_staff: 
-            return get_single_order(db, order_id, as_staff=True) 
+        if request_user.is_staff:
+            return get_single_order(db, order_id, as_staff=True)
         return get_single_order(db, order_id)
-
 
 
 @order_router.patch(

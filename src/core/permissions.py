@@ -11,6 +11,7 @@ def check_if_superuser(request_user: User) -> bool:
         )
     return True
 
+
 def check_if_staff(request_user: User) -> bool:
     if not request_user.is_staff:
         raise AuthorizationException(
@@ -26,11 +27,10 @@ def check_if_staff_or_owner(request_user: User, attribute: str, value: Any) -> b
         )
     return True
 
+
 def check_if_owner(request_user: User, attribute: str, value: Any) -> bool:
     if not (getattr(request_user, attribute) == value):
         raise AuthorizationException(
             "You don't have permissions to access the resource"
         )
     return True
-
-

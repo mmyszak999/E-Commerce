@@ -10,18 +10,18 @@ from src.apps.products.schemas import (
     ProductInputSchema,
     ProductOutputSchema,
     ProductUpdateSchema,
+    ProductWithoutInventoryOutputSchema,
     RemovedProductOutputSchema,
-    ProductWithoutInventoryOutputSchema
 )
 from src.apps.products.services.inventory_services import get_single_inventory
 from src.apps.products.services.product_services import (
     create_product,
-    remove_single_product_from_store,
-    get_all_products,
-    get_single_product_or_inventory,
-    update_single_product,
     get_all_available_products,
-    get_available_single_product
+    get_all_products,
+    get_available_single_product,
+    get_single_product_or_inventory,
+    remove_single_product_from_store,
+    update_single_product,
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -55,7 +55,9 @@ def post_product(
 def get_available_products(
     request: Request, db: Session = Depends(get_db), page_params: PageParams = Depends()
 ) -> PagedResponseSchema[ProductWithoutInventoryOutputSchema]:
-    return get_all_available_products(db, page_params, query_params=request.query_params.multi_items())
+    return get_all_available_products(
+        db, page_params, query_params=request.query_params.multi_items()
+    )
 
 
 @product_router.get(
@@ -64,9 +66,10 @@ def get_available_products(
     status_code=status.HTTP_200_OK,
 )
 def get_products(
-    request: Request, db: Session = Depends(get_db),
+    request: Request,
+    db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
-    page_params: PageParams = Depends()
+    page_params: PageParams = Depends(),
 ) -> PagedResponseSchema[ProductOutputSchema]:
     check_if_staff(request_user)
     return get_all_products(db, page_params, request.query_params.multi_items())
@@ -78,18 +81,24 @@ def get_products(
     status_code=status.HTTP_200_OK,
 )
 def get_product_as_staff(
-    product_id: str, db: Session = Depends(get_db),
-    request_user: User = Depends(authenticate_user)) -> ProductOutputSchema:
+    product_id: str,
+    db: Session = Depends(get_db),
+    request_user: User = Depends(authenticate_user),
+) -> ProductOutputSchema:
     check_if_staff(request_user)
     return get_single_product_or_inventory(db, product_id)
 
 
 @product_router.get(
     "/{product_id}",
-    response_model=Union[ProductWithoutInventoryOutputSchema, RemovedProductOutputSchema],
+    response_model=Union[
+        ProductWithoutInventoryOutputSchema, RemovedProductOutputSchema
+    ],
     status_code=status.HTTP_200_OK,
 )
-def get_product(product_id: str, db: Session = Depends(get_db)) -> Union[ProductWithoutInventoryOutputSchema, RemovedProductOutputSchema]:
+def get_product(
+    product_id: str, db: Session = Depends(get_db)
+) -> Union[ProductWithoutInventoryOutputSchema, RemovedProductOutputSchema]:
     return get_available_single_product(db, product_id)
 
 

@@ -28,10 +28,10 @@ from src.core.exceptions import (
     NonPositiveCartItemQuantityException,
     NoSuchItemInCartException,
     OrderAlreadyCancelledException,
+    ProductAlreadyRemovedFromStoreException,
+    ProductRemovedFromStoreException,
     QuantityLowerThanAmountOfProductItemsInCartsException,
     ServiceException,
-    ProductAlreadyRemovedFromStoreException,
-    ProductRemovedFromStoreException
 )
 from src.core.tasks import scheduler
 
@@ -201,6 +201,7 @@ def handle_product_already_removed_from_store_exception(
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
     )
+
 
 @app.exception_handler(ProductRemovedFromStoreException)
 def handle_product_removed_from_store_exception(

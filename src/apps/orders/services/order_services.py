@@ -5,11 +5,19 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from src.apps.orders.models import Cart, Order
-from src.apps.orders.schemas import OrderItemOutputSchema, OrderOutputSchema, UserOrderOutputSchema
+from src.apps.orders.schemas import (
+    OrderItemOutputSchema,
+    OrderOutputSchema,
+    UserOrderOutputSchema,
+)
 from src.apps.orders.services.order_items_services import create_order_items
 from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.core.exceptions import DoesNotExist, EmptyCartException, OrderAlreadyCancelledException
+from src.core.exceptions import (
+    DoesNotExist,
+    EmptyCartException,
+    OrderAlreadyCancelledException,
+)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -43,12 +51,12 @@ def create_order(session: Session, user_id: str, cart_id: str) -> UserOrderOutpu
     return UserOrderOutputSchema.from_orm(new_order)
 
 
-def get_single_order(session: Session, order_id: str, as_staff: bool=False) -> Union[
-    OrderOutputSchema, UserOrderOutputSchema
-]:
+def get_single_order(
+    session: Session, order_id: str, as_staff: bool = False
+) -> Union[OrderOutputSchema, UserOrderOutputSchema]:
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, "id", order_id)
-    
+
     if as_staff:
         return OrderOutputSchema.from_orm(order_object)
     return UserOrderOutputSchema.from_orm(order_object)

@@ -32,13 +32,13 @@ def test_staff_can_get_all_products_including_removed_ones(
     sync_client: TestClient,
     db_products: list[ProductOutputSchema],
     auth_headers: dict[str, str],
-    staff_auth_headers: dict[str, str]
+    staff_auth_headers: dict[str, str],
 ):
     response = sync_client.patch(
         f"products/{db_products[0].id}/remove", headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_200_OK
-    
+
     response = sync_client.get("products/all", headers=staff_auth_headers)
 
     assert response.status_code == status.HTTP_200_OK
@@ -62,7 +62,7 @@ def test_anonymous_user_cannot_get_all_products(
     response = sync_client.get("products/all")
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    
+
 
 def test_authenticated_user_can_get_available_products(
     sync_client: TestClient,
@@ -74,7 +74,7 @@ def test_authenticated_user_can_get_available_products(
         f"products/{db_products[0].id}/remove", headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_200_OK
-    
+
     response = sync_client.get("products/", headers=auth_headers)
 
     assert response.status_code == status.HTTP_200_OK
@@ -91,7 +91,7 @@ def test_anonymous_user_can_get_available_products(
         f"products/{db_products[0].id}/remove", headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_200_OK
-    
+
     response = sync_client.get("products/")
 
     assert response.status_code == status.HTTP_200_OK
@@ -127,13 +127,15 @@ def test_staff_user_gets_whole_data_about_removed_product(
         f"products/{db_products[0].id}/remove", headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_200_OK
-    
-    response = sync_client.get(f"products/all/{db_products[0].id}", headers=staff_auth_headers)
+
+    response = sync_client.get(
+        f"products/all/{db_products[0].id}", headers=staff_auth_headers
+    )
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["removed_from_store"] == True
     assert response.json()["price"] == db_products[0].price
-    
-    
+
+
 def test_authenticated_user_gets_limited_data_about_removed_product(
     sync_client: TestClient,
     auth_headers: dict[str, str],
@@ -144,7 +146,7 @@ def test_authenticated_user_gets_limited_data_about_removed_product(
         f"products/{db_products[0].id}/remove", headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_200_OK
-    
+
     response = sync_client.get(f"products/{db_products[0].id}", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["description"] == db_products[0].description
@@ -204,7 +206,7 @@ def test_staff_can_remove_product_from_store(
         f"products/{db_products[0].id}/remove", headers=staff_auth_headers
     )
     assert response.status_code == status.HTTP_200_OK
-    
+
     response = sync_client.get(
         f"products/all/{db_products[0].id}", headers=staff_auth_headers
     )
@@ -230,7 +232,9 @@ def test_anonymous_user_cannot_update_product(
     sync_client: TestClient, db_products: list[CategoryOutputSchema]
 ):
     update_data = ProductUpdateSchemaFactory().generate()
-    response = sync_client.patch(f"products/{db_products[0].id}", content=update_data.json())
+    response = sync_client.patch(
+        f"products/{db_products[0].id}", content=update_data.json()
+    )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Missing Authorization Header"
 
@@ -240,7 +244,9 @@ def test_authenticated_user_cannot_remove_product_from_store(
     auth_headers: dict[str, str],
     db_products: list[CategoryOutputSchema],
 ):
-    response = sync_client.patch(f"products/{db_products[0].id}/remove", headers=auth_headers)
+    response = sync_client.patch(
+        f"products/{db_products[0].id}/remove", headers=auth_headers
+    )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 

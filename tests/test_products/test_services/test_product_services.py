@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
 from src.apps.products.services.product_services import (
     create_product,
-    remove_single_product_from_store,
     get_all_products,
     get_single_product_or_inventory,
+    remove_single_product_from_store,
     update_single_product,
 )
 from src.apps.user.schemas import UserOutputSchema
@@ -14,9 +14,9 @@ from src.core.exceptions import (
     AlreadyExists,
     DoesNotExist,
     IsOccupied,
-    QuantityLowerThanAmountOfProductItemsInCartsException,
     ProductAlreadyRemovedFromStoreException,
-    ProductRemovedFromStoreException
+    ProductRemovedFromStoreException,
+    QuantityLowerThanAmountOfProductItemsInCartsException,
 )
 from src.core.factories import (
     CartInputSchemaFactory,
@@ -107,11 +107,14 @@ def test_cart_total_price_remains_correct_when_product_price_changes(
     sync_session,
     db_products: list[ProductOutputSchema],
     db_user: UserOutputSchema,
-    db_staff_user: UserOutputSchema
+    db_staff_user: UserOutputSchema,
 ):
-    from src.apps.orders.services.cart_items_services import create_cart_item, get_single_cart_item
+    from src.apps.orders.services.cart_items_services import (
+        create_cart_item,
+        get_single_cart_item,
+    )
     from src.apps.orders.services.cart_services import create_cart, get_single_cart
-    
+
     cart_1 = create_cart(sync_session, db_user.id)
     quantity = 10
     cart_item_input_1 = CartItemInputSchemaFactory().generate(
@@ -122,13 +125,13 @@ def test_cart_total_price_remains_correct_when_product_price_changes(
     price = 5.3
     update_data = ProductUpdateSchemaFactory().generate(price=5.3)
     update_single_product(sync_session, update_data, db_products[0].id)
-    
+
     cart_1 = get_single_cart(sync_session, cart_1.id)
     cart_item_1 = get_single_cart_item(sync_session, cart_item_1.id)
-    
+
     assert cart_1.cart_total_price == price * quantity
     assert cart_item_1.cart_item_price == price * quantity
-    
+
 
 def test_if_product_can_have_occupied_name(
     sync_session: Session, db_products: list[ProductOutputSchema]
@@ -163,7 +166,7 @@ def test_if_product_removed_from_store_cannot_be_modified(
     update_data = ProductUpdateSchemaFactory().generate(price=5.50)
     with pytest.raises(ProductRemovedFromStoreException):
         update_single_product(sync_session, update_data, db_products[0].id)
-    
+
 
 def test_if_product_can_be_created_with_no_category_attached(
     sync_session: Session, db_categories: list[CategoryOutputSchema]
@@ -171,29 +174,30 @@ def test_if_product_can_be_created_with_no_category_attached(
     inventory_data = InventoryInputSchemaFactory().generate()
     product_data = ProductInputSchemaFactory().generate(inventory=inventory_data)
     product = create_product(sync_session, product_data)
-    
+
     assert len(product.categories) == 0
+
 
 def test_if_product_can_have_multiple_categories(
     sync_session: Session, db_categories: list[CategoryOutputSchema]
 ):
     inventory_data = InventoryInputSchemaFactory().generate()
     product_data = ProductInputSchemaFactory().generate(
-        inventory=inventory_data, category_ids=[
-            db_categories[0].id, db_categories[1].id
-        ])
+        inventory=inventory_data,
+        category_ids=[db_categories[0].id, db_categories[1].id],
+    )
     product = create_product(sync_session, product_data)
-    
+
     assert len(product.categories) == 2
 
+
 def test_if_product_can_have_no_categories_after_update(
-    sync_session: Session, db_categories: list[CategoryOutputSchema],
-    db_products: list[ProductOutputSchema]
+    sync_session: Session,
+    db_categories: list[CategoryOutputSchema],
+    db_products: list[ProductOutputSchema],
 ):
-    product_data = ProductUpdateSchemaFactory().generate(
-        category_ids=[]
-    )
+    product_data = ProductUpdateSchemaFactory().generate(category_ids=[])
     update_single_product(sync_session, product_data, db_products[0].id)
-    
+
     product = get_single_product_or_inventory(sync_session, db_products[0].id)
     assert len(product.categories) == 0

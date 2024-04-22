@@ -24,8 +24,8 @@ from src.apps.products.schemas import CategoryOutputSchema, ProductOutputSchema
 from src.apps.products.services.product_services import (
     create_product,
     get_single_product_or_inventory,
+    remove_single_product_from_store,
     update_single_product,
-    remove_single_product_from_store
 )
 from src.apps.user.schemas import UserOutputSchema
 from src.core.exceptions import (
@@ -38,7 +38,7 @@ from src.core.exceptions import (
     IsOccupied,
     NonPositiveCartItemQuantityException,
     NoSuchItemInCartException,
-    ProductRemovedFromStoreException
+    ProductRemovedFromStoreException,
 )
 from src.core.factories import (
     CartInputSchemaFactory,
@@ -523,6 +523,7 @@ def test_invalid_cart_items_are_deleted_after_30_minutes_in_the_cart(
         with pytest.raises(DoesNotExist):
             get_single_cart(sync_session, cart.id)
 
+
 def test_cart_item_will_be_deleted_when_related_product_is_removed_from_store(
     sync_session: Session,
     db_carts: PagedResponseSchema[CartOutputSchema],
@@ -531,16 +532,17 @@ def test_cart_item_will_be_deleted_when_related_product_is_removed_from_store(
     cart = db_carts.results[0]
     cart_item = cart.cart_items[0]
     product_id = cart_item.product.id
-    
+
     assert len(cart.cart_items) == 1
-    
+
     result = remove_single_product_from_store(sync_session, product_id)
     product = get_single_product_or_inventory(sync_session, product_id)
-    
+
     assert product.removed_from_store == True
-    
+
     with pytest.raises(DoesNotExist):
         get_single_cart_item(sync_session, cart_item.id)
+
 
 def test_raise_exception_when_creating_cart_item_with_product_removed_from_store(
     sync_session: Session,
@@ -548,11 +550,11 @@ def test_raise_exception_when_creating_cart_item_with_product_removed_from_store
     db_products: list[ProductOutputSchema],
 ):
     cart = create_cart(sync_session, db_user.id)
-    
+
     remove_single_product_from_store(sync_session, db_products[1].id)
     product = get_single_product_or_inventory(sync_session, db_products[1].id)
     assert product.removed_from_store == True
-    
+
     cart_item_data = CartItemInputSchemaFactory().generate(product_id=product.id)
     with pytest.raises(ProductRemovedFromStoreException):
         create_cart_item(sync_session, cart_item_data, cart.id)

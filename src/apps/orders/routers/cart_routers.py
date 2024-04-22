@@ -12,7 +12,7 @@ from src.apps.orders.schemas import (
     CartOutputSchema,
     UserCartItemOutputSchema,
     UserCartOutputSchema,
-    UserOrderOutputSchema
+    UserOrderOutputSchema,
 )
 from src.apps.orders.services.cart_services import (
     create_cart,
@@ -25,7 +25,7 @@ from src.apps.orders.services.order_services import create_order
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
-from src.core.permissions import check_if_staff, check_if_staff_or_owner, check_if_owner
+from src.core.permissions import check_if_owner, check_if_staff, check_if_staff_or_owner
 from src.dependencies.get_db import get_db
 from src.dependencies.user import authenticate_user
 
@@ -87,10 +87,10 @@ def get_cart(
 ) -> Union[CartOutputSchema, UserCartOutputSchema]:
     db_cart = get_single_cart(db, cart_id)
     if check_if_staff_or_owner(request_user, "id", db_cart.user_id):
-        if request_user.is_staff: 
-            return get_single_cart(db, cart_id, as_staff=True) 
+        if request_user.is_staff:
+            return get_single_cart(db, cart_id, as_staff=True)
         return get_single_cart(db, cart_id)
-        
+
 
 @cart_router.delete(
     "/{cart_id}",

@@ -8,7 +8,7 @@ from src.apps.orders.schemas import (
     CartItemInputSchema,
     CartItemUpdateSchema,
     CartOutputSchema,
-    UserCartOutputSchema
+    UserCartOutputSchema,
 )
 from src.apps.orders.services.cart_items_services import delete_single_cart_item
 from src.apps.products.models import Product
@@ -34,7 +34,9 @@ def create_cart(session: Session, user_id: str) -> UserCartOutputSchema:
     return UserCartOutputSchema.from_orm(new_cart)
 
 
-def get_single_cart(session: Session, cart_id: int, as_staff: bool=False) -> Union[CartOutputSchema, UserCartOutputSchema]:
+def get_single_cart(
+    session: Session, cart_id: int, as_staff: bool = False
+) -> Union[CartOutputSchema, UserCartOutputSchema]:
     if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
 

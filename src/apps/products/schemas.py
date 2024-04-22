@@ -79,11 +79,11 @@ class ProductWithoutInventoryOutputSchema(ProductBaseSchema):
     id: str
     price: Decimal
     categories: list[CategoryOutputSchema]
-    
+
     class Config:
         orm_mode = True
-    
-    
+
+
 class ProductOutputSchema(ProductWithoutInventoryOutputSchema):
     inventory: InventoryOutputSchema
     removed_from_store: bool

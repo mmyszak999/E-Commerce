@@ -95,7 +95,7 @@ class QuantityLowerThanAmountOfProductItemsInCartsException(ServiceException):
 class OrderAlreadyCancelledException(ServiceException):
     def __init__(self) -> None:
         super().__init__("Order is already cancelled!")
-        
+
 
 class ProductAlreadyRemovedFromStoreException(ServiceException):
     def __init__(self) -> None:
@@ -104,4 +104,6 @@ class ProductAlreadyRemovedFromStoreException(ServiceException):
 
 class ProductRemovedFromStoreException(ServiceException):
     def __init__(self) -> None:
-        super().__init__("Product removed from store and no action can be proceed with this product!")
+        super().__init__(
+            "Product removed from store and no action can be proceed with this product!"
+        )

@@ -4,7 +4,10 @@ from typing import Optional
 
 from pydantic import BaseModel, validator
 
-from src.apps.products.schemas import ProductOutputSchema, ProductWithoutInventoryOutputSchema
+from src.apps.products.schemas import (
+    ProductOutputSchema,
+    ProductWithoutInventoryOutputSchema,
+)
 from src.apps.user.schemas import UserInfoOutputSchema
 
 
@@ -41,14 +44,14 @@ class BaseCartItemOutputSchema(CartItemBaseSchema):
 
 class UserCartItemOutputSchema(BaseCartItemOutputSchema):
     product: ProductWithoutInventoryOutputSchema
-    
+
     class Config:
         orm_mode = True
 
 
 class CartItemOutputSchema(BaseCartItemOutputSchema):
     product: ProductOutputSchema
-    
+
     class Config:
         orm_mode = True
 
@@ -65,21 +68,21 @@ class BaseCartOutputSchema(CartBaseSchema):
     id: str
     user: UserInfoOutputSchema
     cart_total_price: Decimal
-    
+
     class Config:
         orm_mode = True
 
 
 class CartOutputSchema(BaseCartOutputSchema):
     cart_items: list[CartItemOutputSchema]
-    
+
     class Config:
         orm_mode = True
 
 
 class UserCartOutputSchema(BaseCartOutputSchema):
     cart_items: list[UserCartItemOutputSchema]
-    
+
     class Config:
         orm_mode = True
 
@@ -97,8 +100,8 @@ class OrderItemOutputSchema(BaseOrderItemOutputSchema):
 
     class Config:
         orm_mode = True
-        
-        
+
+
 class UserOrderItemOutputSchema(BaseOrderItemOutputSchema):
     product: ProductWithoutInventoryOutputSchema
 
@@ -118,16 +121,17 @@ class BaseOrderOutputSchema(BaseModel):
     total_order_price: Decimal
     created_at: datetime
     payment_deadline: datetime
-    
-    
+
+
 class OrderOutputSchema(BaseOrderOutputSchema):
     order_items: list[OrderItemOutputSchema]
-    
+
     class Config:
         orm_mode = True
-    
+
+
 class UserOrderOutputSchema(BaseOrderOutputSchema):
     order_items: list[UserOrderItemOutputSchema]
-    
+
     class Config:
         orm_mode = True

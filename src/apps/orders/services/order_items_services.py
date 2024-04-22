@@ -33,7 +33,9 @@ def create_order_items(session: Session, order: Order, cart_items: list[OrderIte
         order_item_data["quantity"] = cart_item.quantity
         order_item_data["order_id"] = order.id
         order_item_data["order_item_price"] = cart_item.cart_item_price
-        order_item_data["product_price_when_order_created"] = cart_item.cart_item_price / cart_item.quantity
+        order_item_data["product_price_when_order_created"] = (
+            cart_item.cart_item_price / cart_item.quantity
+        )
 
         validate_item_quantity(product_object.inventory.quantity, cart_item.quantity)
 
@@ -46,7 +48,7 @@ def create_order_items(session: Session, order: Order, cart_items: list[OrderIte
 
 
 def get_single_order_item(
-    session: Session, order_item_id: str, as_staff: bool=False
+    session: Session, order_item_id: str, as_staff: bool = False
 ) -> Union[UserOrderItemOutputSchema, OrderItemOutputSchema]:
     if not (order_item_object := if_exists(OrderItem, "id", order_item_id, session)):
         raise DoesNotExist(OrderItem.__name__, "id", order_item_id)

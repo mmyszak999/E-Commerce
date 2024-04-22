@@ -22,10 +22,7 @@ order_items_router = APIRouter(prefix="/orders/{order_id}/items", tags=["order-i
 
 @order_items_router.get(
     "/{order_item_id}",
-    response_model=Union[
-        OrderItemOutputSchema,
-        UserOrderItemOutputSchema
-    ],
+    response_model=Union[OrderItemOutputSchema, UserOrderItemOutputSchema],
     status_code=status.HTTP_200_OK,
 )
 def get_order_item(
@@ -33,14 +30,11 @@ def get_order_item(
     order_item_id: str,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
-) -> Union[
-        OrderItemOutputSchema,
-        UserOrderItemOutputSchema
-    ]:
+) -> Union[OrderItemOutputSchema, UserOrderItemOutputSchema]:
     db_order = get_single_order(db, order_id)
     if check_if_staff_or_owner(request_user, "id", db_order.user_id):
-        if request_user.is_staff: 
-            return get_single_order_item(db, order_item_id, as_staff=True) 
+        if request_user.is_staff:
+            return get_single_order_item(db, order_item_id, as_staff=True)
         return get_single_order_item(db, order_item_id)
 
 
