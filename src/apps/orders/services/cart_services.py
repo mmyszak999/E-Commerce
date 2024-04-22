@@ -1,12 +1,14 @@
+from typing import Union
+
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from src.apps.orders.models import Cart, CartItem
 from src.apps.orders.schemas import (
     CartItemInputSchema,
-    CartItemOutputSchema,
     CartItemUpdateSchema,
     CartOutputSchema,
+    UserCartOutputSchema,
 )
 from src.apps.orders.services.cart_items_services import delete_single_cart_item
 from src.apps.products.models import Product
@@ -18,7 +20,7 @@ from src.core.pagination.services import paginate
 from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
-def create_cart(session: Session, user_id: str) -> CartOutputSchema:
+def create_cart(session: Session, user_id: str) -> UserCartOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, "id", user_id)
 
@@ -29,22 +31,26 @@ def create_cart(session: Session, user_id: str) -> CartOutputSchema:
     session.add(new_cart)
     session.commit()
 
-    return CartOutputSchema.from_orm(new_cart)
+    return UserCartOutputSchema.from_orm(new_cart)
 
 
-def get_single_cart(session: Session, cart_id: int) -> CartOutputSchema:
+def get_single_cart(
+    session: Session, cart_id: int, as_staff: bool = False
+) -> Union[CartOutputSchema, UserCartOutputSchema]:
     if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
 
     if not (user_object := if_exists(User, "id", cart_object.user_id, session)):
         raise DoesNotExist(User.__name__, "user_id", cart_object.user_id)
 
-    return CartOutputSchema.from_orm(cart_object)
+    if as_staff:
+        return CartOutputSchema.from_orm(cart_object)
+    return UserCartOutputSchema.from_orm(cart_object)
 
 
 def get_all_carts(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
-) -> PagedResponseSchema:
+) -> PagedResponseSchema[CartOutputSchema]:
     query = select(Cart).join(User, Cart.user_id == User.id)
 
     if query_params:
@@ -64,14 +70,14 @@ def get_all_user_carts(
     user_id: int,
     page_params: PageParams,
     query_params: list[tuple] = None,
-) -> PagedResponseSchema[CartOutputSchema]:
+) -> PagedResponseSchema[UserCartOutputSchema]:
     query = select(Cart).join(User, Cart.user_id == User.id).filter(User.id == user_id)
     if query_params:
         query = filter_and_sort_instances(query_params, query, Cart)
 
     return paginate(
         query=query,
-        response_schema=CartOutputSchema,
+        response_schema=UserCartOutputSchema,
         table=Cart,
         page_params=page_params,
         session=session,

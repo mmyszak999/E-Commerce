@@ -1,4 +1,5 @@
 import datetime
+from typing import Union
 
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload, selectinload
@@ -8,6 +9,7 @@ from src.apps.orders.schemas import (
     CartItemInputSchema,
     CartItemOutputSchema,
     CartItemUpdateSchema,
+    UserCartItemOutputSchema,
 )
 from src.apps.products.models import Product
 from src.apps.user.models import User
@@ -19,6 +21,7 @@ from src.core.exceptions import (
     ExceededItemQuantityException,
     NonPositiveCartItemQuantityException,
     NoSuchItemInCartException,
+    ProductRemovedFromStoreException,
     ServiceException,
 )
 from src.core.pagination.models import PageParams
@@ -35,7 +38,7 @@ from src.core.utils.utils import (
 
 def create_cart_item(
     session: Session, cart_item: CartItemInputSchema, cart_id: str
-) -> CartItemOutputSchema:
+) -> UserCartItemOutputSchema:
     if not (cart_object := if_exists(Cart, "id", cart_id, session)):
         raise DoesNotExist(Cart.__name__, "id", cart_id)
 
@@ -45,6 +48,9 @@ def create_cart_item(
 
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
+
+    if product_object.removed_from_store:
+        raise ProductRemovedFromStoreException
 
     item_in_cart_check = session.scalar(
         select(CartItem)
@@ -84,19 +90,23 @@ def create_cart_item(
         session.add(new_cart_item)
         session.commit()
 
-    return CartItemOutputSchema.from_orm(new_cart_item)
+    return UserCartItemOutputSchema.from_orm(new_cart_item)
 
 
-def get_single_cart_item(session: Session, cart_item_id: int) -> CartItemOutputSchema:
+def get_single_cart_item(
+    session: Session, cart_item_id: int, as_staff: bool = False
+) -> Union[CartItemOutputSchema, UserCartItemOutputSchema]:
     if not (cart_item_object := if_exists(CartItem, "id", cart_item_id, session)):
         raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
 
-    return CartItemOutputSchema.from_orm(cart_item_object)
+    if as_staff:
+        return CartItemOutputSchema.from_orm(cart_item_object)
+    return UserCartItemOutputSchema.from_orm(cart_item_object)
 
 
 def get_all_cart_items(
     session: Session, page_params: PageParams, query_params: list[tuple] = None
-) -> PagedResponseSchema:
+) -> PagedResponseSchema[CartItemOutputSchema]:
     query = select(CartItem).join(Product, CartItem.product_id == Product.id)
 
     if query_params:
@@ -116,7 +126,15 @@ def get_all_cart_items_for_single_cart(
     cart_id: str,
     page_params: PageParams,
     query_params: list[tuple] = None,
-) -> PagedResponseSchema:
+    as_staff: bool = False,
+) -> Union[
+    PagedResponseSchema[CartItemOutputSchema],
+    PagedResponseSchema[UserCartItemOutputSchema],
+]:
+    schema = UserCartItemOutputSchema
+    if as_staff:
+        schema = CartItemOutputSchema
+
     query = (
         select(CartItem)
         .join(Product, CartItem.product_id == Product.id)
@@ -128,7 +146,7 @@ def get_all_cart_items_for_single_cart(
 
     return paginate(
         query=query,
-        response_schema=CartItemOutputSchema,
+        response_schema=schema,
         table=CartItem,
         page_params=page_params,
         session=session,
@@ -183,7 +201,7 @@ def update_cart_item(
     cart_item_input: CartItemUpdateSchema,
     cart_item_id: str,
     cart_id: str,
-):
+) -> UserCartItemOutputSchema:
     if not (cart_item_object := if_exists(CartItem, "id", cart_item_id, session)):
         raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
 
@@ -203,6 +221,9 @@ def update_cart_item(
         product_object := if_exists(Product, "id", new_cart_item.product.id, session)
     ):
         raise DoesNotExist(Product.__name__, "id", new_cart_item.product.id)
+
+    if product_object.removed_from_store:
+        raise ProductRemovedFromStoreException
 
     cart_item_data = cart_item_input.dict()
     requested_quantity = cart_item_data.get("quantity")
@@ -264,18 +285,26 @@ def delete_single_cart_item(
     raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
 
 
-def delete_invalid_cart_items(session: Session) -> None:
-    invalid_cart_items = (
-        session.scalars(
-            select(CartItem).filter(
-                CartItem.cart_item_validity < datetime.datetime.now()
-            )
-        )
-        .unique()
-        .all()
-    )
+def delete_specific_cart_items(
+    session: Session, statement, cart_removing: bool = False
+) -> None:
+    cart_items_to_delete = session.scalars(statement).unique().all()
 
     [
-        delete_single_cart_item(session, cart_item.cart_id, cart_item.id)
-        for cart_item in invalid_cart_items
+        delete_single_cart_item(session, cart_item.cart_id, cart_item.id, cart_removing)
+        for cart_item in cart_items_to_delete
     ]
+
+
+def delete_invalid_cart_items(session: Session) -> None:
+    statement = select(CartItem).filter(
+        CartItem.cart_item_validity < datetime.datetime.now()
+    )
+    delete_specific_cart_items(session, statement=statement)
+
+
+def delete_cart_items_with_product_removed_from_store(
+    session: Session, product_id: str
+) -> None:
+    statement = select(CartItem).filter(CartItem.product_id == product_id)
+    delete_specific_cart_items(session, statement=statement, cart_removing=True)

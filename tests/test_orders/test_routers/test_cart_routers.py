@@ -129,7 +129,7 @@ def test_authenticated_user_can_create_order_from_their_cart(
     db_user: UserOutputSchema,
 ):
     response = sync_client.post(
-        f"carts/{db_carts.results[0].id}/order", headers=auth_headers
+        f"carts/{db_carts.results[1].id}/order", headers=auth_headers
     )
 
     assert response.status_code == status.HTTP_201_CREATED

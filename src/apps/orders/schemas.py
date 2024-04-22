@@ -4,7 +4,10 @@ from typing import Optional
 
 from pydantic import BaseModel, validator
 
-from src.apps.products.schemas import ProductOutputSchema
+from src.apps.products.schemas import (
+    ProductOutputSchema,
+    ProductWithoutInventoryOutputSchema,
+)
 from src.apps.user.schemas import UserInfoOutputSchema
 
 
@@ -32,12 +35,22 @@ class CartItemUpdateSchema(BaseModel):
         return quantity
 
 
-class CartItemOutputSchema(CartItemBaseSchema):
+class BaseCartItemOutputSchema(CartItemBaseSchema):
     id: str
-    product: ProductOutputSchema
     cart_id: str
     cart_item_price: Decimal
     cart_item_validity: datetime
+
+
+class UserCartItemOutputSchema(BaseCartItemOutputSchema):
+    product: ProductWithoutInventoryOutputSchema
+
+    class Config:
+        orm_mode = True
+
+
+class CartItemOutputSchema(BaseCartItemOutputSchema):
+    product: ProductOutputSchema
 
     class Config:
         orm_mode = True
@@ -51,28 +64,52 @@ class CartInputSchema(CartBaseSchema):
     pass
 
 
-class CartOutputSchema(CartBaseSchema):
+class BaseCartOutputSchema(CartBaseSchema):
     id: str
     user: UserInfoOutputSchema
-    cart_items: list[CartItemOutputSchema]
     cart_total_price: Decimal
 
     class Config:
         orm_mode = True
 
 
-class OrderItemOutputSchema(BaseModel):
-    id: str
-    order_id: str
-    product: ProductOutputSchema
-    quantity: int
-    order_item_price: Decimal
+class CartOutputSchema(BaseCartOutputSchema):
+    cart_items: list[CartItemOutputSchema]
 
     class Config:
         orm_mode = True
 
 
-class OrderOutputSchema(BaseModel):
+class UserCartOutputSchema(BaseCartOutputSchema):
+    cart_items: list[UserCartItemOutputSchema]
+
+    class Config:
+        orm_mode = True
+
+
+class BaseOrderItemOutputSchema(BaseModel):
+    id: str
+    order_id: str
+    quantity: int
+    order_item_price: Decimal
+    product_price_when_order_created: Decimal
+
+
+class OrderItemOutputSchema(BaseOrderItemOutputSchema):
+    product: ProductOutputSchema
+
+    class Config:
+        orm_mode = True
+
+
+class UserOrderItemOutputSchema(BaseOrderItemOutputSchema):
+    product: ProductWithoutInventoryOutputSchema
+
+    class Config:
+        orm_mode = True
+
+
+class BaseOrderOutputSchema(BaseModel):
     id: str
     user_id: str
     waiting_for_payment: bool
@@ -81,10 +118,20 @@ class OrderOutputSchema(BaseModel):
     being_delivered: bool
     received: bool
     cancelled: bool
-    order_items: list[OrderItemOutputSchema]
     total_order_price: Decimal
     created_at: datetime
     payment_deadline: datetime
+
+
+class OrderOutputSchema(BaseOrderOutputSchema):
+    order_items: list[OrderItemOutputSchema]
+
+    class Config:
+        orm_mode = True
+
+
+class UserOrderOutputSchema(BaseOrderOutputSchema):
+    order_items: list[UserOrderItemOutputSchema]
 
     class Config:
         orm_mode = True
