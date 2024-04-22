@@ -15,7 +15,7 @@ from src.core.exceptions import (
     DoesNotExist,
     IsOccupied,
     QuantityLowerThanAmountOfProductItemsInCartsException,
-    ProductAlreadyRemovedFromStore
+    ProductAlreadyRemovedFromStoreException
 )
 from src.core.factories import (
     CartInputSchemaFactory,
@@ -151,7 +151,7 @@ def test_raise_exception_while_removing_product_from_store_that_is_already_remov
     sync_session: Session, db_products: list[ProductOutputSchema]
 ):
     remove_single_product_from_store(sync_session, db_products[0].id)
-    with pytest.raises(ProductAlreadyRemovedFromStore):
+    with pytest.raises(ProductAlreadyRemovedFromStoreException):
         remove_single_product_from_store(sync_session, db_products[0].id)
 
 

@@ -4,7 +4,7 @@ from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, joinedload
 
 from src.apps.orders.models import CartItem, Cart
-
+from src.apps.orders.services.cart_items_services import delete_cart_items_with_product_removed_from_store
 from src.apps.products.models import (
     Category,
     Product,
@@ -26,7 +26,8 @@ from src.core.exceptions import (
     DoesNotExist,
     IsOccupied,
     ServiceException,
-    ProductAlreadyRemovedFromStore
+    ProductAlreadyRemovedFromStoreException,
+    ProductRemovedFromStoreException
 )
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -147,6 +148,10 @@ def update_single_product(
     
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
+    
+    if product_object.removed_from_store:
+        raise ProductRemovedFromStoreException
+        
     product_data = product_input.dict(exclude_none=True)
 
     if product_data.get("name"):
@@ -182,7 +187,6 @@ def update_single_product(
         current_categories = set(category.id for category in product_object.categories)
 
         if to_delete := (current_categories - incoming_categories):
-            print(to_delete, "del")
             session.execute(
                 delete(category_product_association_table).where(
                     Category.id.in_(to_delete)
@@ -191,7 +195,6 @@ def update_single_product(
             product_was_updated += 1
 
         if to_insert := (incoming_categories - current_categories):
-            print(to_insert, "ins")
             rows = [
                 {"product_id": product_id, "category_id": category_id}
                 for category_id in to_insert
@@ -234,7 +237,9 @@ def remove_single_product_from_store(session: Session, product_id: str) -> dict[
         raise DoesNotExist(Product.__name__, "id", product_id)
     
     if product_object.removed_from_store:
-        raise ProductAlreadyRemovedFromStore
+        raise ProductAlreadyRemovedFromStoreException
+    
+    delete_cart_items_with_product_removed_from_store(session, product_id)
 
     product_object.removed_from_store = True
     session.add(product_object)

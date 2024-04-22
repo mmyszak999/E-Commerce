@@ -9,7 +9,7 @@ from src.apps.orders.schemas import OrderItemOutputSchema, OrderOutputSchema, Us
 from src.apps.orders.services.order_items_services import create_order_items
 from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.core.exceptions import DoesNotExist, EmptyCartException, OrderAlreadyCancelled
+from src.core.exceptions import DoesNotExist, EmptyCartException, OrderAlreadyCancelledException
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -115,7 +115,7 @@ def cancel_single_order(
         raise DoesNotExist(Order.__name__, "id", order_id)
 
     if order_object.cancelled:
-        raise OrderAlreadyCancelled
+        raise OrderAlreadyCancelledException
 
     for order_item in order_object.order_items:
         if not (

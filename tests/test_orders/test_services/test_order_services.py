@@ -27,7 +27,7 @@ from src.core.exceptions import (
     DoesNotExist,
     EmptyCartException,
     IsOccupied,
-    OrderAlreadyCancelled,
+    OrderAlreadyCancelledException,
 )
 from src.core.factories import CartInputSchemaFactory
 from src.core.pagination.models import PageParams
@@ -146,7 +146,7 @@ def test_cancelled_order_cannot_be_cancelled_second_time(
     db_user: UserOutputSchema,
 ):
     cancel_single_order(sync_session, db_orders.results[0].id)
-    with pytest.raises(OrderAlreadyCancelled):
+    with pytest.raises(OrderAlreadyCancelledException):
         cancel_single_order(sync_session, db_orders.results[0].id)
 
 

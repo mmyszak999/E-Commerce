@@ -22,6 +22,7 @@ from src.core.exceptions import (
     NonPositiveCartItemQuantityException,
     NoSuchItemInCartException,
     ServiceException,
+    ProductRemovedFromStoreException
 )
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -47,6 +48,9 @@ def create_cart_item(
 
     if not (product_object := if_exists(Product, "id", product_id, session)):
         raise DoesNotExist(Product.__name__, "id", product_id)
+    
+    if product_object.removed_from_store:
+        raise ProductRemovedFromStoreException
 
     item_in_cart_check = session.scalar(
         select(CartItem)
@@ -218,6 +222,9 @@ def update_cart_item(
     ):
         raise DoesNotExist(Product.__name__, "id", new_cart_item.product.id)
 
+    if product_object.removed_from_store:
+        raise ProductRemovedFromStoreException
+
     cart_item_data = cart_item_input.dict()
     requested_quantity = cart_item_data.get("quantity")
 
@@ -278,18 +285,26 @@ def delete_single_cart_item(
     raise DoesNotExist(CartItem.__name__, "id", cart_item_id)
 
 
-def delete_invalid_cart_items(session: Session) -> None:
-    invalid_cart_items = (
-        session.scalars(
-            select(CartItem).filter(
-                CartItem.cart_item_validity < datetime.datetime.now()
-            )
-        )
+def delete_specific_cart_items(session: Session, statement, cart_removing: bool=False) -> None:
+    cart_items_to_delete = (
+        session.scalars(statement)
         .unique()
         .all()
     )
 
     [
-        delete_single_cart_item(session, cart_item.cart_id, cart_item.id)
-        for cart_item in invalid_cart_items
+        delete_single_cart_item(session, cart_item.cart_id, cart_item.id, cart_removing)
+        for cart_item in cart_items_to_delete
     ]
+    
+
+def delete_invalid_cart_items(session: Session) -> None:
+    statement = select(CartItem).filter(CartItem.cart_item_validity < datetime.datetime.now())
+    delete_specific_cart_items(session, statement=statement)
+
+
+def delete_cart_items_with_product_removed_from_store(
+    session: Session, product_id: str
+) -> None:
+    statement = select(CartItem).filter(CartItem.product_id == product_id)
+    delete_specific_cart_items(session, statement=statement, cart_removing=True)

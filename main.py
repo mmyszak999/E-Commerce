@@ -27,11 +27,13 @@ from src.core.exceptions import (
     NegativeQuantityException,
     NonPositiveCartItemQuantityException,
     NoSuchItemInCartException,
-    OrderAlreadyCancelled,
+    OrderAlreadyCancelledException,
     QuantityLowerThanAmountOfProductItemsInCartsException,
     ServiceException,
-    ProductAlreadyRemovedFromStore
+    ProductAlreadyRemovedFromStoreException,
+    ProductRemovedFromStoreException
 )
+from src.core.tasks import scheduler
 
 app = FastAPI()
 
@@ -183,18 +185,26 @@ def handle_quantity_lower_than_amount_of_product_items_in_carts_exception(
     )
 
 
-@app.exception_handler(OrderAlreadyCancelled)
+@app.exception_handler(OrderAlreadyCancelledException)
 def handle_order_already_cancelled_exception(
-    request: Request, exception: OrderAlreadyCancelled
+    request: Request, exception: OrderAlreadyCancelledException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
     )
 
 
-@app.exception_handler(ProductAlreadyRemovedFromStore)
+@app.exception_handler(ProductAlreadyRemovedFromStoreException)
 def handle_product_already_removed_from_store_exception(
-    request: Request, exception: ProductAlreadyRemovedFromStore
+    request: Request, exception: ProductAlreadyRemovedFromStoreException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+@app.exception_handler(ProductRemovedFromStoreException)
+def handle_product_removed_from_store_exception(
+    request: Request, exception: ProductRemovedFromStoreException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
