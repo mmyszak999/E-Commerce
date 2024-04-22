@@ -526,13 +526,16 @@ def test_invalid_cart_items_are_deleted_after_30_minutes_in_the_cart(
 
 def test_cart_item_will_be_deleted_when_related_product_is_removed_from_store(
     sync_session: Session,
-    db_carts: PagedResponseSchema[CartOutputSchema],
-    db_cart_items: PagedResponseSchema[CartItemOutputSchema],
+    db_user: UserOutputSchema,
+    db_products: list[ProductOutputSchema],
 ):
-    cart = db_carts.results[0]
-    cart_item = cart.cart_items[0]
+    cart = create_cart(sync_session, db_user.id)
+    cart_item_data = CartItemInputSchemaFactory().generate(product_id=db_products[0].id)
+    cart_item = create_cart_item(sync_session, cart_item_data, cart.id)
+
     product_id = cart_item.product.id
 
+    cart = get_single_cart(sync_session, cart.id)
     assert len(cart.cart_items) == 1
 
     result = remove_single_product_from_store(sync_session, product_id)

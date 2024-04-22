@@ -10,6 +10,7 @@ from src.apps.orders.schemas import (
     OrderItemOutputSchema,
     OrderOutputSchema,
 )
+from src.apps.orders.services.cart_items_services import create_cart_item
 from src.apps.orders.services.cart_services import create_cart, get_single_cart
 from src.apps.orders.services.order_items_services import (
     create_order_items,
@@ -37,7 +38,11 @@ from src.core.exceptions import (
     EmptyCartException,
     IsOccupied,
 )
-from src.core.factories import CartInputSchemaFactory, ProductUpdateSchemaFactory
+from src.core.factories import (
+    CartInputSchemaFactory,
+    CartItemInputSchemaFactory,
+    ProductUpdateSchemaFactory,
+)
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.utils.utils import generate_uuid
@@ -122,11 +127,13 @@ def test_if_order_item_price_remains_the_same_when_product_price_changes(
 
 def test_product_removed_from_store_remains_in_the_order_details(
     sync_session: Session,
-    db_orders: PagedResponseSchema[OrderOutputSchema],
-    db_order_items: PagedResponseSchema[OrderItemOutputSchema],
+    db_user: UserOutputSchema,
     db_products: list[ProductOutputSchema],
 ):
-    order = db_orders.results[0]
+    cart = create_cart(sync_session, db_user.id)
+    cart_item_data = CartItemInputSchemaFactory().generate(product_id=db_products[0].id)
+    cart_item = create_cart_item(sync_session, cart_item_data, cart.id)
+    order = create_order(sync_session, db_user.id, cart.id)
     order_item = order.order_items[0]
     assert len(order.order_items) == 1
 
