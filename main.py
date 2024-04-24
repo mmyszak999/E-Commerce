@@ -14,6 +14,7 @@ from src.apps.products.routers.inventory_routers import inventory_router
 from src.apps.products.routers.product_routers import product_router
 from src.apps.user.routers.address_routers import address_router
 from src.apps.user.routers.user_routers import user_router
+from src.apps.payments.routers import stripe_router, payment_router
 from src.core.exceptions import (
     AccountNotActivatedException,
     ActiveCartException,
@@ -53,6 +54,8 @@ root_router.include_router(admin_router)
 root_router.include_router(cart_router)
 root_router.include_router(cart_items_router)
 root_router.include_router(order_items_router)
+root_router.include_router(stripe_router)
+root_router.include_router(payment_router)
 
 app.include_router(root_router)
 

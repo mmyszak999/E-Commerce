@@ -2,11 +2,15 @@ import datetime
 from typing import Union, Any
 
 import stripe
+from fastapi import Request
 from pydantic import BaseSettings
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
-from src.apps.payments.schemas import StripePublishableKeySchema, StripeSessionSchema
+from src.apps.payments.schemas import (StripePublishableKeySchema, StripeSessionSchema,
+                                       UserPaymentOutputSchema, PaymentOutputSchema)
+from src.apps.payments.models import Payment
+from src.apps.user.models import User
 from src.apps.orders.models import Order
 from src.core.exceptions import (
     DoesNotExist,
@@ -20,6 +24,54 @@ from src.core.pagination.services import paginate
 from src.core.utils.utils import filter_and_sort_instances, if_exists
 from src.settings.stripe import settings as stripe_settings
 
+
+def get_single_payment(
+    session: Session, payment_id: str, as_staff: bool = False
+) -> Union[PaymentOutputSchema, UserPaymentOutputSchema]:
+    if not (payment_object := if_exists(Payment, "id", payment_id, session)):
+        raise DoesNotExist(Payment.__name__, "id", payment_id)
+
+    if as_staff:
+        return PaymentOutputSchema.from_orm(payment_object)
+    return UserPaymentOutputSchema.from_orm(payment_object)
+
+
+def get_all_payments(
+    session: Session, page_params: PageParams, query_params: list[tuple] = None
+) -> PagedResponseSchema[PaymentOutputSchema]:
+    query = select(Payment)
+
+    if query_params:
+        query = filter_and_sort_instances(query_params, query, Payment)
+
+    return paginate(
+        query=query,
+        response_schema=PaymentOutputSchema,
+        table=Payment,
+        page_params=page_params,
+        session=session,
+    )
+
+
+def get_all_user_payments(
+    session: Session,
+    user_id: str,
+    page_params: PageParams,
+    query_params: list[tuple] = None,
+) -> PagedResponseSchema[UserPaymentOutputSchema]:
+    query = (
+        select(Payment).filter(User.id == user_id).join(User, Payment.user_id == User.id)
+    )
+    if query_params:
+        query = filter_and_sort_instances(query_params, query, Payment)
+
+    return paginate(
+        query=query,
+        response_schema=UserPaymentOutputSchema,
+        table=Payment,
+        page_params=page_params,
+        session=session,
+    )
 
 
 def get_publishable_key() -> StripePublishableKeySchema:
@@ -40,6 +92,7 @@ def create_checkout_session(
             line_items=[price_data],
             metadata={"order_id": order_id},
         )
+    return checkout_session
 
 def get_stripe_session_data(session: Session, order_id: str):
     if not (order_object := if_exists(Order, "id", order_id, session)):
@@ -67,3 +120,29 @@ def get_stripe_session_data(session: Session, order_id: str):
         session_id=stripe_checkout_session["id"],
         url=stripe_checkout_session["url"]
     )
+
+async def handle_stripe_webhook_event(
+    request: Request,
+    settings: BaseSettings=stripe_settings
+):
+    endpoint_secret = settings.WEBHOOK_SECRET
+    payload = await request.body()
+    sig_header = request.headers["stripe-signature"]
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except ValueError as err:
+        print(err)
+        raise Exception
+    except stripe.error.SignatureVerificationError as err:
+        print(err)
+        raise Exception
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        payment_intent = stripe.PaymentIntent.retrieve(id=session["payment_intent"])
+        print("slatt")
+        """self.service_class.fullfill_order(
+            session=session, payment_intent=payment_intent
+        )"""
+    return

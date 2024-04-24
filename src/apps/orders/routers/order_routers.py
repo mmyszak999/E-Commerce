@@ -108,7 +108,7 @@ part of the routers related to stripe payment system
 """
 
 @order_router.get(
-    "/stripe",
+    "/stripe/get_key",
     response_model=StripePublishableKeySchema,
     status_code=status.HTTP_200_OK,
 )
