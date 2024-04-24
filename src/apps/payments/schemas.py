@@ -30,4 +30,13 @@ class UserPaymentOutputSchema(PaymentBaseOutputSchema):
     
     class Config:
         orm_mode = True
+
+
+class StripePublishableKeySchema(BaseModel):
+    publishable_key: str
+    
+
+class StripeSessionSchema(BaseModel):
+    session_id: str
+    url: str
     

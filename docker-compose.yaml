@@ -27,5 +27,12 @@ services:
     depends_on:
       - db
 
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    network_mode: host
+    container_name: stripe-cli
+    env_file: .env
+    command: listen --api-key ${STRIPE_SECRET_KEY} --forward-to 127.0.0.1:8000/api/stripe/webhook/ --skip-verify
+
 volumes:
   postgres_data:

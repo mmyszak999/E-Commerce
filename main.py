@@ -32,6 +32,7 @@ from src.core.exceptions import (
     ProductRemovedFromStoreException,
     QuantityLowerThanAmountOfProductItemsInCartsException,
     ServiceException,
+    PaymentAlreadyAccepted
 )
 from src.core.tasks import scheduler
 
@@ -206,6 +207,14 @@ def handle_product_already_removed_from_store_exception(
 @app.exception_handler(ProductRemovedFromStoreException)
 def handle_product_removed_from_store_exception(
     request: Request, exception: ProductRemovedFromStoreException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+@app.exception_handler(PaymentAlreadyAccepted)
+def handle_payment_already_accepted_exception(
+    request: Request, exception: PaymentAlreadyAccepted
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}

@@ -72,6 +72,7 @@ def get_products(
     page_params: PageParams = Depends(),
 ) -> PagedResponseSchema[ProductOutputSchema]:
     check_if_staff(request_user)
+    print(request.__dict__, "ww")
     return get_all_products(db, page_params, request.query_params.multi_items())
 
 
