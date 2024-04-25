@@ -34,6 +34,10 @@ class UserPaymentOutputSchema(PaymentBaseOutputSchema):
 
 class PaymentAwaitSchema(BaseModel):
     order_id: str
+    
+    
+class PaymentConfirmationSchema(PaymentAwaitSchema):
+    pass
 
 
 class StripePublishableKeySchema(BaseModel):

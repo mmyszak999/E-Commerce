@@ -2,7 +2,7 @@ import datetime
 from typing import Union, Any
 
 import stripe
-from fastapi import Request
+from fastapi import Request, BackgroundTasks
 from pydantic import BaseSettings
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
@@ -102,6 +102,9 @@ def get_stripe_session_data(session: Session, order_id: str):
     if order_object.payment_accepted:
         raise PaymentAlreadyAccepted
     
+    if order_object.cancelled:
+        raise OrderAlreadyCancelledException
+    
     price_data = {
             "price_data": {
                 "currency": "usd",
@@ -125,6 +128,7 @@ def get_stripe_session_data(session: Session, order_id: str):
 async def handle_stripe_webhook_event(
     session: Session,
     request: Request,
+    background_tasks: BackgroundTasks,
     settings: BaseSettings=stripe_settings
 ):
     endpoint_secret = settings.WEBHOOK_SECRET
@@ -134,18 +138,12 @@ async def handle_stripe_webhook_event(
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except ValueError as err:
-        print(err)
         raise Exception
     except stripe.error.SignatureVerificationError as err:
-        print(err)
         raise Exception
 
     if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        payment_intent = stripe.PaymentIntent.retrieve(id=session["payment_intent"])
-        print("slatt")
-        """self.service_class.fullfill_order(
-            session=session, payment_intent=payment_intent
-        )"""
-        fulfill_order()
+        stripe_session = event["data"]["object"]
+        payment_intent = stripe.PaymentIntent.retrieve(id=stripe_session["payment_intent"])
+        fulfill_order(session, stripe_session, payment_intent, background_tasks)
     return

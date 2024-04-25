@@ -1,7 +1,7 @@
 from typing import Union
 
 import stripe
-from fastapi import Depends, Request, Response, status, BackgroundTasks
+from fastapi import Depends, Request, Response, status
 from fastapi.routing import APIRouter
 
 from sqlalchemy.orm import Session

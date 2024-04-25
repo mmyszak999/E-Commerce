@@ -1,7 +1,7 @@
 from typing import Union
 
 import stripe
-from fastapi import Depends, Request, Response, status
+from fastapi import Depends, Request, Response, status, BackgroundTasks
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
@@ -39,9 +39,10 @@ payment_router = APIRouter(prefix="/payments", tags=["payment"])
 )
 async def handle_webhook_event(
     request: Request,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ) -> None:
-    return await handle_stripe_webhook_event(db, request)
+    return await handle_stripe_webhook_event(db, request, background_tasks)
 
 @payment_router.get(
     "/all",
