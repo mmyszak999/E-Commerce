@@ -1,24 +1,23 @@
 from typing import Union
 
 import stripe
-from fastapi import Depends, Request, Response, status, BackgroundTasks
+from fastapi import BackgroundTasks, Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
-
 from src.apps.payments.schemas import (
+    PaymentOutputSchema,
     StripePublishableKeySchema,
     StripeSessionSchema,
-    PaymentOutputSchema,
-    UserPaymentOutputSchema
+    UserPaymentOutputSchema,
 )
 from src.apps.payments.services import (
-    get_publishable_key,
-    get_stripe_session_data,
-    handle_stripe_webhook_event,
     get_all_payments,
     get_all_user_payments,
-    get_single_payment
+    get_publishable_key,
+    get_single_payment,
+    get_stripe_session_data,
+    handle_stripe_webhook_event,
 )
 from src.apps.user.models import User
 from src.core.pagination.models import PageParams
@@ -86,7 +85,7 @@ def get_payment(
     request_user: User = Depends(authenticate_user),
 ) -> Union[PaymentOutputSchema, UserPaymentOutputSchema]:
     db_payment = get_single_payment(db, payment_id)
-    if check_if_staff_or_owner(request_user, "id", db_payment.user_id):
+    if check_if_staff_or_owner(request_user, "id", db_payment.user.id):
         if request_user.is_staff:
             return get_single_payment(db, payment_id, as_staff=True)
         return get_single_payment(db, payment_id)

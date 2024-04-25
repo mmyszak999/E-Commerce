@@ -5,10 +5,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from src.core.utils.utils import (
-    generate_uuid,
-    get_current_time
-)
+from src.core.utils.utils import generate_uuid, get_current_time
 from src.database.db_connection import Base
 
 

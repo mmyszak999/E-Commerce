@@ -3,10 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
-from src.apps.orders.schemas import (
-    OrderOutputSchema,
-    UserOrderOutputSchema
-)
+from src.apps.orders.schemas import OrderOutputSchema, UserOrderOutputSchema
 from src.apps.user.schemas import UserInfoOutputSchema, UserOutputSchema
 
 

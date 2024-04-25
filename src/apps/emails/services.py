@@ -5,8 +5,8 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from src.apps.emails.schemas import EmailSchema, EmailUpdateSchema
-from src.apps.payments.schemas import PaymentAwaitSchema, PaymentConfirmationSchema
 from src.apps.jwt.schemas import ConfirmationTokenSchema
+from src.apps.payments.schemas import PaymentAwaitSchema, PaymentConfirmationSchema
 from src.apps.user.models import User
 from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
 from src.core.utils.utils import (

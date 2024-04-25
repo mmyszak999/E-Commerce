@@ -5,6 +5,10 @@ from fastapi import BackgroundTasks
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
+from src.apps.emails.services import (
+    send_awaiting_for_payment_mail,
+    send_payment_confirmaion_mail,
+)
 from src.apps.orders.models import Cart, Order
 from src.apps.orders.schemas import (
     OrderItemOutputSchema,
@@ -12,15 +16,14 @@ from src.apps.orders.schemas import (
     UserOrderOutputSchema,
 )
 from src.apps.orders.services.order_items_services import create_order_items
-from src.apps.products.models import Product
 from src.apps.payments.models import Payment
+from src.apps.products.models import Product
 from src.apps.user.models import User
-from src.apps.emails.services import send_awaiting_for_payment_mail, send_payment_confirmaion_mail
 from src.core.exceptions import (
     DoesNotExist,
     EmptyCartException,
     OrderAlreadyCancelledException,
-    PaymentAlreadyAccepted
+    PaymentAlreadyAccepted,
 )
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -156,12 +159,13 @@ def cancel_single_order(
 def fulfill_order(
     session: Session,
     stripe_session, payment_intent,
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks, order_id: str = None
 ):
-    print(payment_intent.__dict__)
+    if not order_id:
+        order_id = stripe_session["metadata"]["order_id"]
+        
     stripe_charge_id = payment_intent["latest_charge"]
     amount = payment_intent["amount"] / 100
-    order_id = stripe_session["metadata"]["order_id"]
     
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, "id", order_id)

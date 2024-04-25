@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy.orm import Session
+from fastapi import BackgroundTasks
 
 from src.apps.orders.models import Cart
 from src.apps.orders.schemas import (
@@ -76,7 +77,7 @@ def db_orders(
     db_carts: PagedResponseSchema[CartOutputSchema],
 ) -> list[OrderOutputSchema]:
     [
-        create_order(sync_session, user.id, cart.id)
+        create_order(sync_session, user.id, cart.id, BackgroundTasks())
         for user, cart in zip(
             [db_user, db_staff_user], [db_carts.results[0], db_carts.results[1]]
         )
