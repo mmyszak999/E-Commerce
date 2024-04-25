@@ -18,6 +18,7 @@ from src.core.exceptions import (
     OrderAlreadyCancelledException,
     PaymentAlreadyAccepted
 )
+from src.apps.orders.services.order_services import fulfill_order
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
 from src.core.pagination.services import paginate
@@ -122,6 +123,7 @@ def get_stripe_session_data(session: Session, order_id: str):
     )
 
 async def handle_stripe_webhook_event(
+    session: Session,
     request: Request,
     settings: BaseSettings=stripe_settings
 ):
@@ -145,4 +147,5 @@ async def handle_stripe_webhook_event(
         """self.service_class.fullfill_order(
             session=session, payment_intent=payment_intent
         )"""
+        fulfill_order()
     return

@@ -32,6 +32,10 @@ class UserPaymentOutputSchema(PaymentBaseOutputSchema):
         orm_mode = True
 
 
+class PaymentAwaitSchema(BaseModel):
+    order_id: str
+
+
 class StripePublishableKeySchema(BaseModel):
     publishable_key: str
     
@@ -39,4 +43,6 @@ class StripePublishableKeySchema(BaseModel):
 class StripeSessionSchema(BaseModel):
     session_id: str
     url: str
+    
+
     

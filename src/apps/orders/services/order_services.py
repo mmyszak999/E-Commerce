@@ -1,6 +1,7 @@
 import datetime
 from typing import Union
 
+from fastapi import BackgroundTasks
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, selectinload
 
@@ -13,6 +14,7 @@ from src.apps.orders.schemas import (
 from src.apps.orders.services.order_items_services import create_order_items
 from src.apps.products.models import Product
 from src.apps.user.models import User
+from src.apps.emails.services import send_awaiting_for_payment_mail
 from src.core.exceptions import (
     DoesNotExist,
     EmptyCartException,
@@ -24,7 +26,9 @@ from src.core.pagination.services import paginate
 from src.core.utils.utils import filter_and_sort_instances, if_exists
 
 
-def create_order(session: Session, user_id: str, cart_id: str) -> UserOrderOutputSchema:
+def create_order(
+    session: Session, user_id: str, cart_id: str, background_tasks: BackgroundTasks
+) -> UserOrderOutputSchema:
     if not (user_object := if_exists(User, "id", user_id, session)):
         raise DoesNotExist(User.__name__, "id", user_id)
 
@@ -48,6 +52,10 @@ def create_order(session: Session, user_id: str, cart_id: str) -> UserOrderOutpu
     statement = delete(Cart).filter(Cart.id == cart_id)
     session.execute(statement)
     session.commit()
+    
+    send_awaiting_for_payment_mail(
+        user_object.email, session, background_tasks, new_order.id 
+    )
     return UserOrderOutputSchema.from_orm(new_order)
 
 
@@ -141,3 +149,7 @@ def cancel_single_order(
     order_object.cancelled = True
     session.add(order_object)
     session.commit()
+
+
+def fulfill_order():
+    pass

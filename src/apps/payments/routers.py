@@ -38,9 +38,10 @@ payment_router = APIRouter(prefix="/payments", tags=["payment"])
     status_code=status.HTTP_200_OK,
 )
 async def handle_webhook_event(
-    request: Request
+    request: Request,
+    db: Session = Depends(get_db)
 ) -> None:
-    return await handle_stripe_webhook_event(request)
+    return await handle_stripe_webhook_event(db, request)
 
 @payment_router.get(
     "/all",
