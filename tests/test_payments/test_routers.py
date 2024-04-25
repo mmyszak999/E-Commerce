@@ -21,7 +21,7 @@ def test_staff_user_can_get_all_payments(
     sync_client: TestClient,
     db_staff_user: UserOutputSchema,
     staff_auth_headers: dict[str, str],
-    db_payments: list[OrderOutputSchema],
+    db_payments: PagedResponseSchema[PaymentOutputSchema],
 ):
     response = sync_client.get("payments/all", headers=staff_auth_headers)
 
@@ -33,7 +33,7 @@ def test_authenticate_user_cannot_get_all_payments(
     sync_client: TestClient,
     db_user: UserOutputSchema,
     auth_headers: dict[str, str],
-    db_payments: list[OrderOutputSchema],
+    db_payments: PagedResponseSchema[PaymentOutputSchema],
 ):
     response = sync_client.get("payments/all", headers=auth_headers)
 
@@ -42,7 +42,7 @@ def test_authenticate_user_cannot_get_all_payments(
 
 def test_anonymous_user_cannot_get_all_payments(
     sync_client: TestClient,
-    db_payments: list[OrderOutputSchema],
+    db_payments: PagedResponseSchema[PaymentOutputSchema],
 ):
     response = sync_client.get("payments/all")
 
@@ -53,7 +53,7 @@ def test_authenticate_user_can_get_their_payments(
     sync_client: TestClient,
     db_user: UserOutputSchema,
     auth_headers: dict[str, str],
-    db_payments: list[OrderOutputSchema],
+    db_payments: PagedResponseSchema[PaymentOutputSchema],
 ):
     response = sync_client.get("payments/", headers=auth_headers)
 
@@ -66,7 +66,7 @@ def test_staff_user_can_get_any_single_payment(
     sync_client: TestClient,
     db_staff_user: UserOutputSchema,
     staff_auth_headers: dict[str, str],
-    db_payments: list[OrderOutputSchema],
+    db_payments: PagedResponseSchema[PaymentOutputSchema],
 ):
     response = sync_client.get(f"payments/{db_payments.results[0].id}", headers=staff_auth_headers)
 
@@ -78,7 +78,7 @@ def test_authenticated_user_can_get_only_their_single_payment(
     sync_client: TestClient,
     db_user: UserOutputSchema,
     auth_headers: dict[str, str],
-    db_payments: list[OrderOutputSchema],
+    db_payments: PagedResponseSchema[PaymentOutputSchema],
 ):
     response = sync_client.get(f"payments/{db_payments.results[0].id}", headers=auth_headers)
 
@@ -92,7 +92,7 @@ def test_authenticated_user_can_get_only_their_single_payment(
 
 def test_anonymous_user_cannot_get_single_payment(
     sync_client: TestClient,
-    db_payments: list[OrderOutputSchema],
+    db_payments: PagedResponseSchema[PaymentOutputSchema],
 ):
     response = sync_client.get(f"payments/{db_payments.results[0].id}")
 
