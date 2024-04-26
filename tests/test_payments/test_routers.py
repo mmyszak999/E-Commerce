@@ -68,7 +68,9 @@ def test_staff_user_can_get_any_single_payment(
     staff_auth_headers: dict[str, str],
     db_payments: PagedResponseSchema[PaymentOutputSchema],
 ):
-    response = sync_client.get(f"payments/{db_payments.results[0].id}", headers=staff_auth_headers)
+    response = sync_client.get(
+        f"payments/{db_payments.results[0].id}", headers=staff_auth_headers
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["id"] == db_payments.results[0].id
@@ -80,12 +82,16 @@ def test_authenticated_user_can_get_only_their_single_payment(
     auth_headers: dict[str, str],
     db_payments: PagedResponseSchema[PaymentOutputSchema],
 ):
-    response = sync_client.get(f"payments/{db_payments.results[0].id}", headers=auth_headers)
+    response = sync_client.get(
+        f"payments/{db_payments.results[0].id}", headers=auth_headers
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["id"] == db_payments.results[0].id
-    
-    response = sync_client.get(f"payments/{db_payments.results[1].id}", headers=auth_headers)
+
+    response = sync_client.get(
+        f"payments/{db_payments.results[1].id}", headers=auth_headers
+    )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 

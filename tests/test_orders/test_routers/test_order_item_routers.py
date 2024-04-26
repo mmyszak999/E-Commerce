@@ -1,9 +1,12 @@
 from fastapi import status
 from fastapi.testclient import TestClient
 from fastapi_jwt_auth import AuthJWT
+from sqlalchemy.orm import Session
+from sqlalchemy import delete, insert, select
 
 from src.apps.orders.schemas import OrderItemOutputSchema, OrderOutputSchema
 from src.apps.user.schemas import UserOutputSchema
+from src.apps.orders.models import Order
 from tests.test_orders.conftest import db_carts, db_order_items, db_orders
 from tests.test_users.conftest import (
     auth_headers,
@@ -14,20 +17,25 @@ from tests.test_users.conftest import (
 
 
 def test_staff_user_can_get_any_single_order_item(
+    sync_session: Session,
     sync_client: TestClient,
     staff_auth_headers: dict[str, str],
     db_orders: list[OrderOutputSchema],
     db_order_items: list[OrderItemOutputSchema],
     db_staff_user: UserOutputSchema,
 ):
+    order = sync_session.scalar(
+        select(Order).filter(Order.id == db_orders.results[1].id)
+    )
+    
     response = sync_client.get(
-        f"orders/{db_orders.results[1].id}/items/{db_order_items.results[1].id}",
+        f"orders/{order.id}/items/{order.order_items[0].id}",
         headers=staff_auth_headers,
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["order_id"] == db_orders.results[1].id
-    assert response.json()["id"] == db_order_items.results[1].id
+    assert response.json()["order_id"] == order.id
+    assert response.json()["id"] == order.order_items[0].id
 
 
 def test_authenticated_user_cannot_get_order_item_from_not_their_order(

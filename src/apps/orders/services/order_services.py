@@ -2,7 +2,7 @@ import datetime
 from typing import Union
 
 from fastapi import BackgroundTasks
-from sqlalchemy import delete, insert, select, update
+from sqlalchemy import delete, insert, select
 from sqlalchemy.orm import Session, selectinload
 
 from src.apps.emails.services import (
@@ -17,6 +17,7 @@ from src.apps.orders.schemas import (
 )
 from src.apps.orders.services.order_items_services import create_order_items
 from src.apps.payments.models import Payment
+from src.apps.payments.schemas import PaymentOutputSchema
 from src.apps.products.models import Product
 from src.apps.user.models import User
 from src.core.exceptions import (
@@ -24,6 +25,7 @@ from src.core.exceptions import (
     EmptyCartException,
     OrderAlreadyCancelledException,
     PaymentAlreadyAccepted,
+    OrderCancelledException
 )
 from src.core.pagination.models import PageParams
 from src.core.pagination.schemas import PagedResponseSchema
@@ -159,19 +161,23 @@ def cancel_single_order(
 def fulfill_order(
     session: Session,
     stripe_session, payment_intent,
-    background_tasks: BackgroundTasks, order_id: str = None
-):
+    background_tasks: BackgroundTasks,
+    order_id: str = None, amount: int = None,
+    testing: bool = False
+) -> None:
     if not order_id:
         order_id = stripe_session["metadata"]["order_id"]
+    
+    if not amount:
+        amount = payment_intent["amount"] / 100
         
     stripe_charge_id = payment_intent["latest_charge"]
-    amount = payment_intent["amount"] / 100
     
     if not (order_object := if_exists(Order, "id", order_id, session)):
         raise DoesNotExist(Order.__name__, "id", order_id)
     
     if order_object.cancelled:
-        raise OrderAlreadyCancelledException
+        raise OrderCancelledException
     
     if order_object.payment_accepted:
         raise PaymentAlreadyAccepted
@@ -204,4 +210,6 @@ def fulfill_order(
         order_object.user.email, session, background_tasks, order_id
     )
     session.commit()
+    if testing:
+        return PaymentOutputSchema.from_orm(new_payment)
     return

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pytest
 from freezegun import freeze_time
 from sqlalchemy.orm import Session
+from fastapi import BackgroundTasks
 
 from src.apps.orders.schemas import (
     CartItemOutputSchema,
@@ -133,7 +134,7 @@ def test_product_removed_from_store_remains_in_the_order_details(
     cart = create_cart(sync_session, db_user.id)
     cart_item_data = CartItemInputSchemaFactory().generate(product_id=db_products[0].id)
     cart_item = create_cart_item(sync_session, cart_item_data, cart.id)
-    order = create_order(sync_session, db_user.id, cart.id)
+    order = create_order(sync_session, db_user.id, cart.id, BackgroundTasks())
     order_item = order.order_items[0]
     assert len(order.order_items) == 1
 

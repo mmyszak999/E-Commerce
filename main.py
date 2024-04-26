@@ -33,7 +33,8 @@ from src.core.exceptions import (
     ProductRemovedFromStoreException,
     QuantityLowerThanAmountOfProductItemsInCartsException,
     ServiceException,
-    PaymentAlreadyAccepted
+    PaymentAlreadyAccepted,
+    OrderCancelledException
 )
 from src.core.tasks import scheduler
 
@@ -192,6 +193,15 @@ def handle_quantity_lower_than_amount_of_product_items_in_carts_exception(
 @app.exception_handler(OrderAlreadyCancelledException)
 def handle_order_already_cancelled_exception(
     request: Request, exception: OrderAlreadyCancelledException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+
+@app.exception_handler(OrderCancelledException)
+def handle_order_cancelled_exception(
+    request: Request, exception: OrderCancelledException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}

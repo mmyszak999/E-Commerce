@@ -1,9 +1,12 @@
 from fastapi import status
 from fastapi.testclient import TestClient
 from fastapi_jwt_auth import AuthJWT
+from sqlalchemy.orm import Session
+from sqlalchemy import delete, insert, select
 
 from src.apps.orders.schemas import CartInputSchema, CartOutputSchema
 from src.apps.user.schemas import UserOutputSchema
+from src.apps.user.models import User
 from src.core.factories import CartInputSchemaFactory
 from tests.test_orders.conftest import db_carts
 from tests.test_users.conftest import (
@@ -123,13 +126,19 @@ def test_authenticated_cannot_delete_cart(
 
 
 def test_authenticated_user_can_create_order_from_their_cart(
+    sync_session: Session,
     sync_client: TestClient,
     auth_headers: dict[str, str],
     db_carts: list[CartOutputSchema],
     db_user: UserOutputSchema,
 ):
+    user = sync_session.scalar(
+        select(User).filter(User.id == db_user.id)
+    )
+    cart_id = user.carts[0].id
+
     response = sync_client.post(
-        f"carts/{db_carts.results[1].id}/order", headers=auth_headers
+        f"carts/{cart_id}/order", headers=auth_headers
     )
 
     assert response.status_code == status.HTTP_201_CREATED
