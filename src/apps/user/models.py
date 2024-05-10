@@ -21,9 +21,10 @@ class User(Base):
     is_active = Column(Boolean, nullable=False, server_default="false")
     is_superuser = Column(Boolean, nullable=False, server_default="false")
     is_staff = Column(Boolean, nullable=False, server_default="false")
-    orders = relationship("Order", back_populates="user")
-    carts = relationship("Cart", back_populates="user")
     address = relationship("UserAddress", uselist=False, back_populates="user")
+    carts = relationship("Cart", back_populates="user")
+    orders = relationship("Order", back_populates="user")
+    payments = relationship("Payment", back_populates="user")
 
 
 class UserAddress(Base):

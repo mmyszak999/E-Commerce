@@ -14,6 +14,7 @@ from src.apps.products.routers.inventory_routers import inventory_router
 from src.apps.products.routers.product_routers import product_router
 from src.apps.user.routers.address_routers import address_router
 from src.apps.user.routers.user_routers import user_router
+from src.apps.payments.routers import stripe_router, payment_router
 from src.core.exceptions import (
     AccountNotActivatedException,
     ActiveCartException,
@@ -32,6 +33,8 @@ from src.core.exceptions import (
     ProductRemovedFromStoreException,
     QuantityLowerThanAmountOfProductItemsInCartsException,
     ServiceException,
+    PaymentAlreadyAccepted,
+    OrderCancelledException
 )
 from src.core.tasks import scheduler
 
@@ -52,6 +55,8 @@ root_router.include_router(admin_router)
 root_router.include_router(cart_router)
 root_router.include_router(cart_items_router)
 root_router.include_router(order_items_router)
+root_router.include_router(stripe_router)
+root_router.include_router(payment_router)
 
 app.include_router(root_router)
 
@@ -194,6 +199,15 @@ def handle_order_already_cancelled_exception(
     )
 
 
+@app.exception_handler(OrderCancelledException)
+def handle_order_cancelled_exception(
+    request: Request, exception: OrderCancelledException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+
 @app.exception_handler(ProductAlreadyRemovedFromStoreException)
 def handle_product_already_removed_from_store_exception(
     request: Request, exception: ProductAlreadyRemovedFromStoreException
@@ -206,6 +220,14 @@ def handle_product_already_removed_from_store_exception(
 @app.exception_handler(ProductRemovedFromStoreException)
 def handle_product_removed_from_store_exception(
     request: Request, exception: ProductRemovedFromStoreException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}
+    )
+
+@app.exception_handler(PaymentAlreadyAccepted)
+def handle_payment_already_accepted_exception(
+    request: Request, exception: PaymentAlreadyAccepted
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exception)}

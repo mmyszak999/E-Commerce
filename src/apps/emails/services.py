@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.apps.emails.schemas import EmailSchema, EmailUpdateSchema
 from src.apps.jwt.schemas import ConfirmationTokenSchema
+from src.apps.payments.schemas import PaymentAwaitSchema, PaymentConfirmationSchema
 from src.apps.user.models import User
 from src.core.exceptions import DoesNotExist, IsOccupied, ServiceException
 from src.core.utils.utils import (
@@ -32,6 +33,32 @@ def send_activation_email(
     )
     token = generate_confirm_token([email])
     body_schema = ConfirmationTokenSchema(token=token)
+    send_email(email_schema, body_schema, background_tasks, settings=email_config())
+
+
+def send_awaiting_for_payment_mail(
+    email: EmailStr, session: Session,
+    background_tasks: BackgroundTasks, order_id: str
+) -> None:
+    email_schema = EmailSchema(
+        email_subject="Awaiting for payment",
+        receivers=(email,),
+        template_name="awaiting_for_payment.html",
+    )
+    body_schema = PaymentAwaitSchema(order_id=order_id)
+    send_email(email_schema, body_schema, background_tasks, settings=email_config())
+
+
+def send_payment_confirmaion_mail(
+    email: EmailStr, session: Session,
+    background_tasks: BackgroundTasks, order_id: str
+) -> None:
+    email_schema = EmailSchema(
+        email_subject="Payment Confirmation",
+        receivers=(email,),
+        template_name="payment_confirmation.html",
+    )
+    body_schema = PaymentConfirmationSchema(order_id=order_id)
     send_email(email_schema, body_schema, background_tasks, settings=email_config())
 
 

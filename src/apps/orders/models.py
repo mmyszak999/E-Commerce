@@ -64,6 +64,9 @@ class Order(Base):
         nullable=False,
     )
     user = relationship("User", back_populates="orders")
+    payment = relationship(
+        "Payment", uselist=False, back_populates="order"
+    )
     waiting_for_payment = Column(Boolean, nullable=False, server_default="true")
     order_accepted = Column(Boolean, nullable=False, server_default="false")
     payment_accepted = Column(Boolean, nullable=False, server_default="false")

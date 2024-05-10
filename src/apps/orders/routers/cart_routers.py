@@ -1,6 +1,6 @@
 from typing import Union
 
-from fastapi import Depends, Request, Response, status
+from fastapi import BackgroundTasks, Depends, Request, Response, status
 from fastapi.routing import APIRouter
 from sqlalchemy.orm import Session
 
@@ -113,9 +113,10 @@ def delete_cart(
 )
 def create_order_from_cart(
     cart_id: str,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     request_user: User = Depends(authenticate_user),
 ) -> UserOrderOutputSchema:
     db_cart = get_single_cart(db, cart_id)
     check_if_staff_or_owner(request_user, "id", db_cart.user_id)
-    return create_order(db, request_user.id, cart_id)
+    return create_order(db, request_user.id, cart_id, background_tasks)
